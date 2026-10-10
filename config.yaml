@@ -1,0 +1,19 @@
+project:
+  name: "Artist Next Move"
+  SEED: 1
+
+data:
+  demo_masters: "data/demo/masters_demo.csv"
+  raw_masters_xml: "discogs_20260901_masters.xml"
+  raw_releases_xml: "discogs_20260901_releases.xml"
+  masters_parquet: "data/processed/masters.parquet"
+  masters_clean_parquet: "data/processed/masters_clean.parquet"
+
+when:
+  horizons:
+    - 1
+    - 2
+  min_history_years: 2
+
+what:
+  min_previous_works: 3

@@ -1,0 +1,17 @@
+# All data stays local, nothing under data/ is versioned (see README.md for how to regenerate it)
+data/
+*.xml
+
+# Python
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Environment and secrets
+.env
+
+# Logs and local files
+scripts/*.log
+.DS_Store
+project_requirements.md
