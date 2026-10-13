@@ -13,7 +13,7 @@ when:
   horizons:
     - 1
     - 2
-  min_history_years: 2
 
 what:
+  # Minimum number of previous dated Works (artist-year level for WHAT: dated Works strictly before the year).
   min_previous_works: 3
