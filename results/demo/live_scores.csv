@@ -1,0 +1,11 @@
+artist,artist_id,dated_works,undated,first_year,last_year,last_work,last_type,works_so_far_this_year,albums_so_far_this_year,singles_so_far_this_year,is_album_like,is_single_like,history_count,years_since_last,years_active_so_far,historical_rate,p_next_1y,p_last_snapshot_next_1y,p_next_2y,p_last_snapshot_next_2y
+"Tyler, The Creator",1967268,31,0,2010,2025,Don't Tap The Glass,album,0,0,0,True,False,31,1,16,1.9375,0.5760566,0.589552,0.77353644,0.75992006
+Taylor Swift,1124645,125,4,2002,2026,"I Knew It, I Knew You",single,3,0,3,False,True,125,0,24,5.208333333333333,0.9141571,0.91340566,0.9664342,0.96535814
+Kendrick Lamar,1778977,36,0,2009,2024,Look At Them Speakers (3-D Audio),single,0,0,0,False,True,36,2,17,2.1176470588235294,0.53741735,0.6507674,0.69545424,0.86892545
+Sabrina Carpenter,4378284,42,0,2010,2026,House Tour,single,1,0,1,False,True,42,0,16,2.625,0.74977666,0.730354,0.881272,0.8716773
+Olivia Rodrigo,7592689,29,0,2016,2026,Purple (Happy Version),other,6,1,4,False,False,29,0,10,2.9,0.8935048,0.89040816,0.95742416,0.9576754
+Rihanna,321128,78,2,2005,2022,Lift Me Up,single,0,0,0,False,True,78,4,21,3.7142857142857144,0.40558973,0.4361828,0.5973333,0.5989537
+Frank Ocean,2013868,22,0,2011,2020,Sweet Life (Ezel Remix),other,0,0,0,False,False,22,6,15,1.4666666666666666,0.33215338,0.85308695,0.42895386,0.94655466
+Lorde,3317315,24,2,2012,2025,Hammer,single,0,0,0,False,True,24,1,14,1.7142857142857142,0.65741223,0.68012834,0.8007761,0.85374063
+Mitski,4110740,19,1,2012,2026,Nothing’s About To Happen To Me,album,1,1,0,True,False,19,0,14,1.3571428571428572,0.5316768,0.3118027,0.7390118,0.54836476
+Tame Impala,1245513,39,0,2008,2025,Dracula,single,0,0,0,False,True,39,1,18,2.1666666666666665,0.69405097,0.7312819,0.8408469,0.8929792
