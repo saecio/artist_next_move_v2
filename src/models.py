@@ -295,3 +295,140 @@ def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATU
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
     return fit, score
+
+
+def make_what_logistic_regression(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
+    """WHAT sibling of the WHEN Logistic Regression: untuned linear reference, one configuration.
+
+    Same Pipeline and settings as `make_logistic_regression`, copied here because that function
+    builds its input matrix from the WHEN snapshot columns. NaN is filled with the median of the
+    fold's train rows (same rule as WHEN, no missing-value indicator columns). Limit: years_since_new_style
+    is 17.07% NaN (fold 5 train) and was not checked as an exact identifier of the imputed rows, unlike
+    history_count and years_active_so_far in WHEN. Features are only standardized, no log transform of the
+    heavy-tailed counts, a known limit of this untuned linear model. `features` is the output of
+    `build_what_features`; `feature_columns` must not contain any of `WHAT_FORBIDDEN_INPUTS`
+    or a repeated name. Returns `(fit, score)` with the signatures `evaluate_folds` expects:
+    `fit(train)` returns the fitted model, `score(test, fitted)` the probability of `target` == 1.
+    """
+    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
+    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
+
+    def fit(train: pd.DataFrame):
+        model = Pipeline([
+            ("impute", SimpleImputer(strategy="median")),  # Same: median, not mean, the counts are heavy-tailed.
+            ("scale", StandardScaler()),  # Same: zero mean and unit variance from train, so L2 does not penalize units.
+            ("model", LogisticRegression(
+                C=1.0,            # Same: inverse regularization strength, sklearn default, untuned.
+                solver="lbfgs",   # Same: default solver.
+                max_iter=1000,    # Same: iteration cap, leaves room to converge.
+            )),
+        ])
+        return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
+
+    def score(test: pd.DataFrame, fitted):
+        return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
+
+    return fit, score
+
+
+def make_what_naive_bayes(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
+    """WHAT sibling of the WHEN Gaussian Naive Bayes: untuned probabilistic reference point, one configuration.
+
+    Same Pipeline and settings as `make_naive_bayes`, copied here because that function builds
+    its input matrix from the WHEN snapshot columns. Known mismatch: GaussianNB models every
+    feature as an independent Gaussian, but 11 of the 25 columns are 0/1 (the genre columns)
+    and the counts and shares are skewed, bounded and correlated. It is kept as a reference, not
+    as a competitive candidate, so the mismatch is documented and not fixed with a mixed
+    Gaussian/Bernoulli model. Its scores are overconfident (calibration), which does not affect
+    the ranking metrics. NaN is filled with the median of the fold's train rows (same rule as
+    WHEN, no missing-value indicator columns). Limit: years_since_new_style is 17.07% NaN (fold 5
+    train) and was not checked as an exact identifier of the imputed rows. `features` is the output
+    of `build_what_features`; `feature_columns` must not contain any of `WHAT_FORBIDDEN_INPUTS`
+    or a repeated name. Returns `(fit, score)` with the signatures `evaluate_folds` expects:
+    `fit(train)` returns the fitted model, `score(test, fitted)` the probability of `target` == 1.
+    """
+    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
+    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
+
+    def fit(train: pd.DataFrame):
+        model = Pipeline([
+            ("impute", SimpleImputer(strategy="median")),  # Same: median imputation as the other non-native-NaN models.
+            ("model", GaussianNB(
+                var_smoothing=1e-9,  # Same: sklearn default, fraction of the largest variance added to every variance.
+            )),
+        ])
+        return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
+
+    def score(test: pd.DataFrame, fitted):
+        return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
+
+    return fit, score
+
+
+def make_what_random_forest(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
+    """WHAT sibling of the WHEN Random Forest: untuned tree-ensemble reference, one configuration.
+
+    Same Pipeline and settings as `make_random_forest`, copied here because that function
+    builds its input matrix from the WHEN snapshot columns. NaN is filled with the median of the
+    fold's train rows (same rule as WHEN, no missing-value indicator columns). Trees do not need
+    scaling. Limit: years_since_new_style is 17.07% NaN (fold 5 train) and was not checked as an
+    exact identifier of the imputed rows. The values are the WHEN common starting points, not the
+    result of any search. `features` is the output of `build_what_features`; `feature_columns`
+    must not contain any of `WHAT_FORBIDDEN_INPUTS` or a repeated name. Returns `(fit, score)` with
+    the signatures `evaluate_folds` expects: `fit(train)` returns the fitted model,
+    `score(test, fitted)` the probability of `target` == 1.
+    """
+    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
+    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
+
+    def fit(train: pd.DataFrame):
+        model = Pipeline([
+            ("impute", SimpleImputer(strategy="median")),  # Same: median imputation as the other non-native-NaN models.
+            ("model", RandomForestClassifier(
+                n_estimators=200,      # Same: number of trees.
+                max_depth=12,          # Same: main lever against overfitting.
+                min_samples_leaf=50,   # Same: minimum rows in a leaf.
+                max_features="sqrt",   # Same: features tried per split (5 of 25 here, about 4 of 20 in WHEN).
+                max_samples=0.25,      # Same: each tree trains on a random 25% of the rows.
+                n_jobs=-1,             # Same: every CPU core.
+                random_state=SEED,     # Same: reproducible runs.
+            )),
+        ])
+        return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
+
+    def score(test: pd.DataFrame, fitted):
+        return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
+
+    return fit, score
+
+
+def make_what_hist_gradient_boosting(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
+    """WHAT sibling of the WHEN HistGradientBoostingClassifier: untuned boosting reference, one configuration.
+
+    Same settings as `make_hist_gradient_boosting`, copied here because that function builds its
+    input matrix from the WHEN snapshot columns. No imputer and no scaler: the model sends NaN
+    (years_since_new_style, new_style_rate_so_far, n_new_styles_year and top_style_share) down a
+    learned branch at every split, and trees do not need scaling. The values are the WHEN common
+    starting points, not the result of any search. `features` is the output of `build_what_features`;
+    `feature_columns` must not contain any of `WHAT_FORBIDDEN_INPUTS` or a repeated name. Returns
+    `(fit, score)` with the signatures `evaluate_folds` expects: `fit(train)` returns the fitted
+    model, `score(test, fitted)` the probability of `target` == 1.
+    """
+    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
+    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
+
+    def fit(train: pd.DataFrame):
+        model = HistGradientBoostingClassifier(
+            learning_rate=0.1,      # Same: step size of each new tree.
+            max_iter=200,           # Same: number of boosting rounds.
+            max_leaf_nodes=31,      # Same: leaves per tree.
+            min_samples_leaf=50,    # Same: minimum rows in a leaf, as in the Random Forest.
+            early_stopping=False,   # Same: off, all train rows are used and no validation split is carved out.
+            random_state=SEED,      # Same: reproducible runs.
+        )
+        return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
+
+    def score(test: pd.DataFrame, fitted):
+        return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
+
+    return fit, score

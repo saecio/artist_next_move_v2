@@ -409,7 +409,7 @@ def evaluate_folds(folds: list, target: str, fit_fn, score_fn, n_bootstrap: int 
     (higher = more likely `target` == 1). `folds` must come from make_folds
     with the same `target`, so every test row has a resolved label.
     """
-    alpha = (1 - confidence) / 2  # two-sided tail, 0.05 each side at 90%
+    alpha = (1 - confidence) / 2  # two-sided tail, 0.025 each side at 95%
     rows = []  # one dict per fold
     for f in folds:
         train, test = f["train"], f["test"]  # fold dataframes

@@ -22,7 +22,7 @@ Models: Logistic Regression, KNN, Random Forest, XGBoost, always compared agains
    - Master-only filter tried and reversed on 2026-10-10 (see CUT in [decisions.md](decisions.md)).
    - Result: 510,364 works (8.58%) keep `year = NaN`. `year_missing` exists at the artist level in `src/eda.py`; the work-level flag is still pending, to be added in the snapshots block.
 5. **EDA** (`notebooks/02_eda_visualization.ipynb`, `src/eda.py`): univariate, bivariate, multivariate and hypothesis tests on `works_checkpoint.parquet`. Findings are logged in [decisions.md](decisions.md).
-6. **Baselines** (`src/baselines.py`): historical baselines for WHEN and WHAT, plus the kill gate. A model passes only if the lower bound of its 90% artist-level bootstrap PR-AUC interval is above the upper bound of the baseline's. Not yet run on real snapshots.
+6. **Baselines** (`src/baselines.py`): historical baselines for WHEN and WHAT, plus the kill gate. A model passes only if the lower bound of its 95% artist-level bootstrap PR-AUC interval is above the upper bound of the baseline's.
 7. **Snapshots** (`src/snapshots.py`): `build_snapshots` turns the Works table into one row per dated work (5,438,765 on the full checkpoint, about 12 seconds) with the WHEN and WHAT targets. WHEN looks at the next year with activity, not the next work. Re-validated at full scale on 2026-10-10, see [decisions.md](decisions.md).
 
 ## Next

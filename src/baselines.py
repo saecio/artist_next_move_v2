@@ -50,11 +50,10 @@ from sklearn.metrics import average_precision_score
 
 from eda import VOLUME_BUCKET_EDGES, VOLUME_BUCKET_LABELS, _bucket_by_prior_works  # same history and volume buckets as the Work-level EDA
 
-# Confidence level used to decide "clearly above", not just "higher".
-# 90%, not 95%, is a deliberate choice: with artist-level bootstrap on a
-# dataset this size, 95% CIs are wide enough that almost nothing would
-# ever clear the gate. 90% is still a real, stated bar, not a rubber stamp.
-KILL_GATE_CONFIDENCE = 0.90
+# Confidence level of the bootstrap intervals, used to decide "clearly above",
+# not just "higher". 95%, the conventional level for a two-sided interval
+# (docs/decisions.md, "Confidence level moved from 90% to 95%").
+KILL_GATE_CONFIDENCE = 0.95
 
 # Number of bootstrap resamples for the kill gate's PR-AUC confidence
 # intervals. 1,000 is the usual default for a bootstrap CI; this is not
@@ -274,8 +273,8 @@ def evaluate_kill_gate(
 
     Rule: the gate passes (`model_beats_baseline: True`) only when the
     LOWER bound of the model's CI is strictly above the UPPER bound of the
-    baseline's CI, at the given `confidence` (two-sided, so a 90%
-    confidence level reads off the 5th and 95th percentiles of each
+    baseline's CI, at the given `confidence` (two-sided, so a 95%
+    confidence level reads off the 2.5th and 97.5th percentiles of each
     bootstrap distribution).
 
     Returns a plain dict with both point estimates, both CIs, and the
