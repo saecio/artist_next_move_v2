@@ -48,6 +48,8 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score
 
+from eda import VOLUME_BUCKET_EDGES, VOLUME_BUCKET_LABELS, _bucket_by_prior_works  # same history and volume buckets as the Work-level EDA
+
 # Confidence level used to decide "clearly above", not just "higher".
 # 90%, not 95%, is a deliberate choice: with artist-level bootstrap on a
 # dataset this size, 95% CIs are wide enough that almost nothing would
@@ -58,6 +60,12 @@ KILL_GATE_CONFIDENCE = 0.90
 # intervals. 1,000 is the usual default for a bootstrap CI; this is not
 # tuned, just a standard, round number.
 N_BOOTSTRAP = 1_000
+
+# Minimum train rows a lookup cell needs before its own positive rate is
+# trusted. With fewer than 30 rows a rate has a standard error of about 9
+# points or more (sqrt(0.25 / 30)), too noisy to rank rows better than the
+# global rate, so smaller cells fall back to the global rate instead.
+MIN_CELL_ROWS = 30
 
 
 # --------------------------------------------------------------------------
@@ -137,6 +145,78 @@ def score_what_baseline(snapshots: pd.DataFrame, fitted: dict) -> pd.Series:
     that is the point, it is the "no information" floor WHAT has to clear.
     """
     return pd.Series(fitted["positive_rate"], index=snapshots.index)
+
+
+# --------------------------------------------------------------------------
+# WHAT lookup baselines: "the train positive rate of the row's own cell."
+# --------------------------------------------------------------------------
+#
+# The constant WHAT baseline above cannot rank rows at all. These baselines
+# use only information known at the cutoff, as coarse buckets of the number of
+# previous Works (history_bucket) and of the Works in the current year
+# (volume_bucket): each row is scored with the TRAIN positive rate of
+# new_style_year in its own cell. Next-year volume is never used, it is not
+# known at the cutoff. No smoothing and no model: a cell with fewer than
+# MIN_CELL_ROWS train rows, or one never seen in train, gets the global train
+# rate. The strongest of them (history_bucket and volume_bucket together) is
+# the reference a WHAT model has to beat.
+
+
+def add_what_buckets(table: pd.DataFrame, min_previous_works: int = 3) -> pd.DataFrame:
+    """Add `history_bucket` and `volume_bucket` to a WHAT modeling table.
+
+    `table` is the output of `build_what_table`. `history_bucket` comes from
+    `history_count` with the prior-work buckets of src/eda.py (the lowest
+    label assumes `min_previous_works` = 3) and `volume_bucket` from
+    `n_works_year` (1, 2, 3-4, 5+). Both use columns known at the cutoff. The
+    eda helper drops rows below `min_previous_works`; on a table built with
+    the same threshold it removes nothing, and this is asserted.
+    """
+    # The eda helper reads the history under the name prior_work_count.
+    bucketed = _bucket_by_prior_works(table.rename(columns={"history_count": "prior_work_count"}), min_previous_works)
+    # No row may be dropped or reordered by the helper, otherwise the buckets would not line up.
+    assert len(bucketed) == len(table) and bucketed.index.equals(table.index), "bucketing changed the rows of the table"
+    # Copy so the caller's table is untouched.
+    result = table.copy()
+    # History bucket from the eda helper.
+    result["history_bucket"] = bucketed["prior_work_bucket"]
+    # Volume bucket of the current year, never of the next one.
+    result["volume_bucket"] = pd.cut(table["n_works_year"], bins=VOLUME_BUCKET_EDGES, labels=VOLUME_BUCKET_LABELS)
+    return result
+
+
+def fit_what_lookup_baseline(train: pd.DataFrame, group_columns: list) -> dict:
+    """Learn, from TRAIN only, the new_style_year positive rate of each
+    combination of `group_columns`, and the global train rate.
+
+    Rows with an unknown label are ignored. A combination with fewer than
+    `MIN_CELL_ROWS` train rows is not stored, so it scores as the global rate.
+    Returns a plain dict: `global_rate`, `group_columns` and `rates` (one
+    entry per stored combination, keyed by a tuple of the column values).
+    """
+    # Only rows with a known label can say anything about the rate.
+    known = train.dropna(subset=["new_style_year"])
+    # Fallback for any cell that is unseen or too small.
+    global_rate = float(known["new_style_year"].mean()) if len(known) else 0.0
+    # Row count and positive rate of every combination present in train.
+    cells = known.groupby(list(group_columns), observed=True)["new_style_year"].agg(["size", "mean"])
+    # Cells under the minimum are left out on purpose, no smoothing.
+    cells = cells[cells["size"] >= MIN_CELL_ROWS]
+    # Keys as tuples even with one column, so scoring looks them up the same way.
+    rates = {(key if isinstance(key, tuple) else (key,)): float(rate) for key, rate in zip(cells.index, cells["mean"])}
+    return {"global_rate": global_rate, "group_columns": list(group_columns), "rates": rates}
+
+
+def score_what_lookup_baseline(rows: pd.DataFrame, fitted: dict) -> pd.Series:
+    """Score every row with the fitted rate of its own cell, or the global
+    train rate when the cell was unseen or too small. PR-AUC only cares about
+    ranking, so the rates are used directly as scores.
+    """
+    # One tuple of column values per row, in the order of the fitted columns.
+    keys = zip(*[rows[column] for column in fitted["group_columns"]])
+    # Cell rate if stored, global train rate otherwise.
+    scores = [fitted["rates"].get(key, fitted["global_rate"]) for key in keys]
+    return pd.Series(scores, index=rows.index)
 
 
 # --------------------------------------------------------------------------

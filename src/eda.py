@@ -391,6 +391,8 @@ def artist_style_diversity(works_df: pd.DataFrame) -> pd.Series:
 
 PRIOR_WORK_BUCKET_EDGES = [0, 5, 10, 20, 50, float("inf")]  # right-inclusive bucket edges for prior_work_count
 PRIOR_WORK_BUCKET_LABELS = ["3-5", "6-10", "11-20", "21-50", "51+"]  # bucket names, the lowest assumes min_previous_works=3
+VOLUME_BUCKET_EDGES = [0, 1, 2, 4, float("inf")]  # right-inclusive bucket edges for the number of Works an artist has in one year
+VOLUME_BUCKET_LABELS = ["1", "2", "3-4", "5+"]  # bucket names for that count
 
 
 def what_base_rate(transitions: pd.DataFrame, min_previous_works: int) -> dict:

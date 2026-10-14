@@ -129,6 +129,13 @@ def split_summary(parts: dict) -> pd.DataFrame:
 # purged cross-validation for time series).
 GAP_YEARS = 2
 
+# Walk-forward test tranches: the last N_FOLD_TRANCHES * TRANCHE_YEARS
+# development years are split into N_FOLD_TRANCHES consecutive tranches of
+# TRANCHE_YEARS calendar years each (1993-1997 ... 2013-2017 for a holdout
+# starting in 2018). Defaults of make_what_folds, same values as make_folds.
+N_FOLD_TRANCHES = 5
+TRANCHE_YEARS = 5
+
 
 def holdout_gap(development: pd.DataFrame, holdout_start: int = HOLDOUT_START_YEAR, gap_years: int = GAP_YEARS) -> tuple:
     """Split development into rows safe to train the final model on and the gap rows.
@@ -199,6 +206,64 @@ def fold_summary(folds: list) -> pd.DataFrame:
     table = table.rename(columns={"test_artists_in_train": "test_rows_with_train_artist"})  # it counts rows, not artists
     table["share_with_train_artist"] = table["test_rows_with_train_artist"] / table["test_rows"]  # share of test rows by artists seen in train
     return table  # one row per fold
+
+
+def make_what_folds(table: pd.DataFrame, n_folds: int = N_FOLD_TRANCHES, test_years: int = TRANCHE_YEARS, holdout_start: int = HOLDOUT_START_YEAR) -> list:
+    """Expanding-window walk-forward folds for WHAT, cut by calendar year, with a label-resolution rule instead of a gap.
+
+    `table` is the output of `build_what_table` (labelled artist-year rows
+    only). Only development years (`year` < `holdout_start`) are used, so the
+    holdout is never read. The last `n_folds * test_years` calendar years of
+    development are split into `n_folds` consecutive test tranches of
+    `test_years` calendar years each, exactly as in `make_folds`. Fold k
+    trains on every year before its tranche and tests on the tranche.
+
+    One exclusion is applied per fold:
+    - resolution rule: train rows with `next_active_year >= test_start` are
+      dropped, because the label of an artist-year is only known once its next
+      active year has happened, and that can be more than 2 years later, so the
+      fixed gap of `make_folds` would not close the leak.
+    There is no censoring, every row of `table` already has a label.
+    An artist may have rows on both sides of a fold, that is not leakage
+    (features are point-in-time safe and train labels are resolved).
+
+    Returns one dict per fold with the keys of `make_folds`, so `fold_summary`
+    and `evaluate_folds` work unchanged (`gap_years` is the text "resolution
+    rule", `gap_rows` counts the rows removed by the rule, `test_rows_raw`
+    equals `test_rows` and `censored_rows` is 0), plus `dropped_by_resolution_rule`
+    and `test_rows_label_beyond_tranche` (test rows whose `next_active_year` is
+    after the tranche end, informational, same as the WHEN test labels).
+    """
+    development = table[table["year"] < holdout_start]  # development years only, the holdout is never read
+    last_year = development["year"].max()  # last development year, end of the final tranche
+    first_test_year = last_year - n_folds * test_years + 1  # first year of fold 1's test tranche
+    folds = []  # one dict per fold
+    for k in range(n_folds):  # fold 1 tests the earliest tranche
+        start = first_test_year + k * test_years  # first test year of this fold
+        end = start + test_years - 1  # last test year of this fold
+        before = development[development["year"] < start]  # everything before the tranche
+        train = before[before["next_active_year"] < start]  # expanding window, only labels resolved before the test starts
+        test = development[(development["year"] >= start) & (development["year"] <= end)]  # calendar tranche, all rows labelled
+        dropped = len(before) - len(train)  # train rows removed by the resolution rule
+        folds.append({
+            "fold": k + 1,  # 1-based fold number
+            "train_years": f"{train['year'].min()}-{train['year'].max()}",  # train window after the rule
+            "gap_years": "resolution rule",  # no fixed gap, the rule replaces it
+            "test_years": f"{start}-{end}",  # test tranche
+            "gap_rows": dropped,  # train rows removed by the rule
+            "train_rows": len(train),  # rows available for training
+            "test_rows_raw": len(test),  # rows in the tranche, nothing is censored
+            "censored_rows": 0,  # the table has labelled rows only
+            "test_rows": len(test),  # final test rows
+            "test_artists": test["artist_id"].nunique(),  # artists in the final test set
+            "test_artists_in_train": int(test["artist_id"].isin(set(train["artist_id"])).sum()),  # test rows by artists that also have train rows
+            "history_median": test["history_count"].median(),  # typical prior works of the test rows
+            "train": train,  # train dataframe
+            "test": test,  # test dataframe
+            "dropped_by_resolution_rule": dropped,  # same number as gap_rows, named for what it is
+            "test_rows_label_beyond_tranche": int((test["next_active_year"] > end).sum()),  # test labels that look past the tranche end
+        })
+    return folds  # list of fold dicts
 
 
 def point_in_time_check(works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, seed: int = 1) -> pd.Series:

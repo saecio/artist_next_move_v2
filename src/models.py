@@ -217,3 +217,81 @@ FINAL_XGB_PARAMS = {
     "next_1y": {"max_depth": 7, "reg_lambda": 15, "learning_rate": 0.05, "n_estimators": 500, "subsample": 0.8, "colsample_bytree": 0.55, "min_child_weight": 50, "reg_alpha": 0.01},
     "next_2y": {"max_depth": 9, "reg_lambda": 2, "learning_rate": 0.03, "n_estimators": 500, "subsample": 0.8, "colsample_bytree": 0.55, "min_child_weight": 50, "reg_alpha": 0.01},
 }
+
+
+# WHAT inputs that come from build_what_features (src/what_target.py): the numeric
+# and share columns, then one True / False column per genre of the WHEN vocabulary.
+WHAT_FEATURE_COLUMNS = [
+    "n_styles_seen", "n_styles_year", "n_new_styles_year", "styles_per_work", "new_style_rate_so_far",
+    "years_since_new_style", "years_since_prev_active_year", "years_active_so_far", "top_style_share",
+    "n_genres_seen", "albums_share_year", "singles_share_year",
+] + [f"genre_{g}" for g in GENRES]
+
+# WHAT inputs that already sit in the rows of build_what_table, so they are not repeated in the features table.
+WHAT_TABLE_INPUTS = ["history_count", "n_works_year"]
+
+# Full list of WHAT model inputs, without duplicates (checked by make_what_xgboost).
+WHAT_FEATURES = WHAT_TABLE_INPUTS + WHAT_FEATURE_COLUMNS
+
+# Columns that must never be a WHAT model input: keys, and everything that describes the next
+# active year or the label itself (docs/decisions.md, "WHAT feature set and point-in-time audit").
+WHAT_FORBIDDEN_INPUTS = ["artist_id", "year", "next_active_year", "new_style_year", "n_works_next_year"]
+
+
+def _what_matrix(rows: pd.DataFrame, features: pd.DataFrame, feature_columns: list) -> pd.DataFrame:
+    """Model input matrix of WHAT rows: the requested columns, as floats, in the order of `feature_columns`.
+
+    `rows` is a train or test table from build_what_table (with `artist_id` and `year`),
+    `features` the output of build_what_features. A requested column is taken from `features`
+    when it is there, joined on (artist_id, year), and from `rows` otherwise. The join is a
+    reindex on the key, so it can neither add nor reorder rows, and it is asserted.
+    """
+    keys = ["artist_id", "year"]  # row identity shared by both tables
+    lookup = features.set_index(keys)  # one row per artist-year
+    assert lookup.index.is_unique, "the features table has repeated (artist_id, year) keys"
+    wanted = pd.MultiIndex.from_frame(rows[keys])  # the keys of the rows, in their order
+    joined = lookup.reindex(wanted)  # features of each row, NaN row if the key is missing
+    assert len(joined) == len(rows), "the join changed the row count"
+    assert wanted.isin(lookup.index).all(), "some rows have no features"  # a missing key, not a feature that is NaN
+    joined.index = rows.index  # back to the index of the rows
+    assert joined.index.equals(rows.index), "the join changed the index"
+    from_features = [c for c in feature_columns if c in lookup.columns]  # columns that come from the features table
+    from_rows = [c for c in feature_columns if c not in lookup.columns]  # columns that come from the rows themselves
+    matrix = pd.concat([joined[from_features], rows[from_rows]], axis=1)[feature_columns]  # requested order
+    return matrix.astype(float)  # booleans become 0.0 / 1.0, NaN stays NaN
+
+
+def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
+    """WHAT sibling of the WHEN XGBoost stage 0: untuned reference model, one configuration.
+
+    Same hyperparameters as `make_xgboost` (stage 0), copied here because that function
+    builds its input matrix from the WHEN snapshot columns. No imputation (NaN is handled
+    natively), no class weights, binary objective on `target` (the XGBClassifier default, as in
+    WHEN, so there is no intended difference in the settings). `features` is the output of
+    `build_what_features`; `feature_columns` must not contain any of `WHAT_FORBIDDEN_INPUTS`
+    or a repeated name. Returns `(fit, score)` with the signatures `evaluate_folds` expects:
+    `fit(train)` returns the fitted model, `score(test, fitted)` the probability of `target` == 1.
+    """
+    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
+    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
+
+    def fit(train: pd.DataFrame):
+        model = XGBClassifier(
+            n_estimators=300,        # Same as the WHEN stage 0: boosting rounds.
+            learning_rate=0.1,       # Same: step size of each new tree.
+            max_depth=6,             # Same: depth of each tree.
+            min_child_weight=50,     # Same: minimum hessian weight in a leaf (at least 200 rows at p = 0.5).
+            subsample=0.8,           # Same: fraction of rows each tree sees.
+            colsample_bytree=0.8,    # Same: fraction of features each tree sees.
+            reg_lambda=1.0,          # Same: L2 penalty on the leaf values.
+            tree_method="hist",      # Same: histogram split search.
+            eval_metric="aucpr",     # Same: matches the project's main metric, no eval set is passed.
+            n_jobs=-1,               # Same: every CPU core.
+            random_state=SEED,       # Same: reproducible runs.
+        )
+        return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
+
+    def score(test: pd.DataFrame, fitted):
+        return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
+
+    return fit, score
