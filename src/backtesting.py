@@ -439,14 +439,15 @@ def _sorted_inputs(y: np.ndarray, scores: np.ndarray) -> tuple:
     return y[order].astype(float), np.ones(len(y)), group_ends  # (y_sorted, weights, group_ends)
 
 
-def evaluate_holdout(final_train: pd.DataFrame, holdout: pd.DataFrame, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = 1, threshold: float = 0.5) -> dict:
+def evaluate_holdout(final_train: pd.DataFrame, holdout: pd.DataFrame, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = 1, threshold: float = 0.5, return_scores: bool = False) -> dict:
     """The one-time final evaluation on the sealed holdout.
 
     Fits on `final_train` (development without the label gap), scores the
     holdout rows whose `target` is resolved, and reports PR-AUC and ROC-AUC
     with artist-clustered bootstrap intervals, the same metrics by holdout
     year, and precision and recall at `threshold` (sklearn's
-    classification_report, as a dict).
+    classification_report, as a dict). With `return_scores=True` the result
+    also carries the holdout `scores` and `labels` (arrays, same row order).
     """
     test = holdout[holdout[target].notna()]  # censoring: only resolved targets
     scores = np.asarray(score_fn(test, fit_fn(final_train)))  # fit on train only, score the holdout once
@@ -462,7 +463,7 @@ def evaluate_holdout(final_train: pd.DataFrame, holdout: pd.DataFrame, target: s
     pr_boot = _artist_bootstrap_pr_auc(y, scores, test["artist_id"].to_numpy(), n_bootstrap, seed)  # PR-AUC draws
     by_year = {int(yr): {"rows": int(m.sum()), "positive_rate": float(y[m].mean()), "pr_auc": float(average_precision_score(y[m], scores[m])), "roc_auc": float(roc_auc_score(y[m], scores[m]))}
                for yr in sorted(test["year"].unique()) for m in [(test["year"] == yr).to_numpy()]}  # descriptive, one entry per holdout year
-    return {
+    result = {
         "target": target, "train_rows": len(final_train), "test_rows": len(test), "test_artists": int(n_artists),
         "dropped_unresolved": len(holdout) - len(test), "positive_rate": float(y.mean()),
         "pr_auc": float(average_precision_score(y, scores)), "pr_auc_lo": float(np.nanquantile(pr_boot, alpha)), "pr_auc_hi": float(np.nanquantile(pr_boot, 1 - alpha)),
@@ -470,6 +471,10 @@ def evaluate_holdout(final_train: pd.DataFrame, holdout: pd.DataFrame, target: s
         "by_year": by_year, "threshold": threshold,
         "classification_report": classification_report(y, (scores >= threshold).astype(int), output_dict=True, target_names=["no new work", "new work"]),
     }
+    if return_scores:  # only when asked, so the stored JSON results of the WHEN callers keep their keys
+        result["scores"] = scores  # holdout scores, same row order as the labels
+        result["labels"] = y  # resolved holdout labels
+    return result
 
 
 def holdout_tables(results_dir) -> dict:

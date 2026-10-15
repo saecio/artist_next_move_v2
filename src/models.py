@@ -261,7 +261,7 @@ def _what_matrix(rows: pd.DataFrame, features: pd.DataFrame, feature_columns: li
     return matrix.astype(float)  # booleans become 0.0 / 1.0, NaN stays NaN
 
 
-def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
+def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year", **overrides):
     """WHAT sibling of the WHEN XGBoost stage 0: untuned reference model, one configuration.
 
     Same hyperparameters as `make_xgboost` (stage 0), copied here because that function
@@ -269,8 +269,10 @@ def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATU
     natively), no class weights, binary objective on `target` (the XGBClassifier default, as in
     WHEN, so there is no intended difference in the settings). `features` is the output of
     `build_what_features`; `feature_columns` must not contain any of `WHAT_FORBIDDEN_INPUTS`
-    or a repeated name. Returns `(fit, score)` with the signatures `evaluate_folds` expects:
-    `fit(train)` returns the fitted model, `score(test, fitted)` the probability of `target` == 1.
+    or a repeated name. `overrides` replaces any stage 0 value through `set_params`, which is how
+    a tuned configuration is evaluated; with no overrides the model is the stage 0 one. Returns
+    `(fit, score)` with the signatures `evaluate_folds` expects: `fit(train)` returns the fitted
+    model, `score(test, fitted)` the probability of `target` == 1.
     """
     assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
@@ -288,7 +290,7 @@ def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATU
             eval_metric="aucpr",     # Same: matches the project's main metric, no eval set is passed.
             n_jobs=-1,               # Same: every CPU core.
             random_state=SEED,       # Same: reproducible runs.
-        )
+        ).set_params(**overrides)  # tuned values replace the stage 0 ones, nothing changes when empty
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
     def score(test: pd.DataFrame, fitted):

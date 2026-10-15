@@ -21,10 +21,11 @@ import time  # seconds per trial
 from pathlib import Path  # log file path
 
 import numpy as np  # random sampling of the search space
+import pandas as pd  # type of the WHAT features table
 import xgboost as xgb  # DMatrix and the training loop
 from sklearn.metrics import average_precision_score, roc_auc_score  # per-fold metrics
 
-from models import SEED, build_features  # same feature matrix as every other model
+from models import SEED, WHAT_FEATURES, _what_matrix, build_features  # same feature matrices as every other model
 
 # Values that stay fixed while the other hyperparameters are searched. They
 # are the stage 0 values (src/models.py make_xgboost) that are not searched.
@@ -52,6 +53,24 @@ def prepare_fold_data(folds: list, target: str) -> list:
             "fold": f["fold"],  # 1-based fold number
             "dtrain": xgb.DMatrix(build_features(train).astype("float32"), label=train[target].to_numpy()),  # NaN stays missing
             "dtest": xgb.DMatrix(build_features(test).astype("float32")),  # test features, no label needed to predict
+            "y_test": test[target].to_numpy(),  # resolved test labels
+        })
+    return data  # list of per-fold dicts
+
+
+def prepare_what_fold_data(folds: list, features: pd.DataFrame, target: str = "new_style_year") -> list:
+    """WHAT sibling of prepare_fold_data: same dict per fold, inputs are the WHAT_FEATURES columns.
+
+    `folds` come from make_what_folds (development years only) and `features` is the output of
+    build_what_features. NaN stays missing in the DMatrix, no imputation, as in the WHEN version.
+    """
+    data = []  # one dict per fold
+    for f in folds:
+        train, test = f["train"], f["test"]  # fold dataframes
+        data.append({
+            "fold": f["fold"],  # 1-based fold number
+            "dtrain": xgb.DMatrix(_what_matrix(train, features, WHAT_FEATURES).astype("float32"), label=train[target].to_numpy()),  # NaN stays missing
+            "dtest": xgb.DMatrix(_what_matrix(test, features, WHAT_FEATURES).astype("float32")),  # test features, no label needed to predict
             "y_test": test[target].to_numpy(),  # resolved test labels
         })
     return data  # list of per-fold dicts
@@ -154,6 +173,41 @@ def run_grid_search(fold_data: list, target: str, log_path) -> None:
         print(f"{target} trial {trial}: {params['max_depth']}/{params['reg_lambda']}/{params['learning_rate']} mean PR-AUC {result['mean_pr_auc']:.4f} in {result['seconds']}s", flush=True)
 
     grid_rows = [r for r in read_log(log_path) if r["phase"] == "grid" and r["trial"] != "g_best_1000"]  # finished grid combos
+    best = max(grid_rows, key=lambda r: r["mean_pr_auc"])  # best by mean PR-AUC
+    if best["params"]["learning_rate"] == 0.03 and "g_best_1000" not in {r["trial"] for r in read_log(log_path)}:  # 500 trees may be too few at this rate
+        params = {**best["params"], "n_estimators": 1000}  # same combo, twice the trees
+        result = run_trial(fold_data, params)
+        _append(log_path, {"phase": "grid", "target": target, "trial": "g_best_1000", "params": params, **result})
+        print(f"{target} trial g_best_1000 (from {best['trial']}): mean PR-AUC {result['mean_pr_auc']:.4f}", flush=True)
+
+
+# WHAT grid (docs/decisions.md, "WHAT XGBoost phase 1 (random search) results and phase 2 (grid) design").
+# Everything not listed in WHAT_GRID is fixed at WHAT_GRID_FIXED.
+WHAT_GRID = {
+    "max_depth": [3, 5, 7],  # tree depth, the phase 1 top 10 span 3 to 7
+    "reg_lambda": [0.01, 0.3, 2],  # L2 penalty on leaf values, the phase 1 top 10 span 0.001 to 2
+    "learning_rate": [0.03, 0.05, 0.08],  # step size of each tree, same values as the WHEN grid
+}
+WHAT_GRID_FIXED = {"subsample": 0.811, "colsample_bytree": 0.538, "min_child_weight": 81.4, "reg_alpha": 0.343, "n_estimators": 500}  # median of the 10 best phase 1 trials
+
+
+def run_what_grid_search(fold_data: list, target: str, log_path) -> None:
+    """WHAT sibling of run_grid_search: full product of WHAT_GRID, same trial function and log. A failed combo is logged and skipped."""
+    done = {r["trial"] for r in read_log(log_path)}  # combos finished in an earlier run
+    for i, values in enumerate(itertools.product(*WHAT_GRID.values()), start=1):
+        trial = f"g{i}"  # grid trial id, apart from the random search ids
+        if trial in done:  # resume: already in the log
+            continue
+        params = {**WHAT_GRID_FIXED, **dict(zip(WHAT_GRID, values))}  # one combination
+        try:
+            result = run_trial(fold_data, params)  # fit on all folds
+        except Exception as error:  # keep going if one combo fails
+            print(f"{target} trial {trial} FAILED: {error}", flush=True)
+            continue
+        _append(log_path, {"phase": "grid", "target": target, "trial": trial, "params": params, **result})  # logged as soon as it ends
+        print(f"{target} trial {trial}: {params['max_depth']}/{params['reg_lambda']}/{params['learning_rate']} mean PR-AUC {result['mean_pr_auc']:.4f} in {result['seconds']}s", flush=True)
+
+    grid_rows = [r for r in read_log(log_path) if r["phase"] == "grid" and r["trial"] != "g_best_1000"]  # finished grid combos, stage0 is phase random
     best = max(grid_rows, key=lambda r: r["mean_pr_auc"])  # best by mean PR-AUC
     if best["params"]["learning_rate"] == 0.03 and "g_best_1000" not in {r["trial"] for r in read_log(log_path)}:  # 500 trees may be too few at this rate
         params = {**best["params"], "n_estimators": 1000}  # same combo, twice the trees

@@ -1,0 +1,30 @@
+log rows at start: 36, by phase: {'random': 36}
+new_style_year trial g1: 3/0.01/0.03 mean PR-AUC 0.4881 in 8.6s
+new_style_year trial g2: 3/0.01/0.05 mean PR-AUC 0.4884 in 8.2s
+new_style_year trial g3: 3/0.01/0.08 mean PR-AUC 0.4882 in 8.3s
+new_style_year trial g4: 3/0.3/0.03 mean PR-AUC 0.4880 in 8.4s
+new_style_year trial g5: 3/0.3/0.05 mean PR-AUC 0.4883 in 8.4s
+new_style_year trial g6: 3/0.3/0.08 mean PR-AUC 0.4882 in 8.5s
+new_style_year trial g7: 3/2/0.03 mean PR-AUC 0.4881 in 8.9s
+new_style_year trial g8: 3/2/0.05 mean PR-AUC 0.4885 in 8.5s
+new_style_year trial g9: 3/2/0.08 mean PR-AUC 0.4883 in 8.4s
+new_style_year trial g10: 5/0.01/0.03 mean PR-AUC 0.4889 in 12.1s
+new_style_year trial g11: 5/0.01/0.05 mean PR-AUC 0.4881 in 11.9s
+new_style_year trial g12: 5/0.01/0.08 mean PR-AUC 0.4871 in 11.6s
+new_style_year trial g13: 5/0.3/0.03 mean PR-AUC 0.4889 in 12.7s
+new_style_year trial g14: 5/0.3/0.05 mean PR-AUC 0.4882 in 11.9s
+new_style_year trial g15: 5/0.3/0.08 mean PR-AUC 0.4871 in 11.8s
+new_style_year trial g16: 5/2/0.03 mean PR-AUC 0.4889 in 13.2s
+new_style_year trial g17: 5/2/0.05 mean PR-AUC 0.4883 in 13.2s
+new_style_year trial g18: 5/2/0.08 mean PR-AUC 0.4870 in 13.0s
+new_style_year trial g19: 7/0.01/0.03 mean PR-AUC 0.4881 in 18.1s
+new_style_year trial g20: 7/0.01/0.05 mean PR-AUC 0.4865 in 17.6s
+new_style_year trial g21: 7/0.01/0.08 mean PR-AUC 0.4839 in 17.2s
+new_style_year trial g22: 7/0.3/0.03 mean PR-AUC 0.4880 in 18.8s
+new_style_year trial g23: 7/0.3/0.05 mean PR-AUC 0.4864 in 17.8s
+new_style_year trial g24: 7/0.3/0.08 mean PR-AUC 0.4842 in 17.4s
+new_style_year trial g25: 7/2/0.03 mean PR-AUC 0.4881 in 19.1s
+new_style_year trial g26: 7/2/0.05 mean PR-AUC 0.4863 in 18.1s
+new_style_year trial g27: 7/2/0.08 mean PR-AUC 0.4841 in 17.6s
+new_style_year trial g_best_1000 (from g13): mean PR-AUC 0.4880
+log rows at end: 64, by phase: {'random': 36, 'grid': 28}

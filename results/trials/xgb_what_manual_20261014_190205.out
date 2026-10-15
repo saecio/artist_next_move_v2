@@ -1,0 +1,15 @@
+log rows at start: 64, by phase: {'random': 36, 'grid': 28}
+base trial g13 (mean PR-AUC 0.48888), params: {'subsample': 0.811, 'colsample_bytree': 0.538, 'min_child_weight': 81.4, 'reg_alpha': 0.343, 'n_estimators': 500, 'max_depth': 5, 'reg_lambda': 0.3, 'learning_rate': 0.03}
+base is g13 (max_depth 5, reg_lambda 0.3, learning_rate 0.03, n_estimators 500): True
+p = 0.306747 (210928 positives of 687628 rows), scale_pos_weight (1 - p) / p = 2.260013
+m_depth4: changes versus base: {max_depth: 5 -> 4}
+m_depth6: changes versus base: {max_depth: 5 -> 6}
+m_lr_0.02: changes versus base: {learning_rate: 0.03 -> 0.02, n_estimators: 500 -> 750}
+m_lr_0.012: changes versus base: {learning_rate: 0.03 -> 0.012, n_estimators: 500 -> 1250}
+m_spw: changes versus base: {scale_pos_weight: None -> 2.26}
+new_style_year m_depth4: mean PR-AUC 0.48879 in 10.1s
+new_style_year m_depth6: mean PR-AUC 0.48853 in 13.2s
+new_style_year m_lr_0.02: mean PR-AUC 0.48899 in 18.0s
+new_style_year m_lr_0.012: mean PR-AUC 0.48914 in 29.8s
+new_style_year m_spw: mean PR-AUC 0.48895 in 12.1s
+log rows at end: 69, by phase: {'random': 36, 'grid': 28, 'manual': 5}

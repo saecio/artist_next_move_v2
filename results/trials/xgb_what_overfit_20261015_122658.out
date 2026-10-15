@@ -1,0 +1,19 @@
+stage 0 params (log row stage0): {'max_depth': 6, 'min_child_weight': 50, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 1.0, 'reg_alpha': 0.0, 'learning_rate': 0.1, 'n_estimators': 300}
+logged validation PR-AUC per fold: [0.4607, 0.4751, 0.4946, 0.4947, 0.5002]
+fold 1 done: validation PR-AUC 0.4607
+fold 2 done: validation PR-AUC 0.4751
+fold 3 done: validation PR-AUC 0.4946
+fold 4 done: validation PR-AUC 0.4947
+fold 5 done: validation PR-AUC 0.5002
+reproduction, this refit  : [0.4607, 0.4751, 0.4946, 0.4947, 0.5002]
+reproduction, log row     : [0.4607, 0.4751, 0.4946, 0.4947, 0.5002]
+reproduction, gate values : [0.4607, 0.4751, 0.4946, 0.4947, 0.5002]
+largest unrounded difference to the log row: 0.00e+00
+ fold  train_rows  validation_rows  train_positive_rate  validation_positive_rate  train_pr_auc  validation_pr_auc  gap_pr_auc_points  train_roc_auc  validation_roc_auc  gap_roc_auc_points  baseline_c_pr_auc
+    1      232404            58141               0.2916                    0.3064        0.5063             0.4607             4.5576         0.7138              0.6690              4.4833             0.3474
+    2      282606            74558               0.2944                    0.3018        0.5054             0.4751             3.0279         0.7106              0.6781              3.2433             0.3479
+    3      347763            93072               0.2958                    0.3161        0.5028             0.4946             0.8261         0.7065              0.6825              2.4057             0.3625
+    4      430809           121659               0.2983                    0.3266        0.5013             0.4947             0.6537         0.7027              0.6677              3.5006             0.3698
+    5      539157           156591               0.3039                    0.3228        0.5039             0.5002             0.3760         0.6993              0.6708              2.8516             0.3597
+mean gap train minus validation: PR-AUC 1.89 points, ROC-AUC 3.30 points
+written xgb_what_overfit.csv

@@ -1,0 +1,22 @@
+stage 0 params (log row stage0): {'max_depth': 6, 'min_child_weight': 50, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 1.0, 'reg_alpha': 0.0, 'learning_rate': 0.1, 'n_estimators': 300}
+dated Works per year (2018-2026; recent years are still being loaded and 2026 is partial): {2018: 171332, 2019: 173233, 2020: 191013, 2021: 175246, 2022: 159118, 2023: 150212, 2024: 134900, 2025: 117600, 2026: 54958}
+train rows 687628, p = 0.306747
+artists with a last-active-year row of history_count >= 3: 15 of 15; without: []
+rows that are also a saved holdout row: 0; largest absolute difference between the live score and the saved score: nan
+ artist_id             artist  last_active_year  history_count  n_works_year  n_styles_seen  years_since_new_style  score  last_holdout_year  last_holdout_score  training_rate_p
+   2013868        Frank Ocean              2020             18             4           11.0                    0.0 0.5196               2019              0.3868           0.3067
+   1967268 Tyler, The Creator              2025             30             1           24.0                    0.0 0.4957               2020              0.4313           0.3067
+   5894905          Bad Bunny              2025             26             2           19.0                    0.0 0.4922               2022              0.4975           0.3067
+   4378284  Sabrina Carpenter              2026             41             1           14.0                    2.0 0.4673               2022              0.4758           0.3067
+   3317315              Lorde              2025             20             4            8.0                    8.0 0.3945               2018              0.5820           0.3067
+   2171152         The Weeknd              2026             60             1           32.0                    1.0 0.3821               2022              0.4140           0.3067
+     29735           Coldplay              2024            122             5           27.0                    0.0 0.3792               2020              0.2029           0.3067
+   1124645       Taylor Swift              2026            122             3           36.0                    2.0 0.3751               2022              0.3071           0.3067
+     52835            Beyoncé              2026             95             1           38.0                    2.0 0.3618               2022              0.3346           0.3067
+   7592689     Olivia Rodrigo              2026             23             6           15.0                    2.0 0.3592               2022              0.5057           0.3067
+   1245513        Tame Impala              2025             35             4           19.0                    0.0 0.3208               2021              0.3153           0.3067
+   1778977     Kendrick Lamar              2024             31             5           12.0                    0.0 0.2934               2018              0.5141           0.3067
+    321128            Rihanna              2022             77             1           34.0                    6.0 0.2865               <NA>                 NaN           0.3067
+   4110740             Mitski              2026             18             1            7.0                    5.0 0.2592               2022              0.3359           0.3067
+     18839          Metallica              2026            331            15           24.0                    0.0 0.2501               2022              0.2111           0.3067
+written what_live_scores.csv
