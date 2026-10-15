@@ -1,7 +1,7 @@
 """Run the XGBoost grid search for one or both targets and append every combination to results/trials/.
 
 Usage:
-    venv/bin/python3 scripts/run_xgb_grid_search.py next_1y next_2y
+    venv/bin/python3 scripts/run_when_xgb_grid_search.py next_1y next_2y
 """
 
 import sys  # command line arguments and module search path

@@ -3,7 +3,7 @@
 Refuses to run twice: the result files are written once and never overwritten.
 
 Usage:
-    venv/bin/python3 scripts/run_holdout.py
+    venv/bin/python3 scripts/run_when_holdout.py
 """
 
 import json  # result files

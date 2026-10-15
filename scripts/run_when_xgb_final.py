@@ -1,7 +1,7 @@
 """Evaluate the final tuned XGBoost configuration per target through evaluate_folds, with the full bootstrap CI.
 
 Usage:
-    venv/bin/python3 scripts/run_xgb_final.py
+    venv/bin/python3 scripts/run_when_xgb_final.py
 """
 
 import sys  # module search path

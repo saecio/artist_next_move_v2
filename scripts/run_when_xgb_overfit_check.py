@@ -1,7 +1,7 @@
 """Train vs test PR-AUC per fold for stage 0 and the top tuned candidates of each target.
 
 Usage:
-    venv/bin/python3 scripts/run_xgb_overfit_check.py next_1y next_2y
+    venv/bin/python3 scripts/run_when_xgb_overfit_check.py next_1y next_2y
 """
 
 import sys  # command line arguments and module search path

@@ -1,11 +1,11 @@
 """Recompute the intervals of the final tuned XGBoost configuration at the project confidence level.
 
-Same folds, locked parameters and seed as scripts/run_xgb_final.py, which is not run again. The point estimates
+Same folds, locked parameters and seed as scripts/run_when_xgb_final.py, which is not run again. The point estimates
 must equal the stored results/trials/xgb_final_{target}.csv exactly. If they do not, nothing is written.
 The output goes to new files and no existing file is opened for writing.
 
 Usage:
-    venv/bin/python3 scripts/run_xgb_final_ci95.py
+    venv/bin/python3 scripts/run_when_xgb_final_ci95.py
 """
 
 import sys  # module search path and exit

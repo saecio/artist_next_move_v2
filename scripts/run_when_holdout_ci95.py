@@ -1,12 +1,12 @@
 """Recompute the sealed-holdout intervals of the WHEN final model and baseline at the project confidence level.
 
-Same final training rows, locked parameters, seed and bootstrap as scripts/run_holdout.py, which is not run again.
+Same final training rows, locked parameters, seed and bootstrap as scripts/run_when_holdout.py, which is not run again.
 Each model is fitted once and the holdout is scored once, solely to obtain the new bounds. Every point estimate
 must equal the stored results/holdout/*.json exactly. If anything differs, nothing is written. The output goes to
 results/holdout_ci95/ and no existing file is opened for writing.
 
 Usage:
-    venv/bin/python3 scripts/run_holdout_ci95.py
+    venv/bin/python3 scripts/run_when_holdout_ci95.py
 """
 
 import json  # result files

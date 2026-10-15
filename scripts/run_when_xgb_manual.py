@@ -1,7 +1,7 @@
 """Manual tuning phase for XGBoost: a short, hand-picked list of trials per target, appended to results/trials/.
 
 Usage:
-    venv/bin/python3 scripts/run_xgb_manual.py next_1y next_2y
+    venv/bin/python3 scripts/run_when_xgb_manual.py next_1y next_2y
 """
 
 import sys  # command line arguments and module search path

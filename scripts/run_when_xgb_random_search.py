@@ -1,7 +1,7 @@
 """Run the XGBoost random search for one or both targets and append every trial to results/trials/.
 
 Usage:
-    venv/bin/python3 scripts/run_xgb_random_search.py next_1y next_2y
+    venv/bin/python3 scripts/run_when_xgb_random_search.py next_1y next_2y
 """
 
 import sys  # command line arguments and module search path
