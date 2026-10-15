@@ -1,0 +1,102 @@
+
+== hits@10 per target year
+      eligible  random  repeat_last  mean_growth  bayes_ridge  xgboost  random_forest
+2018     230.0    0.43          3.0          2.0          3.0      5.0            6.0
+2019     236.0    0.42          8.0          5.0          8.0      8.0            8.0
+2020     239.0    0.42          6.0          4.0          6.0      6.0            5.0
+2021     245.0    0.41          5.0          3.0          4.0      5.0            6.0
+2022     247.0    0.40          5.0          6.0          4.0      4.0            5.0
+-- hits@10 mean over the 5 years and 95% interval (bootstrap over years, 2,000 draws, seed 1)
+               mean   low  high
+random         0.42  0.41  0.43
+repeat_last    5.40  4.00  6.80
+mean_growth    4.00  2.80  5.20
+bayes_ridge    5.00  3.60  6.80
+xgboost        5.60  4.60  6.80
+random_forest  6.00  5.20  7.00
+
+== hits@5 per target year
+      eligible  random  repeat_last  mean_growth  bayes_ridge  xgboost  random_forest
+2018     230.0    0.11          1.0          1.0          1.0      1.0            2.0
+2019     236.0    0.11          3.0          1.0          3.0      3.0            4.0
+2020     239.0    0.10          2.0          2.0          2.0      1.0            2.0
+2021     245.0    0.10          2.0          3.0          2.0      2.0            2.0
+2022     247.0    0.10          3.0          2.0          3.0      2.0            3.0
+-- hits@5 mean over the 5 years and 95% interval (bootstrap over years, 2,000 draws, seed 1)
+               mean  low  high
+random          0.1  0.1  0.11
+repeat_last     2.2  1.6  2.80
+mean_growth     1.8  1.2  2.40
+bayes_ridge     2.2  1.6  2.80
+xgboost         1.8  1.2  2.40
+random_forest   2.6  2.0  3.40
+
+== Spearman on the styles scored by every method, per year
+      repeat_last  mean_growth  bayes_ridge  xgboost  random_forest  common
+2018        0.619        0.573        0.564    0.572          0.612   230.0
+2019        0.569        0.435        0.561    0.542          0.587   236.0
+2020        0.574        0.496        0.508    0.514          0.573   239.0
+2021        0.601        0.466        0.594    0.615          0.636   245.0
+2022        0.528        0.288        0.578    0.540          0.580   247.0
+mean over the years:
+repeat_last      0.578
+mean_growth      0.452
+bayes_ridge      0.561
+xgboost          0.557
+random_forest    0.597
+
+== count metrics, target years 2018 to 2022, nominal coverage 0.80
+                    set        method    n  median_ape  coverage
+           all eligible   bayes_ridge 1197       0.106     0.732
+           all eligible       xgboost 1197       0.106     0.754
+           all eligible random_forest 1197       0.101     0.728
+           all eligible     repeat_ct 1197       0.100     0.742
+           all eligible         mean3 1197       0.125     0.789
+  top 10 of bayes_ridge   bayes_ridge   50       0.153     0.540
+  top 10 of bayes_ridge       xgboost   50       0.240     0.420
+  top 10 of bayes_ridge random_forest   50       0.133     0.540
+  top 10 of bayes_ridge     repeat_ct   50       0.178     0.480
+  top 10 of bayes_ridge         mean3   50       0.360     0.340
+      top 10 of xgboost   bayes_ridge   50       0.193     0.480
+      top 10 of xgboost       xgboost   50       0.241     0.420
+      top 10 of xgboost random_forest   50       0.200     0.440
+      top 10 of xgboost     repeat_ct   50       0.185     0.440
+      top 10 of xgboost         mean3   50       0.388     0.280
+top 10 of random_forest   bayes_ridge   50       0.161     0.540
+top 10 of random_forest       xgboost   50       0.236     0.460
+top 10 of random_forest random_forest   50       0.178     0.480
+top 10 of random_forest     repeat_ct   50       0.188     0.440
+top 10 of random_forest         mean3   50       0.392     0.280
+
+== descriptive paired differences, each model minus repeat last year (mean and 95% interval, bootstrap over years, 2,000 draws, seed 1)
+-- development years, 1993 to 2017
+                         mean    low   high
+bayes_ridge hits@10     0.120 -0.200  0.440
+bayes_ridge Spearman   -0.012 -0.022 -0.003
+xgboost hits@10         0.000 -0.400  0.400
+xgboost Spearman       -0.008 -0.023  0.006
+random_forest hits@10   0.280 -0.120  0.680
+random_forest Spearman  0.023  0.013  0.033
+-- test years, 2018 to 2022
+                         mean    low   high
+bayes_ridge hits@10    -0.400 -0.800  0.000
+bayes_ridge Spearman   -0.017 -0.050  0.017
+xgboost hits@10         0.200 -0.600  1.200
+xgboost Spearman       -0.021 -0.048  0.005
+random_forest hits@10   0.600 -0.400  1.800
+random_forest Spearman  0.019  0.001  0.038
+
+== projection for 2024: top 10 by repeat last year, expected Works (range 10th-90th percentile)
+            style  growth  works_2023    base     bayes_ridge         xgboost   random_forest
+       Noise Rock   3.649       468.0 230.000   723 (601-881)   373 (306-450)   475 (400-573)
+     Dark Electro   3.204       412.0 218.333   570 (474-694)   571 (468-689)   446 (376-538)
+Alternative Metal   3.098       403.0 211.000   574 (478-700)   458 (376-553)   486 (409-585)
+   Plunderphonics   2.298       443.0 267.667   564 (469-687)   483 (396-582)   506 (426-609)
+          Alt-Pop   2.037       892.0 532.667 1094 (910-1333) 1050 (861-1267) 1053 (888-1269)
+     Future House   1.894       436.0 251.667   568 (472-692)   347 (285-419)   376 (317-453)
+         Balearic   1.407       272.0 192.667   319 (266-389)   186 (152-224)   246 (208-297)
+       Bass Music   1.050       708.0 459.000  837 (696-1020)   621 (509-749)   643 (542-775)
+        Latin Pop   0.951       173.0 116.667   196 (163-239)   195 (160-236)   180 (152-217)
+            Latin   0.923       398.0 290.000   437 (363-532)   456 (374-550)   454 (383-547)
+
+written: /Users/juan/Documents/Ironhack/artist_next_move_v2/results/style_forecast/predictions.csv and /Users/juan/Documents/Ironhack/artist_next_move_v2/results/style_forecast/models

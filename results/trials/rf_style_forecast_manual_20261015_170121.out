@@ -1,0 +1,10 @@
+log rows at start: 63
+base configuration (best non-stage0 trial): 12 {'n_estimators': 300, 'max_depth': 13, 'min_samples_leaf': 7, 'max_features': 0.5, 'bootstrap': True, 'max_samples': 0.3253691715004556, 'random_state': 1}
+rf style trial m_depth16: mean Spearman 0.7283, hits@10 6.44 in 15.9s
+rf style trial m_depth_none: mean Spearman 0.7283, hits@10 6.36 in 15.9s
+rf style trial m_leaf30: mean Spearman 0.7248, hits@10 6.12 in 12.1s
+rf style trial m_trees600: mean Spearman 0.7297, hits@10 6.28 in 31.2s
+rf style trial m_samples1.0: mean Spearman 0.7268, hits@10 6.28 in 38.6s
+rf style trial m_nobootstrap: mean Spearman 0.7227, hits@10 6.32 in 60.3s
+rf style trial m_absolute_error: mean Spearman 0.7282, hits@10 6.28 in 98.7s
+log rows at end: 70

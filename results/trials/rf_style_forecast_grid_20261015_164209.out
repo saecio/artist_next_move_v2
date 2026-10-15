@@ -1,0 +1,30 @@
+log rows at start: 36
+fixed max_samples (median of the 10 best phase 1 trials): 0.673514
+rf style trial g1: mean Spearman 0.7227, hits@10 6.16 in 15.8s
+rf style trial g2: mean Spearman 0.7247, hits@10 6.24 in 25.3s
+rf style trial g3: mean Spearman 0.7250, hits@10 6.36 in 39.3s
+rf style trial g4: mean Spearman 0.7232, hits@10 6.32 in 15.4s
+rf style trial g5: mean Spearman 0.7260, hits@10 6.32 in 24.7s
+rf style trial g6: mean Spearman 0.7260, hits@10 6.36 in 38.3s
+rf style trial g7: mean Spearman 0.7224, hits@10 6.08 in 14.8s
+rf style trial g8: mean Spearman 0.7268, hits@10 6.24 in 23.8s
+rf style trial g9: mean Spearman 0.7270, hits@10 6.28 in 36.6s
+rf style trial g10: mean Spearman 0.7254, hits@10 6.36 in 17.9s
+rf style trial g11: mean Spearman 0.7264, hits@10 6.20 in 28.8s
+rf style trial g12: mean Spearman 0.7255, hits@10 6.32 in 44.4s
+rf style trial g13: mean Spearman 0.7254, hits@10 6.16 in 17.1s
+rf style trial g14: mean Spearman 0.7276, hits@10 6.28 in 27.5s
+rf style trial g15: mean Spearman 0.7265, hits@10 6.28 in 42.1s
+rf style trial g16: mean Spearman 0.7242, hits@10 6.28 in 16.2s
+rf style trial g17: mean Spearman 0.7275, hits@10 6.24 in 25.7s
+rf style trial g18: mean Spearman 0.7275, hits@10 6.28 in 38.9s
+rf style trial g19: mean Spearman 0.7259, hits@10 6.40 in 19.6s
+rf style trial g20: mean Spearman 0.7254, hits@10 6.32 in 31.3s
+rf style trial g21: mean Spearman 0.7244, hits@10 6.52 in 48.2s
+rf style trial g22: mean Spearman 0.7253, hits@10 6.16 in 18.3s
+rf style trial g23: mean Spearman 0.7269, hits@10 6.12 in 28.9s
+rf style trial g24: mean Spearman 0.7271, hits@10 6.32 in 44.2s
+rf style trial g25: mean Spearman 0.7245, hits@10 6.24 in 16.8s
+rf style trial g26: mean Spearman 0.7277, hits@10 6.28 in 26.3s
+rf style trial g27: mean Spearman 0.7271, hits@10 6.32 in 39.6s
+log rows at end: 63

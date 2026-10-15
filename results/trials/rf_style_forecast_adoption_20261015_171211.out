@@ -1,0 +1,87 @@
+== step 1: adoption evaluation, from the log (no refit)
+log rows used for the candidate: best non-stage0 trial by mean Spearman
+candidate: m_trees600 {'n_estimators': 600, 'max_depth': 13, 'min_samples_leaf': 7, 'max_features': 0.5, 'bootstrap': True, 'max_samples': 0.3253691715004556, 'random_state': 1} mean Spearman 0.729665 mean hits@10 6.28
+stage0: {'n_estimators': 200, 'max_depth': 6, 'min_samples_leaf': 10, 'max_features': 'sqrt', 'random_state': 1} mean Spearman 0.711716 mean hits@10 6.16
+True  | 1 lower bound of paired bootstrap difference above 0 | (np.float64(0.017948976807429087), np.float64(0.012039382781200259), np.float64(0.02428579056099472))
+True  | 2 mean Spearman at least stage 0 in at least 4 of 5 tranches | 5
+True  | 3 mean hits@10 not lower than stage 0 | (6.28, 6.16)
+candidate adopted: True
+locked Random Forest: {'n_estimators': 600, 'max_depth': 13, 'min_samples_leaf': 7, 'max_features': 0.5, 'bootstrap': True, 'max_samples': 0.3253691715004556, 'random_state': 1}
+
+== step 2: train versus validation diagnostic (Spearman, fold's own training rows against target year)
+-- stage0, validation equals the log row in all 25 years: True
+                 train  validation     gap
+1993-1997       0.7823      0.7565  0.0257
+1998-2002       0.7747      0.6766  0.0981
+2003-2007       0.7639      0.7148  0.0490
+2008-2012       0.7639      0.7581  0.0058
+2013-2017       0.7646      0.6525  0.1121
+overall         0.7699      0.7117  0.0582
+worst year gap  0.7752      0.6042  0.1711
+-- m_trees600, validation equals the log row in all 25 years: True
+                 train  validation     gap
+1993-1997       0.8122      0.7781  0.0341
+1998-2002       0.8100      0.6952  0.1148
+2003-2007       0.8030      0.7301  0.0729
+2008-2012       0.8035      0.7688  0.0347
+2013-2017       0.8029      0.6761  0.1268
+overall         0.8063      0.7297  0.0767
+worst year gap  0.8112      0.6337  0.1775
+
+== step 3: pass rule with the locked Random Forest
+untuned models and baselines reproduce dev_hits.csv: True
+Random Forest reproduces the hits@10 and hits@5 of its log row: True
+Random Forest reproduces the Spearman of its log row: True
+
+== mean hits per method (95% interval by bootstrap over years)
+-- hits@10
+               mean  ci_low  ci_high
+random         0.54    0.52     0.57
+repeat_last    6.00    5.48     6.52
+mean_growth    4.52    4.00     5.04
+bayes_ridge    6.12    5.52     6.72
+xgboost        6.00    5.48     6.52
+random_forest  6.28    5.80     6.84
+-- hits@5
+               mean  ci_low  ci_high
+random         0.14    0.13     0.14
+repeat_last    2.72    2.28     3.12
+mean_growth    1.96    1.48     2.40
+bayes_ridge    2.72    2.36     3.08
+xgboost        2.44    2.08     2.80
+random_forest  2.76    2.40     3.12
+
+== mean hits by tranche
+-- hits@10
+               1993-1997  1998-2002  2003-2007  2008-2012  2013-2017
+random              0.65       0.58       0.54       0.49       0.46
+repeat_last         7.00       5.80       4.80       6.00       6.40
+mean_growth         5.40       4.40       3.40       4.40       5.00
+bayes_ridge         7.60       6.00       4.60       6.00       6.40
+xgboost             6.40       5.60       5.00       6.20       6.80
+random_forest       7.40       5.80       5.00       6.60       6.60
+-- hits@5
+               1993-1997  1998-2002  2003-2007  2008-2012  2013-2017
+random              0.16       0.14       0.13       0.12       0.12
+repeat_last         3.20       2.60       2.60       2.40       2.80
+mean_growth         2.40       1.00       2.00       2.00       2.40
+bayes_ridge         3.40       2.60       2.20       2.60       2.80
+xgboost             2.80       2.40       1.80       2.40       2.80
+random_forest       3.60       2.80       2.20       2.60       2.60
+
+== mean Spearman on the styles scored by every method (25 years)
+repeat_last      0.707
+mean_growth      0.550
+bayes_ridge      0.695
+xgboost          0.699
+random_forest    0.730
+
+== pass rule: candidate random_forest, best baseline repeat_last
+False | 1 mean hits@10 at least 0.5 above best baseline | 0.28000000000000025
+True  | 2 at least as many hits as best baseline in 15+ years | 21
+False | 3 lower bound of paired difference above 0 | -0.12
+True  | 4 at least 1.0 above random and lower bound above 0 | (np.float64(5.736999714829437), np.float64(5.246095348795808))
+True  | 5 mean Spearman not below best baseline | (np.float64(0.7296646821963049), np.float64(0.7069108155083421))
+paired difference vs best baseline (mean, low, high): [np.float64(0.28), np.float64(-0.12), np.float64(0.68)]
+paired difference vs random (mean, low, high): [np.float64(5.737), np.float64(5.246), np.float64(6.277)]
+recommended ranking: repeat_last
