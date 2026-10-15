@@ -227,8 +227,8 @@ def _bootstrap_pr_auc(y_true: np.ndarray, scores: np.ndarray, artist_ids: np.nda
                        n_bootstrap: int, rng: np.random.Generator) -> np.ndarray:
     """Artist-level bootstrap of PR-AUC: resample ARTISTS with replacement
     (not individual rows), then take every row belonging to the resampled
-    artists. This matches "artist-level bootstrap" already planned in
-    docs/methodology.md: rows from the same artist are correlated (same
+    artists. This is the "artist-level bootstrap" of the kill gate
+    (see docs/decisions.md): rows from the same artist are correlated (same
     career, same style habits), so resampling rows directly would
     understate how uncertain this really is.
     """
@@ -329,17 +329,3 @@ def evaluate_kill_gate(
         "n_bootstrap": n_bootstrap,
         "model_beats_baseline": bool(model_beats_baseline),
     }
-
-
-def print_kill_gate_result(name: str, result: dict) -> None:
-    """Human-readable one-block printout of an evaluate_kill_gate() result,
-    meant for a notebook cell, not for logging/parsing.
-    """
-    verdict = "PASSES: keep this target" if result["model_beats_baseline"] else "FAILS: kill this target"
-    pct = int(result["confidence"] * 100)
-    print(f"Kill gate: {name}")
-    print(f"  Model    PR-AUC: {result['model_pr_auc']:.3f}  "
-          f"[{pct}% CI {result['model_pr_auc_ci'][0]:.3f} - {result['model_pr_auc_ci'][1]:.3f}]")
-    print(f"  Baseline PR-AUC: {result['baseline_pr_auc']:.3f}  "
-          f"[{pct}% CI {result['baseline_pr_auc_ci'][0]:.3f} - {result['baseline_pr_auc_ci'][1]:.3f}]")
-    print(f"  Verdict: {verdict}")

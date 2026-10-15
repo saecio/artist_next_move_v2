@@ -84,6 +84,7 @@ assert round(p, 4) == EXPECTED_P, f"p differs from {EXPECTED_P}"  # before any f
 def checked(fit_fn, logged_params: dict):
     """Wrap a fit function: after the single fit, print get_params and stop if any logged value is not in the model."""
     def wrapper(rows):
+        """Fit stage 0 on the training rows and check that its parameters equal the logged ones, exiting if they differ. Input: the training rows. Output: the fitted model."""
         model = fit_fn(rows)  # fitted on the training rows only
         got = model.get_params()  # parameters the model really has
         print(f"stage 0 get_params after the fit: {got}", flush=True)

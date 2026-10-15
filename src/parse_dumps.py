@@ -147,7 +147,7 @@ def _artist_names(elem: ET.Element, path: str = "./artists/artist/name") -> list
 
 
 def parse_master(elem: ET.Element) -> dict:
-    """Flatten a <master> element into one flat row. See docs/data_dictionary.md.
+    """Flatten a <master> element into one flat row.
 
     A <master> looks roughly like:
         <master id="113">
@@ -409,6 +409,7 @@ def convert_releases(xml_path: Path, out_path: Path, limit: Optional[int] = None
 
 
 def main() -> None:
+    """Read the command line and convert the chosen dump (masters or releases) to Parquet. Input: kind, xml path, output path and the optional --limit. Output: none, the Parquet file is written."""
     # CLI entry point: `python -m src.parse_dumps <masters|releases> <xml_path> <out_path>`.
     parser = argparse.ArgumentParser(description="Convert a Discogs XML dump into Parquet.")
     parser.add_argument("kind", choices=["masters", "releases"])

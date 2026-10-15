@@ -1358,6 +1358,7 @@ def _apply_gate_rule(folds: pd.DataFrame, min_folds: int = GATE_MIN_FOLDS, margi
 def _record_scores(score_fn, store: list):
     """Wrap a score function so that the scores it returns are also appended to `store`."""
     def recorded(test, fitted):
+        """Score the test rows with `score_fn` and keep a copy of the scores in `store`. Inputs: the test dataframe and the fitted model. Output: the array of scores, one per test row."""
         scores = np.asarray(score_fn(test, fitted))  # the scores evaluate_folds will use
         assert len(scores) == len(test), "a score function must return one score per test row"
         store.append(scores)

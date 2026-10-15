@@ -8,12 +8,10 @@ WHAT) needs exactly one row per Work, not one row per Release, so this
 module does that reduction once, in one place, instead of every notebook
 repeating its own version of the same logic.
 
-This is the same reduction that was first tried out by hand inside
-notebooks/04_demo_feasibility_check.ipynb (section 6). It is copied here,
-generalised into a plain function, so it can be reused on the full
-releases.parquet later without copying and pasting notebook cells again.
-That original notebook section is left exactly as it was, this file does
-not replace it, it just makes the same idea reusable.
+This is the same reduction that was first tried out by hand in an early
+feasibility notebook that is no longer in the repository. It is a plain
+function, so it can be reused on the full releases.parquet without
+copying and pasting notebook cells again.
 
 Usage:
     from src.works import build_works_table
@@ -321,6 +319,7 @@ def build_works_table(releases: pd.DataFrame) -> pd.DataFrame:
     representative = _pick_representative_release(real_work_releases)
 
     def first_artist_is_placeholder(artist_names_list) -> bool:
+        """True when the first credited artist is a placeholder name such as Various, False for an empty list. Input: the list of artist names of a Master. Output: a bool."""
         # An empty artist list should not happen in practice, but this
         # guards against it instead of assuming it never will.
         if len(artist_names_list) == 0:
@@ -475,6 +474,7 @@ def remove_catalog_number_duplicates(works_df: pd.DataFrame, releases_df: pd.Dat
     master_label_sets = representative.set_index("master_id")["labels"].apply(_label_catno_pairs)
 
     def label_set_for_row(row) -> frozenset:
+        """Look up the label and catalog number set of one Work by its work_source (master or synthetic). Input: a row of the Works table. Output: a frozenset, empty when no release is found."""
         # Looks up this row's label set from whichever lookup applies to
         # its work_source; .get(..., frozenset()) means a Work with no
         # matching release found (should not happen, but not assumed)
@@ -504,11 +504,13 @@ def remove_catalog_number_duplicates(works_df: pd.DataFrame, releases_df: pd.Dat
         parent = list(range(n))
 
         def find(i):
+            """Find the root position of `i` in the union-find `parent` list. Input: a row position. Output: the root position of its component."""
             while parent[i] != i:  # walk up to this position's current root
                 i = parent[i]
             return i
 
         def union(i, j):
+            """Merge the components of positions `i` and `j` in the union-find `parent` list. Inputs: two row positions. Output: none, `parent` is updated."""
             root_i, root_j = find(i), find(j)
             if root_i != root_j:  # only link roots that are not already in the same component
                 parent[root_i] = root_j
@@ -536,6 +538,7 @@ def remove_catalog_number_duplicates(works_df: pd.DataFrame, releases_df: pd.Dat
             # real year always wins over a missing one, ties broken by
             # the smaller work_id.
             def sort_key(pos):
+                """Sort key of a row position: its year (missing years last), then its work_id. Input: a row position. Output: a tuple."""
                 year = years[pos]
                 return (float("inf") if pd.isna(year) else year, work_ids[pos])
 
@@ -589,6 +592,7 @@ def remove_mass_upload_artists(
         notebook 01).
     """
     def artist_signature(group: pd.DataFrame) -> pd.Series:
+        """Compute the signals of one artist_id group: work count, synthetic share, bare roman numeral title share and busiest 2-year share. Input: the Works of one artist. Output: a Series with those four values."""
         # One row's worth of the three signals for one artist_id's group
         # of works, returned together so groupby/apply can build one
         # signature table in a single pass instead of three separate

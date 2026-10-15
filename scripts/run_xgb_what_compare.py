@@ -63,6 +63,7 @@ def checked(fit_fn, params: dict, name: str):
     state = {"checked": False}  # the check runs once, on the first fold
 
     def wrapper(train):
+        """Fit the model and, on the first fit only, check that its parameters equal the logged ones, exiting if they differ. Input: the train rows. Output: the fitted model."""
         model = fit_fn(train)  # fitted on the fold's train rows
         if not state["checked"]:
             got = model.get_params()  # parameters the model really has

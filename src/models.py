@@ -61,9 +61,11 @@ def _make_pair(target: str, make_model):
     its statistics are learned on the fold's train rows only.
     """
     def fit(train: pd.DataFrame):
+        """Fit a fresh model on the train rows of a fold. Input: the train dataframe. Output: the fitted estimator."""
         return make_model().fit(build_features(train), train[target])  # fitted on the fold's train rows only
 
     def score(test: pd.DataFrame, fitted):
+        """Score test rows with a fitted model. Inputs: the test dataframe and the fitted estimator. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(build_features(test))[:, 1]  # probability of target == 1
 
     return fit, score
@@ -278,6 +280,7 @@ def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATU
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
 
     def fit(train: pd.DataFrame):
+        """Fit a fresh XGBoost with the stage 0 settings plus `overrides` on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted model."""
         model = XGBClassifier(
             n_estimators=300,        # Same as the WHEN stage 0: boosting rounds.
             learning_rate=0.1,       # Same: step size of each new tree.
@@ -294,6 +297,7 @@ def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATU
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
     def score(test: pd.DataFrame, fitted):
+        """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
     return fit, score
@@ -316,6 +320,7 @@ def make_what_logistic_regression(features: pd.DataFrame, feature_columns: list 
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
 
     def fit(train: pd.DataFrame):
+        """Fit a fresh Logistic Regression pipeline (median imputation, scaling) on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted pipeline."""
         model = Pipeline([
             ("impute", SimpleImputer(strategy="median")),  # Same: median, not mean, the counts are heavy-tailed.
             ("scale", StandardScaler()),  # Same: zero mean and unit variance from train, so L2 does not penalize units.
@@ -328,6 +333,7 @@ def make_what_logistic_regression(features: pd.DataFrame, feature_columns: list 
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
     def score(test: pd.DataFrame, fitted):
+        """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
     return fit, score
@@ -353,6 +359,7 @@ def make_what_naive_bayes(features: pd.DataFrame, feature_columns: list = WHAT_F
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
 
     def fit(train: pd.DataFrame):
+        """Fit a fresh Gaussian Naive Bayes pipeline (median imputation) on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted pipeline."""
         model = Pipeline([
             ("impute", SimpleImputer(strategy="median")),  # Same: median imputation as the other non-native-NaN models.
             ("model", GaussianNB(
@@ -362,6 +369,7 @@ def make_what_naive_bayes(features: pd.DataFrame, feature_columns: list = WHAT_F
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
     def score(test: pd.DataFrame, fitted):
+        """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
     return fit, score
@@ -384,6 +392,7 @@ def make_what_random_forest(features: pd.DataFrame, feature_columns: list = WHAT
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
 
     def fit(train: pd.DataFrame):
+        """Fit a fresh Random Forest pipeline (median imputation) on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted pipeline."""
         model = Pipeline([
             ("impute", SimpleImputer(strategy="median")),  # Same: median imputation as the other non-native-NaN models.
             ("model", RandomForestClassifier(
@@ -399,6 +408,7 @@ def make_what_random_forest(features: pd.DataFrame, feature_columns: list = WHAT
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
     def score(test: pd.DataFrame, fitted):
+        """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
     return fit, score
@@ -420,6 +430,7 @@ def make_what_hist_gradient_boosting(features: pd.DataFrame, feature_columns: li
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
 
     def fit(train: pd.DataFrame):
+        """Fit a fresh HistGradientBoosting model on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted model."""
         model = HistGradientBoostingClassifier(
             learning_rate=0.1,      # Same: step size of each new tree.
             max_iter=200,           # Same: number of boosting rounds.
@@ -431,6 +442,7 @@ def make_what_hist_gradient_boosting(features: pd.DataFrame, feature_columns: li
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
     def score(test: pd.DataFrame, fitted):
+        """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
     return fit, score

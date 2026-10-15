@@ -78,6 +78,7 @@ def dev_hits_summary(path: Path, k: int) -> pd.DataFrame:
 def conditions_table(conditions: dict) -> pd.DataFrame:
     """Rule conditions as a table: name, True or False and the numbers behind it."""
     def show(value):  # round numbers, keep tuples
+        """Round a number, or every number of a tuple, to 4 decimals for printing."""
         return tuple(round(float(v), 4) for v in value) if isinstance(value, tuple) else round(float(value), 4)  # printable numbers
     return pd.DataFrame([{"condition": re.sub(r"hits.10", "top_10_styles", name), "holds": bool(ok), "numbers": show(value)} for name, (ok, value) in conditions.items()])  # one row per condition, the rule text shows the metric under its report name
 
@@ -325,6 +326,7 @@ def compare_all(test: pd.DataFrame, dev: pd.DataFrame, printed: dict) -> pd.Data
     rows = []  # one row per quantity
 
     def add(name, recomputed, printed_values, decimals):
+        """Compare one recomputed quantity with its printed values and append a row to `rows`. Inputs: quantity name, recomputed values, printed values and decimals. Output: none."""
         diff, ok = compare(recomputed, printed_values, decimals)  # largest difference and rounding check
         rows.append({"quantity": name, "max abs difference": diff, "within printed rounding": ok})  # keep
 
