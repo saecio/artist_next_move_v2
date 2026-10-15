@@ -22,7 +22,8 @@ import numpy as np  # array maths for the bootstrap
 from sklearn.metrics import average_precision_score, classification_report, roc_auc_score  # PR-AUC, ROC-AUC and the per-class precision and recall
 
 from baselines import KILL_GATE_CONFIDENCE, N_BOOTSTRAP, SEED  # same confidence level and resample count as the kill gate
-from snapshots import CONFIG, ROOT, build_snapshots  # builds one row per snapshot from the Works table
+from config import CONFIG, ROOT  # project settings and project root from config.yaml
+from snapshots import build_snapshots  # builds one row per snapshot from the Works table
 
 # Where the cleaned Works table lives and where the built snapshots are cached.
 WORKS_PATH = ROOT / CONFIG["paths"]["works"]  # paths.works

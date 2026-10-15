@@ -24,7 +24,7 @@ from sklearn.pipeline import Pipeline  # chains imputer, scaler and model so all
 from sklearn.preprocessing import StandardScaler  # puts features on a common scale for the linear model
 from xgboost import XGBClassifier  # gradient boosted trees with native NaN handling
 
-from snapshots import CONFIG  # project settings read from config.yaml
+from config import CONFIG  # project settings read from config.yaml
 
 # Seed for every model with randomness, the project seed of config.yaml.
 SEED = CONFIG["project"]["SEED"]  # project.SEED

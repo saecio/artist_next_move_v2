@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # Make src/ importable without installing anything
 sys.path.insert(0, str(ROOT / "src"))
 
-from snapshots import CONFIG  # noqa: E402  (project settings read from config.yaml)
+from config import CONFIG  # noqa: E402  (project settings read from config.yaml)
 from year_imputation import parse_release_groups  # noqa: E402  (needs the path set above)
 
 # Run the parser on the full dump and write the reference parquet

@@ -16,7 +16,7 @@ from sklearn.ensemble import RandomForestRegressor  # random forest model
 from sklearn.linear_model import BayesianRidge  # bayesian ridge model
 from xgboost import XGBRegressor  # gradient boosting model
 
-from snapshots import CONFIG  # project settings read from config.yaml
+from config import CONFIG  # project settings read from config.yaml
 from style_series import style_year_counts, style_year_table  # series builders from the first phase
 
 FIRST_YEAR = CONFIG["years"]["style_first_column"]  # years.style_first_column; first calendar column of the style by year table

@@ -15,7 +15,7 @@ often be a same-year sibling (a gap of 0 years that says nothing about
 forecasting). So WHEN measures the gap to the artist's next year with
 activity after the snapshot's own year.
 
-This module reads no data files (only config.yaml, through `load_config`)
+This module reads no data files (only config.yaml, through `config.py`)
 and does not know about Discogs. It only takes a Works table shaped like notebook 01's real output checkpoint
 (`data/processed/works_checkpoint.parquet`), one row per Work, and turns it
 into one row per snapshot.
@@ -27,22 +27,10 @@ Usage:
 
 from __future__ import annotations
 
-from pathlib import Path  # project root and config path
-
 import numpy as np
 import pandas as pd
-import yaml  # reads config.yaml
 
-ROOT = Path(__file__).resolve().parent.parent  # project root, independent of the working directory
-
-
-def load_config() -> dict:
-    """Read config.yaml from the project root and return it as a dict."""
-    with open(ROOT / "config.yaml", encoding="utf-8") as f:  # the single settings file of the project
-        return yaml.safe_load(f)  # plain nested dict
-
-
-CONFIG = load_config()  # read once at import, shared by the modules that import it
+from config import CONFIG  # project settings read from config.yaml
 
 # The Discogs dump is dated 2026-09-01, so 2026 is only partly observed. The
 # last year that is fully observed (config.yaml, years.last_complete) is 2025,

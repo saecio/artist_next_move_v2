@@ -14,7 +14,7 @@ import pandas as pd  # tabular loading and manipulation
 import pyarrow.dataset as ds  # filtered read of the large Discogs releases table
 from rapidfuzz import fuzz, process  # fuzzy scoring and candidate search
 
-from snapshots import CONFIG, ROOT  # project root and settings from config.yaml
+from config import CONFIG, ROOT  # project root and settings from config.yaml
 from works import SYNTHETIC_WORK_ID_OFFSET, differs_only_by_number_or_roman  # work_id offset and number guard already used in works.py
 
 PROCESSED = ROOT / CONFIG["paths"]["processed"]  # paths.processed, folder of the parquet files

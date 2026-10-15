@@ -48,7 +48,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score
 
-from snapshots import CONFIG  # project settings read from config.yaml
+from config import CONFIG  # project settings read from config.yaml
 from eda import VOLUME_BUCKET_EDGES, VOLUME_BUCKET_LABELS, _bucket_by_prior_works  # same history and volume buckets as the Work-level EDA
 
 # Confidence level of the bootstrap intervals, used to decide "clearly above",

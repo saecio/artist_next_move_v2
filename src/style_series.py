@@ -14,7 +14,8 @@ from pathlib import Path  # path handling for the Works file
 
 import pandas as pd  # tables
 
-from snapshots import CONFIG, ROOT, _split_styles  # same list-to-set conversion used by the other models
+from config import CONFIG, ROOT  # project settings and project root from config.yaml
+from snapshots import _split_styles  # same list-to-set conversion used by the other models
 
 WORKS_PATH = ROOT / CONFIG["paths"]["works"]  # paths.works, cleaned Works table used by the WHEN and WHAT models
 
