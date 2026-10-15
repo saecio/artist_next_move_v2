@@ -13,7 +13,7 @@ A Work is one row per artist-level creative release: the unit of analysis for bo
 
 A Work comes from one of two sources, kept in the `work_source` column:
 
-- `master`: a Discogs Master (the entity that groups all Releases of the same album or single). 2,589,349 masters in the 2026-09-01 dump before cleaning.
+- `master`: a Discogs Master (the entity that groups all Releases of the same album or single). 2,589,349 masters in the 01-09-2026 dump before cleaning.
 - `synthetic`: a standalone Release with no Master link (`master_id == 0`, 41.6% of releases), promoted to a Work so artists who never got a Master are not lost. Only standalone releases from artists with 3+ standalone releases qualify. This recovers 388,610 artists that would disappear entirely under a Master-only definition.
 
 Both sources go through the same exclusion and cleaning rules, then sit in one table.
@@ -73,7 +73,7 @@ Any feature or label that strictly needs a year excludes or special-cases those 
 
 ## 7. Master-only, tried and reversed
 
-On 2026-10-10 the Works table was filtered to `work_source == "master"` to avoid the missing-year gap. It cut 3,998,160 works (67.2%) and 403,897 of 1,034,756 artists (39.0%) to fix an 8.58% field-level gap, and removing most of an artist's discography destroys the sequences a next-work model learns from. Reversed the same day. Full reasoning and counts: `docs/decisions.md`, CUT, "Work definition is Master-only".
+On 10-10-2026 the Works table was filtered to `work_source == "master"` to avoid the missing-year gap. It cut 3,998,160 works (67.2%) and 403,897 of 1,034,756 artists (39.0%) to fix an 8.58% field-level gap, and removing most of an artist's discography destroys the sequences a next-work model learns from. Reversed the same day. Full reasoning and counts: `docs/decisions.md`, CUT, "Work definition is Master-only".
 
 ## 8. Cleaning funnel
 
