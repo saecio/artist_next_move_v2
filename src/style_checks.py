@@ -13,7 +13,7 @@ design fixed before any model result exists" (15-10-2026):
   Works only and synthetic Works only (`universe_tables`, `three_year_base`,
   `smoothed_growth`, `top_k_overlap`).
 The synthetic share of a style (signal c of that entry) is not computed here.
-The repo holds no saved output of these figures, so the entry is their only record.
+The figures are reproduced by scripts/run_style_design_checks.py, with the outputs in results/style_design_checks/.
 
 Usage:
     from style_series import load_works, keep_dated_styled
