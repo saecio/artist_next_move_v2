@@ -7,9 +7,11 @@ analysis logic inline.
 
 from __future__ import annotations
 
+import itertools  # all pairs of columns for the correlation table
 import random  # local RNG for reservoir sampling in the similarity-band sampler
 
 import matplotlib.pyplot as plt  # plotting library used for the histogram
+import numpy as np  # log1p transform of the count columns
 import pandas as pd  # used only for type hints here, data itself comes from the notebook
 from rapidfuzz import fuzz, process  # fuzzy string matching, used for the near-duplicate title check
 from scipy.stats import chi2_contingency, mannwhitneyu, normaltest, skew, kurtosis, spearmanr  # normality test + skew/kurtosis and Mann-Whitney U for the year-gap hypothesis, chi-square independence test for the prior-work buckets, rank correlation + p-value for the genre-age confound check
@@ -635,6 +637,49 @@ def new_style_rate_by_year_missing_and_work_bucket(transitions: pd.DataFrame, mi
     rates = restricted.pivot_table(index="year_missing", columns="prior_work_bucket", values="is_new_style", aggfunc="mean", observed=True)  # mean of the 0/1 flag is the rate
     rates.loc["gap (True - False)"] = rates.loc[True] - rates.loc[False]  # per-bucket difference, shows whether the pooled gap survives holding history length fixed
     return rates
+
+
+TRANSFORM_COLUMNS = ["prior_work_count", "year_gap", "prior_style_count"]  # right-skewed count columns of the transitions table
+CORRELATION_COLUMNS = TRANSFORM_COLUMNS + ["is_new_style"]  # numeric columns analysed above, plus the 0/1 target
+
+
+def transformation_check(transitions: pd.DataFrame, min_previous_works: int, columns: list = TRANSFORM_COLUMNS, sample_size: int = 5000, seed: int = 0) -> pd.DataFrame:
+    """Skewness and normality test of each count column, raw and after log1p, on the modeling population.
+
+    Skewness and excess kurtosis use every row. The D'Agostino-Pearson test
+    uses one fixed-seed random sample of at most `sample_size` rows, the same
+    rows for the raw and the log1p version, because a normality test on
+    millions of rows rejects for any tiny deviation. Returns one row per
+    column and version, with n, the sample size, skewness, excess kurtosis,
+    the test statistic and its p-value.
+    """
+    population = _modeling_population(transitions, min_previous_works)  # same filter as the hypotheses above
+    rows = []  # one row per column and version
+    for column in columns:  # each count column in turn
+        values = population[column].astype(float)  # counts as floats
+        sample = values.sample(min(sample_size, len(values)), random_state=seed)  # one fixed-seed sample per column
+        for version, data, drawn in (("raw", values, sample), ("log1p", np.log1p(values), np.log1p(sample))):  # log1p keeps the zeros defined
+            stat, p_value = normaltest(drawn)  # null is a normal distribution
+            rows.append({"variable": column, "version": version, "n": len(data), "sample_size": len(drawn), "skewness": skew(data), "excess_kurtosis": kurtosis(data), "normaltest_stat": stat, "normaltest_p": p_value})  # skew and kurtosis on all rows, test on the sample
+    return pd.DataFrame(rows)  # long table, raw row first for each column
+
+
+def spearman_table(transitions: pd.DataFrame, min_previous_works: int, columns: list = CORRELATION_COLUMNS) -> pd.DataFrame:
+    """Spearman correlation, two-sided p-value and n for every pair of numeric columns of the modeling population.
+
+    Rank correlation is used because the count columns are heavy-tailed and a
+    log transform leaves it unchanged (it only depends on ranks). Every pair
+    is a separate test, so the table also carries the Bonferroni threshold
+    (0.05 divided by the number of pairs) and whether each p-value is below it.
+    """
+    population = _modeling_population(transitions, min_previous_works)[columns].astype(float)  # numeric columns only, same filter as above
+    pairs = list(itertools.combinations(columns, 2))  # every pair once
+    threshold = 0.05 / len(pairs)  # Bonferroni threshold for this family of tests
+    rows = []  # one row per pair
+    for first, second in pairs:  # each pair in turn
+        r, p_value = spearmanr(population[first], population[second])  # rank correlation and two-sided p-value
+        rows.append({"variable_a": first, "variable_b": second, "n": len(population), "spearman_r": r, "p_value": p_value, "bonferroni_alpha": threshold, "below_bonferroni": bool(p_value < threshold)})  # one test per pair
+    return pd.DataFrame(rows)  # one row per pair
 
 
 def inspect_near_duplicate_titles(works_df: pd.DataFrame, artist: str, sample_size: int = 40) -> pd.DataFrame:
