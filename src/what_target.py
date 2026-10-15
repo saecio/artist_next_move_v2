@@ -29,7 +29,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score  # PR-AUC of 
 
 from backtesting import GAP_YEARS, HOLDOUT_END_YEAR, HOLDOUT_START_YEAR, N_FOLD_TRANCHES, TRANCHE_YEARS, _sorted_inputs, _weighted_average_precision, evaluate_folds, make_what_folds  # shared fold and holdout constants, the WHAT folds and the per-fold evaluation, defined once in the WHEN module
 from baselines import KILL_GATE_CONFIDENCE, N_BOOTSTRAP, add_what_buckets, fit_what_baseline, fit_what_lookup_baseline, score_what_baseline, score_what_lookup_baseline  # same bootstrap settings and baselines as the kill gate
-from models import GENRES, WHAT_FEATURES, WHAT_TABLE_INPUTS, make_what_xgboost  # fixed genre vocabulary of the WHEN models, and the WHAT reference model
+from models import GENRES, SEED, WHAT_FEATURES, WHAT_TABLE_INPUTS, make_what_xgboost  # fixed genre vocabulary of the WHEN models, and the WHAT reference model
 from eda import PRIOR_WORK_BUCKET_LABELS, VOLUME_BUCKET_EDGES, VOLUME_BUCKET_LABELS, _bucket_by_prior_works  # same history and volume buckets as the Work-level EDA
 from snapshots import _split_styles, classify_work_type  # same list-to-set conversion and Work type as the Work-level snapshots
 
@@ -1244,7 +1244,7 @@ def _compare_builds(full: pd.DataFrame, cut: pd.DataFrame, columns: list, kind: 
     return pd.DataFrame(records, columns=["column", "kind", "rows_compared", "rows_differ", "differ_nan_vs_value"]).set_index("column")
 
 
-def what_point_in_time_check(works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, seed: int = 1, features_fn=build_what_features) -> pd.DataFrame:
+def what_point_in_time_check(works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, seed: int = SEED, features_fn=build_what_features) -> pd.DataFrame:
     """Count, per WHAT feature, the rows whose value changes when the future is removed.
 
     Mirrors `backtesting.point_in_time_check`. Builds the features and the
@@ -1289,7 +1289,7 @@ def what_point_in_time_check(works: pd.DataFrame, cutoff_year: int, n_artists: i
     return table
 
 
-def what_undated_check(works: pd.DataFrame, n_artists: int = 30000, seed: int = 1, features_fn=build_what_features) -> pd.DataFrame:
+def what_undated_check(works: pd.DataFrame, n_artists: int = 30000, seed: int = SEED, features_fn=build_what_features) -> pd.DataFrame:
     """Check that undated Works enter no WHAT feature.
 
     Builds the features for the same seeded sample of artists as

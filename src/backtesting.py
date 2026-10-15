@@ -21,15 +21,15 @@ import pandas as pd  # dataframe library used throughout
 import numpy as np  # array maths for the bootstrap
 from sklearn.metrics import average_precision_score, classification_report, roc_auc_score  # PR-AUC, ROC-AUC and the per-class precision and recall
 
-from baselines import KILL_GATE_CONFIDENCE, N_BOOTSTRAP  # same confidence level and resample count as the kill gate
-from snapshots import build_snapshots  # builds one row per snapshot from the Works table
+from baselines import KILL_GATE_CONFIDENCE, N_BOOTSTRAP, SEED  # same confidence level and resample count as the kill gate
+from snapshots import CONFIG, ROOT, build_snapshots  # builds one row per snapshot from the Works table
 
 # Where the cleaned Works table lives and where the built snapshots are cached.
-WORKS_PATH = Path("../data/processed/works_checkpoint.parquet")
-SNAPSHOTS_PATH = Path("../data/processed/snapshots.parquet")
+WORKS_PATH = ROOT / CONFIG["paths"]["works"]  # paths.works
+SNAPSHOTS_PATH = ROOT / CONFIG["paths"]["snapshots"]  # paths.snapshots
 
 # The Discogs dump is dated 2026-09-01, so 2026 is only partly observed.
-PARTIAL_YEAR = 2026
+PARTIAL_YEAR = CONFIG["years"]["partial"]  # years.partial
 
 # A complete year is "low volume" when its snapshot count is below this
 # quantile of the yearly counts of all complete years.
@@ -82,8 +82,8 @@ def plot_year_distribution(table: pd.DataFrame) -> None:
 
 # Final holdout boundary: the chronologically most recent complete years that
 # are not affected by Discogs submission lag (see docs/decisions.md).
-HOLDOUT_START_YEAR = 2018
-HOLDOUT_END_YEAR = 2023
+HOLDOUT_START_YEAR = CONFIG["years"]["holdout_start"]  # years.holdout_start
+HOLDOUT_END_YEAR = CONFIG["years"]["holdout_end"]  # years.holdout_end
 
 
 def split_holdout(snapshots: pd.DataFrame, holdout_start: int = HOLDOUT_START_YEAR, holdout_end: int = HOLDOUT_END_YEAR, partial_year: int = PARTIAL_YEAR) -> dict:
@@ -127,7 +127,7 @@ def split_summary(parts: dict) -> pd.DataFrame:
 # this many years of the start of a test or holdout period has a label that
 # reaches into that period, so it is excluded from training (a gap, as in
 # purged cross-validation for time series).
-GAP_YEARS = 2
+GAP_YEARS = CONFIG["years"]["label_gap"]  # years.label_gap
 
 # Walk-forward test tranches: the last N_FOLD_TRANCHES * TRANCHE_YEARS
 # development years are split into N_FOLD_TRANCHES consecutive tranches of
@@ -266,7 +266,7 @@ def make_what_folds(table: pd.DataFrame, n_folds: int = N_FOLD_TRANCHES, test_ye
     return folds  # list of fold dicts
 
 
-def point_in_time_check(works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, seed: int = 1) -> pd.Series:
+def point_in_time_check(works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, seed: int = SEED) -> pd.Series:
     """Count, per snapshot column, the rows whose value changes when the future is removed.
 
     Builds the snapshots twice for a random sample of artists: once from all
@@ -290,7 +290,7 @@ def point_in_time_check(works: pd.DataFrame, cutoff_year: int, n_artists: int = 
     return pd.Series(differs)  # 0 means identical with and without the future
 
 
-def presence_truncation_check(clean_fn, works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, n_big_artists: int = 10000, seed: int = 1) -> dict:
+def presence_truncation_check(clean_fn, works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, n_big_artists: int = 10000, seed: int = SEED) -> dict:
     """Test whether a cleaning step lets later Works decide the fate of earlier ones.
 
     Applies `clean_fn` (a function Works -> Works that only removes rows)
@@ -401,7 +401,7 @@ def _artist_bootstrap_pr_auc(y_true: np.ndarray, scores: np.ndarray, artist_ids:
     return pr_aucs  # NaN where a draw had one class only
 
 
-def evaluate_folds(folds: list, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = 1) -> pd.DataFrame:
+def evaluate_folds(folds: list, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = SEED) -> pd.DataFrame:
     """Per-fold metrics for one fit/score pair, one row per fold, never averaged.
 
     `fit_fn(train)` returns the fitted object learned from the fold's train
@@ -439,7 +439,7 @@ def _sorted_inputs(y: np.ndarray, scores: np.ndarray) -> tuple:
     return y[order].astype(float), np.ones(len(y)), group_ends  # (y_sorted, weights, group_ends)
 
 
-def evaluate_holdout(final_train: pd.DataFrame, holdout: pd.DataFrame, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = 1, threshold: float = 0.5, return_scores: bool = False) -> dict:
+def evaluate_holdout(final_train: pd.DataFrame, holdout: pd.DataFrame, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = SEED, threshold: float = 0.5, return_scores: bool = False) -> dict:
     """The one-time final evaluation on the sealed holdout.
 
     Fits on `final_train` (development without the label gap), scores the

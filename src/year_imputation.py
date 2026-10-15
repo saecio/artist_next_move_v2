@@ -14,7 +14,10 @@ import pandas as pd  # tabular loading and manipulation
 import pyarrow.dataset as ds  # filtered read of the large Discogs releases table
 from rapidfuzz import fuzz, process  # fuzzy scoring and candidate search
 
+from snapshots import CONFIG, ROOT  # project root and settings from config.yaml
 from works import SYNTHETIC_WORK_ID_OFFSET, differs_only_by_number_or_roman  # work_id offset and number guard already used in works.py
+
+PROCESSED = ROOT / CONFIG["paths"]["processed"]  # paths.processed, folder of the parquet files
 
 # Placeholder credits already excluded from the Works dataset (see docs/decisions.md)
 NON_ARTIST_NAMES = {"Various", "Unknown Artist", "No Artist"}
@@ -25,7 +28,7 @@ MB_MIN_YEAR = 1860
 MB_YEAR_RE = re.compile(r"^\d{4}")
 
 
-def load_masters_for_check(path: str = "../data/processed/masters.parquet") -> pd.DataFrame:
+def load_masters_for_check(path: str = str(PROCESSED / "masters.parquet")) -> pd.DataFrame:
     """Load raw masters with one row per master and its first credited artist."""
     # Read only the columns this check needs, the file has 2.5M rows
     df = pd.read_parquet(path, columns=["master_id", "artist_ids", "artist_names", "title", "year"])
@@ -71,7 +74,7 @@ def consecutive_pair_stats(df: pd.DataFrame, min_dated: int = 5) -> tuple[float,
 
 def parse_release_groups(
     path: str = "../data/raw/release-group",
-    out_path: str = "../data/processed/musicbrainz_release_groups.parquet",
+    out_path: str = str(PROCESSED / "musicbrainz_release_groups.parquet"),
     log_every: int = 500_000,
 ) -> tuple[pd.DataFrame, Counter]:
     """Stream the MusicBrainz release-group NDJSON into a clean title, artist, year table."""
@@ -132,8 +135,8 @@ def parse_release_groups(
 
 
 def build_missing_year_subset(
-    path: str = "../data/processed/works_checkpoint.parquet",
-    out_path: str = "../data/processed/works_missing_year.parquet",
+    path: str = str(PROCESSED / "works_checkpoint.parquet"),
+    out_path: str = str(PROCESSED / "works_missing_year.parquet"),
 ) -> tuple[pd.DataFrame, int]:
     """Works that still have no year after cleaning, with the columns needed for matching."""
     # Final cleaned works table, read only the columns the matching needs
@@ -249,7 +252,7 @@ def normalize_catno(text: str) -> str:
 
 def parse_releases(
     path: str = "../data/raw/release.ndjson",
-    out_path: str = "../data/processed/musicbrainz_releases.parquet",
+    out_path: str = str(PROCESSED / "musicbrainz_releases.parquet"),
     log_every: int = 100_000,
 ) -> tuple[pd.DataFrame, Counter]:
     """Stream the MusicBrainz release NDJSON into one row per (release, label, catalog number)."""
@@ -318,7 +321,7 @@ def parse_releases(
 EMPTY_CATNO_KEYS = {"", "NONE", "NA"}
 
 
-def discogs_label_catno(works: pd.DataFrame, releases_path: str = "../data/processed/releases.parquet") -> pd.DataFrame:
+def discogs_label_catno(works: pd.DataFrame, releases_path: str = str(PROCESSED / "releases.parquet")) -> pd.DataFrame:
     """One row per (work, label, catalog number) from the Discogs release that represents each work."""
     # Synthetic works are one release (work_id minus the offset), masters are looked up by master_id
     is_master = works["work_source"] == "master"
@@ -343,7 +346,7 @@ def discogs_label_catno(works: pd.DataFrame, releases_path: str = "../data/proce
     return works[["work_id", "work_source", "artist", "title"]].merge(pairs, on="work_id", how="left")
 
 
-def catno_join(works: pd.DataFrame, mb: pd.DataFrame, releases_path: str = "../data/processed/releases.parquet") -> pd.DataFrame:
+def catno_join(works: pd.DataFrame, mb: pd.DataFrame, releases_path: str = str(PROCESSED / "releases.parquet")) -> pd.DataFrame:
     """Join works to MusicBrainz releases on (label, catalog number); one row per matched pair, plus unmatched works."""
     # Works with their Discogs keys (works with no usable pair keep NaN keys)
     pairs = discogs_label_catno(works, releases_path)

@@ -48,17 +48,21 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score
 
+from snapshots import CONFIG  # project settings read from config.yaml
 from eda import VOLUME_BUCKET_EDGES, VOLUME_BUCKET_LABELS, _bucket_by_prior_works  # same history and volume buckets as the Work-level EDA
 
 # Confidence level of the bootstrap intervals, used to decide "clearly above",
 # not just "higher". 95%, the conventional level for a two-sided interval
 # (docs/decisions.md, "Confidence level moved from 90% to 95%").
-KILL_GATE_CONFIDENCE = 0.95
+KILL_GATE_CONFIDENCE = CONFIG["bootstrap"]["confidence"]  # bootstrap.confidence
 
 # Number of bootstrap resamples for the kill gate's PR-AUC confidence
 # intervals. 1,000 is the usual default for a bootstrap CI; this is not
 # tuned, just a standard, round number.
-N_BOOTSTRAP = 1_000
+N_BOOTSTRAP = CONFIG["bootstrap"]["draws"]  # bootstrap.draws
+
+# Seed of the bootstrap draws, the project seed of config.yaml.
+SEED = CONFIG["project"]["SEED"]  # project.SEED
 
 # Minimum train rows a lookup cell needs before its own positive rate is
 # trusted. With fewer than 30 rows a rate has a standard error of about 9
@@ -260,7 +264,7 @@ def evaluate_kill_gate(
     artist_ids: pd.Series,
     confidence: float = KILL_GATE_CONFIDENCE,
     n_bootstrap: int = N_BOOTSTRAP,
-    seed: int = 1,
+    seed: int = SEED,
 ) -> dict:
     """Decide whether a model clearly beats its baseline on PR-AUC, using
     non-overlapping bootstrap confidence intervals, not a bare point-estimate

@@ -24,8 +24,10 @@ from sklearn.pipeline import Pipeline  # chains imputer, scaler and model so all
 from sklearn.preprocessing import StandardScaler  # puts features on a common scale for the linear model
 from xgboost import XGBClassifier  # gradient boosted trees with native NaN handling
 
-# Seed for every model with randomness, same as config.yaml's project SEED.
-SEED = 1
+from snapshots import CONFIG  # project settings read from config.yaml
+
+# Seed for every model with randomness, the project seed of config.yaml.
+SEED = CONFIG["project"]["SEED"]  # project.SEED
 
 # The only columns allowed as model inputs for WHEN (docs/decisions.md,
 # "Feature allowlist for WHEN modeling"). genres is expanded into one 0/1

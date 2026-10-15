@@ -1,18 +1,28 @@
 project:
   name: "Artist Next Move"
-  SEED: 1
+  SEED: 1  # the single random seed of the project (models, sampling and bootstrap)
 
-data:
-  demo_masters: "data/demo/masters_demo.csv"
-  raw_masters_xml: "discogs_20260901_masters.xml"
-  raw_releases_xml: "discogs_20260901_releases.xml"
-  masters_parquet: "data/processed/masters.parquet"
-  masters_clean_parquet: "data/processed/masters_clean.parquet"
+paths:
+  raw: "data/raw"  # raw dumps, not versioned
+  processed: "data/processed"  # parquet files, not versioned
+  works: "data/processed/works_checkpoint.parquet"  # cleaned Works table
+  snapshots: "data/processed/snapshots.parquet"  # cached snapshots
+  results: "results"  # result files and trial logs
 
-when:
-  horizons:
-    - 1
-    - 2
+years:
+  last_complete: 2025  # last fully observed year (the dump is dated 2026-09-01)
+  partial: 2026  # partly observed year, demo only
+  development_last: 2017  # last development year, nothing later is used for tuning
+  holdout_start: 2018  # first year of the holdout
+  holdout_end: 2023  # last year of the holdout
+  label_gap: 2  # years removed before a test or holdout period (longest label horizon)
+  style_first_column: 1890  # first calendar column of the style by year table
+  style_dev_first_target: 1993  # first development target year of the style forecast
+
+bootstrap:
+  draws: 1000  # artist-clustered bootstrap draws (WHEN and WHAT)
+  confidence: 0.95  # two-sided confidence level
+  style_draws: 2000  # bootstrap draws over years (style forecast)
 
 what:
   # Minimum number of previous dated Works (artist-year level for WHAT: dated Works strictly before the year).

@@ -16,15 +16,16 @@ from sklearn.ensemble import RandomForestRegressor  # random forest model
 from sklearn.linear_model import BayesianRidge  # bayesian ridge model
 from xgboost import XGBRegressor  # gradient boosting model
 
+from snapshots import CONFIG  # project settings read from config.yaml
 from style_series import style_year_counts, style_year_table  # series builders from the first phase
 
-FIRST_YEAR = 1890  # first calendar column of the style by year table
-DEV_FIRST_TARGET = 1993  # first development target year
-DEV_LAST_TARGET = 2017  # last development target year, nothing later is ever read
+FIRST_YEAR = CONFIG["years"]["style_first_column"]  # years.style_first_column; first calendar column of the style by year table
+DEV_FIRST_TARGET = CONFIG["years"]["style_dev_first_target"]  # years.style_dev_first_target; first development target year
+DEV_LAST_TARGET = CONFIG["years"]["development_last"]  # years.development_last; last development target year, nothing later is ever read
 MIN_BASE = 100  # a style is eligible when the mean of the three latest years is at least this
 TOP_K = 10  # size of the ranking that is scored
-SEED = 1  # one seed for every model and for the bootstrap
-N_BOOT = 2000  # bootstrap draws over years
+SEED = CONFIG["project"]["SEED"]  # project.SEED, one seed for every model and for the bootstrap
+N_BOOT = CONFIG["bootstrap"]["style_draws"]  # bootstrap.style_draws, bootstrap draws over years
 MODELS = ["bayes_ridge", "xgboost", "random_forest"]  # model names, in report order
 # Locked Random Forest settings, fixed in the decisions entry "Style trend forecast, adoption and pass rule results, final test, 2024 projection and output procedure" (trial m_trees600 of results/trials/rf_style_forecast.jsonl).
 LOCKED_RF_PARAMS = {"n_estimators": 600, "max_depth": 13, "min_samples_leaf": 7, "max_features": 0.5, "bootstrap": True, "max_samples": 0.3253691715004556, "random_state": 1}  # same keys as the tuning trials

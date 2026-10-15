@@ -14,9 +14,9 @@ from pathlib import Path  # path handling for the Works file
 
 import pandas as pd  # tables
 
-from snapshots import _split_styles  # same list-to-set conversion used by the other models
+from snapshots import CONFIG, ROOT, _split_styles  # same list-to-set conversion used by the other models
 
-WORKS_PATH = Path(__file__).resolve().parent.parent / "data/processed/works_checkpoint.parquet"  # cleaned Works table used by the WHEN and WHAT models
+WORKS_PATH = ROOT / CONFIG["paths"]["works"]  # paths.works, cleaned Works table used by the WHEN and WHAT models
 
 
 def load_works(path: Path = WORKS_PATH) -> pd.DataFrame:

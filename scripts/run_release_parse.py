@@ -12,12 +12,13 @@ ROOT = Path(__file__).resolve().parent.parent
 # Make src/ importable without installing anything
 sys.path.insert(0, str(ROOT / "src"))
 
+from snapshots import CONFIG  # noqa: E402  (project settings read from config.yaml)
 from year_imputation import parse_releases  # noqa: E402  (needs the path set above)
 
 # Read the stream from stdin and write the reference parquet; progress every 500k releases
 df, counts = parse_releases(
     path="-",
-    out_path=str(ROOT / "data/processed/musicbrainz_releases.parquet"),
+    out_path=str(ROOT / CONFIG["paths"]["processed"] / "musicbrainz_releases.parquet"),  # processed folder from config
     log_every=500_000,
 )
 # Final tally: every outcome, including the catalog-number-with-year split

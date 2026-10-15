@@ -15,8 +15,8 @@ often be a same-year sibling (a gap of 0 years that says nothing about
 forecasting). So WHEN measures the gap to the artist's next year with
 activity after the snapshot's own year.
 
-This module does not read any files and does not know about Discogs. It
-only takes a Works table shaped like notebook 01's real output checkpoint
+This module reads no data files (only config.yaml, through `load_config`)
+and does not know about Discogs. It only takes a Works table shaped like notebook 01's real output checkpoint
 (`data/processed/works_checkpoint.parquet`), one row per Work, and turns it
 into one row per snapshot.
 
@@ -27,13 +27,28 @@ Usage:
 
 from __future__ import annotations
 
+from pathlib import Path  # project root and config path
+
 import numpy as np
 import pandas as pd
+import yaml  # reads config.yaml
+
+ROOT = Path(__file__).resolve().parent.parent  # project root, independent of the working directory
+
+
+def load_config() -> dict:
+    """Read config.yaml from the project root and return it as a dict."""
+    with open(ROOT / "config.yaml", encoding="utf-8") as f:  # the single settings file of the project
+        return yaml.safe_load(f)  # plain nested dict
+
+
+CONFIG = load_config()  # read once at import, shared by the modules that import it
 
 # The Discogs dump is dated 2026-09-01, so 2026 is only partly observed. The
-# last year that is fully observed is 2025, and it is the boundary used to
-# decide whether "no next active year" is a real 0 or simply not known yet.
-LAST_COMPLETE_YEAR = 2025
+# last year that is fully observed (config.yaml, years.last_complete) is 2025,
+# and it is the boundary used to decide whether "no next active year" is a
+# real 0 or simply not known yet.
+LAST_COMPLETE_YEAR = CONFIG["years"]["last_complete"]
 
 # Seed for the order of Works inside one artist-year. The data only knows the
 # year, so that order is not real chronology; sorting same-year Works by
@@ -41,8 +56,8 @@ LAST_COMPLETE_YEAR = 2025
 # carry a 10_000_000_000 offset), and the "so far" counts would partly encode
 # work_source. Instead the order follows a hash of work_id plus this seed: it
 # looks random, but it is identical on every run and does not depend on the
-# row order of the input. Same seed as config.yaml's project SEED.
-WITHIN_YEAR_ORDER_SEED = 1
+# row order of the input. It is the project seed of config.yaml (project.SEED).
+WITHIN_YEAR_ORDER_SEED = CONFIG["project"]["SEED"]
 
 # Discogs format_descriptions tags that mark an album-like or a single-like
 # release. Everything else (including no tag at all) is "other".
