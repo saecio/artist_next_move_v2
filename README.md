@@ -10,7 +10,7 @@ No data is stored in this repository. The whole `data/` directory is gitignored.
 
 ### Sources
 
-- Discogs monthly data dump dated 2026-09-01 (`discogs_20260901_masters.xml`, `discogs_20260901_releases.xml`), from the public Discogs data dumps page.
+- Discogs monthly data dump dated 01-09-2026 (`discogs_20260901_masters.xml`, `discogs_20260901_releases.xml`), from the public Discogs data dumps page.
 - MusicBrainz JSON dump, snapshot 20261007-001001 (`release-group` and `release` entities), from the public MusicBrainz data dumps. Only used by the year-imputation experiments, which were abandoned (see `docs/abandoned_approaches.md`). The main pipeline does not need it.
 
 Place the raw files in `data/raw/`. Run everything from the project root with the `venv` environment (`pip install -r requirements.txt`).
