@@ -1,5 +1,5 @@
 """
-Reporting helpers of notebooks/style_forecast.ipynb: tables and charts of the style forecast.
+Reporting helpers of notebooks/06_style_forecast.ipynb: tables and charts of the style forecast.
 
 Everything here reads saved files or the style by year table, nothing is fitted.
 The test values are recomputed from the saved predictions and the series, and

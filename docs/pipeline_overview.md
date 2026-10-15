@@ -31,7 +31,7 @@ Facts below come from [decisions.md](decisions.md) and `results/holdout_what/hea
 
 - **Unit and target**: one row per artist and calendar year (`src/what_target.py`). `new_style_year` is 1 if the Works of the artist's next active year contain a style absent from every style seen through the end of the current year (styles of undated Works count as seen). Rows are kept when `history_count >= 3` (`config.yaml`, `what.min_previous_works`) and the label exists. Prevalence is 30.9% over 763,371 labelled development rows.
 - **Kill gate**: PASS. The model is above baseline (c), the history and volume lookup, in 5 of 5 development folds, with 25 inputs.
-- **Model comparison and tuning**: five models on the same folds and inputs (`notebooks/what_models.ipynb`); every model is above baseline (c) in 5 of 5 folds. Staged XGBoost tuning (69 log rows, stage 0 plus 68 trials, `results/trials/xgb_what_new_style_year.jsonl`) ended with stage 0 kept.
+- **Model comparison and tuning**: five models on the same folds and inputs (`notebooks/05_what_models.ipynb`); every model is above baseline (c) in 5 of 5 folds. Staged XGBoost tuning (69 log rows, stage 0 plus 68 trials, `results/trials/xgb_what_new_style_year.jsonl`) ended with stage 0 kept.
 - **Holdout**: training rows have `year < 2018` and `next_active_year < 2018` (687,628 rows). Test rows are labelled rows with `2018 <= year <= 2023` and `next_active_year <= 2023`: 143,228 rows from 71,523 artists, effectively 2018 to 2022. Evaluated once. Stage 0: PR-AUC 0.499 [0.493, 0.504] and ROC-AUC 0.678 against a base rate of 0.313; baseline (c): PR-AUC 0.346 and ROC-AUC 0.559.
 
 ## Style trend forecast

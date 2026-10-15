@@ -1,4 +1,4 @@
-"""Readers and small helpers for the holdout and illustrative sections of notebooks/what_models.ipynb.
+"""Readers and small helpers for the holdout and illustrative sections of notebooks/05_what_models.ipynb.
 
 Everything here only reads files saved by scripts/run_xgb_what_holdout.py and the cleaned Works table.
 Nothing is fitted, scored or recomputed, and the sealed holdout is not evaluated again.
