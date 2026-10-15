@@ -74,3 +74,46 @@ Any feature or label that strictly needs a year excludes or special-cases those 
 ## 7. Master-only, tried and reversed
 
 On 2026-10-10 the Works table was filtered to `work_source == "master"` to avoid the missing-year gap. It cut 3,998,160 works (67.2%) and 403,897 of 1,034,756 artists (39.0%) to fix an 8.58% field-level gap, and removing most of an artist's discography destroys the sequences a next-work model learns from. Reversed the same day. Full reasoning and counts: `docs/decisions.md`, CUT, "Work definition is Master-only".
+
+## 8. Cleaning funnel
+
+Rows in and rows out at each stage, from the raw tables to the snapshots. Nothing was recomputed from the data: the counts are the executed outputs of `notebooks/01_cleaning_eda.ipynb` (current run, after the Master year recovery), the entry "WHEN target is measured at year level, snapshots stay one per dated work" of `docs/decisions.md` for the snapshots stage, and the counts of the exclusion entries of `docs/decisions.md` for the overlaps. A number that is not logged anywhere in the repo is marked MISSING.
+
+| Stage | Rows in | Rows out | Reason |
+|---|---|---|---|
+| Parse masters (`src/parse_dumps.py`) | MISSING | 2,589,349 | One row per master. The raw XML record count and the parse error count of the full run are not logged (the 1,000-row sample logged 0 parse errors) |
+| Masters: non-artist placeholders (Various, Unknown Artist, No Artist, case-insensitive) | 2,589,349 | 2,415,300 | Not a real artist |
+| Masters: Non-Music or Children's genre | 2,415,300 | 2,360,235 | Not relevant to musical style prediction |
+| Masters: Classical or Brass & Military genre | 2,360,235 | 2,204,466 | Out-of-scope genres |
+| Masters: placeholder record `master_id` 376240 ("Dummy1") | 2,204,466 | 2,204,465 | Placeholder or test record |
+| Masters: `data_quality == "Entirely Incorrect"` | 2,204,465 | 2,204,326 | Flagged unreliable by Discogs |
+| Masters: compilation or unofficial release | 2,204,326 | 2,015,417 | Read from the representative release. 165,172 compilations and 32,158 unofficial, overlap 8,421 (not additive) |
+| Parse releases (`src/parse_dumps.py`) | MISSING | 19,417,067 | One row per release. The raw XML record count and the parse error count of the full run are not logged |
+| Releases without a master (`master_id == 0`) | 19,417,067 | 8,076,985 | Standalone releases |
+| Standalone releases of artists with 3+ standalone releases | 8,076,985 | 6,221,353 | Artists with fewer than 3 cannot reach `min_previous_works` |
+| Standalone: placeholder artist, out-of-scope genre or Entirely Incorrect | 6,221,353 | 4,752,274 | 899,514 placeholders, 685,589 genres and 826 Entirely Incorrect (overlap, not additive) |
+| Standalone: compilation or unofficial release | 4,752,274 | 4,218,546 | 401,541 compilations and 182,761 unofficial, overlap 50,574 (not additive) |
+| Combine masters (2,015,417) and standalone releases (4,218,546) into Works | 2,015,417 + 4,218,546 | 6,233,963 | `work_source` master or synthetic. `year == 0` or `year > 2026` set to missing (rows unchanged) |
+| Master year recovery | 6,233,963 | 6,233,963 | Rows unchanged. 38,670 master years recovered (101,543 missing before, 62,873 after) |
+| Exact duplicates (artist, normalized title, year) | 6,233,963 | 6,114,920 | Master preferred over synthetic |
+| Reissue, repress or remaster of an earlier work | 6,114,920 | 6,109,956 | Earliest work of each group survives |
+| Live recordings | 6,109,956 | 6,017,429 | Performance of existing material |
+| "Greatest Hits" titles | 6,017,429 | 6,015,806 | Slipped through the compilation flag |
+| Other compilation titles (best of, anthology, box set, discography, b-sides, rarities) | 6,015,806 | 6,009,186 | Slipped through the compilation flag |
+| "Remixes" titles | 6,009,186 | 5,984,270 | Third-party reworking |
+| "Tribute" titles | 5,984,270 | 5,978,875 | Covers of existing songs |
+| "(Acoustic)" suffix | 5,978,875 | 5,977,815 | Re-recording of existing songs |
+| "(Instrumental)" suffix | 5,977,815 | 5,977,058 | Vocal-less version of an existing track |
+| "Unplugged" titles | 5,977,058 | 5,976,075 | Live acoustic performances of existing songs |
+| Radio edit, radio version, BBC session | 5,976,075 | 5,974,340 | Shortened or re-performed existing tracks |
+| Placeholder-artist QA pass (case variants) | 5,974,340 | 5,972,918 | Variants missed by the first exclusion |
+| Fuzzy-duplicate titles (`remove_fuzzy_duplicate_titles`) | 5,972,918 | 5,952,053 | Within an artist, `token_sort_ratio >= 90`, numbered series protected |
+| Catalog-number duplicates (`remove_catalog_number_duplicates`) | 5,952,053 | 5,951,071 | Same artist and title, shared real label and catalog number |
+| Mass-upload artists (`remove_mass_upload_artists`) | 5,951,071 | 5,949,217 | Exactly one artist (6391827, "Nosferatu 1922") |
+| Snapshots (`build_snapshots`) | 5,949,217 | 5,438,765 | 510,357 undated Works and 95 Works without artist dropped, counted in `result.attrs` |
+
+Notes:
+
+- Exclusion counts inside one stage overlap and are not additive: compilation and unofficial masters overlap by 8,421, and the three standalone exclusions overlap among themselves. Only the rows in and rows out of a stage are reliable.
+- Several counts in `docs/decisions.md` come from earlier runs of the notebook and differ slightly from this table, which follows the current outputs: 174,000 placeholder masters (6.7%) against 174,049, 119,492 exact duplicates against 119,043, 21,846 fuzzy duplicates (measured on a stale checkpoint) against 20,865, and a final checkpoint of 5,948,995 rows before the Master year recovery was added against 5,949,217.
+- The checkpoint written by the last cell has 9 columns and 1,034,756 artists; 510,364 Works keep `year = NaN` (section 6).
