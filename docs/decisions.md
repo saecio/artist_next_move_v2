@@ -140,6 +140,81 @@
 ### Leakage in model selection: label look-ahead in development fold 5 (17-10-2026)
 Test rows of development fold 5 (origin years 2013-2017) have labels that reach into 2018-2019, the holdout period: 21.32% of rows for WHEN next_1y, 41.70% for next_2y and 39.38% for WHAT (upper bound for WHEN, since some labels are settled by data up to 2017). This is leakage in model selection: the fold 5 score entered the mean used to choose hyperparameters. Features, training labels (ending in 2011-2012) and holdout scores are not affected. Dropping the affected rows lowers the fold 5 PR-AUC of both compared configurations by 0.005 to 0.0065, with a base-rate shift of about 0.004 and a change of population (origin years 2016-2017 removed). The difference between configurations is stable: 0.0004 vs 0.0004 (next_1y), 0.0003 vs 0.0005 (next_2y) and 0.0030 vs 0.0037 (WHAT), with the same sign in the fold 5 difference and in the 5-fold mean difference. The choice between the final configuration and stage 0 does not change. Only two configurations per target were compared, not all trials. WHAT candidate m_lr_0.012 shows a paired fold 5 gain of +0.0030 [0.0022, 0.0037]; it was not adopted under the unpaired rule and the holdout was scored with stage 0, so it is reported here and not applied. Style forecast does not depend on data from 2018 or later in selection. Scripts: scripts/run_label_lookahead_check.py and scripts/run_label_lookahead_ranking_check.py. Outputs: results/label_lookahead/.
 
+## Demo artist selection: eligibility rule (17-10-2026)
+
+Context: the Time Machine demo needs well-known artists across genres, chosen before any score is viewed.
+
+Decision: an artist is a candidate if at least one of these holds for ceremony years 2019 to 2026:
+- a Grammy Album of the Year nomination;
+- a Primetime Emmy nomination in Outstanding Variety Special (Live), Outstanding Variety Special (Pre-Recorded), Outstanding Music Direction or Outstanding Original Music and Lyrics.
+Popularity filler chosen by the author is also admitted, backed where possible by Billboard year-end 2022, the Billboard Latin Music Awards 2019 to 2025, Pitchfork 2022 or the Latin Grammy. One nomination is enough, there is no minimum count.
+
+Limitation: selecting by nominations favours artists whose nominated work coincides with a stylistic change. The demo list is therefore not a random sample and says nothing about global performance. Global metrics come only from the holdout.
+
+Sources (accessed 17-10-2026): en.wikipedia.org pages for the Grammy Album of the Year and for the four Emmy categories above; grammy.com category pages; billboard.com year-end and Latin charts.
+
+## Demo artist selection: cap per genre (17-10-2026)
+
+Decision: at most 10 candidates per genre. Cut order: Album of the Year nominations, then Emmy nominations, then presence in Billboard year-end 2022.
+Left out by the cap: Ariana Grande, Miley Cyrus, Rihanna, J Balvin, Maluma, Daddy Yankee, Jennifer Lopez, Billy Joel, Bruce Springsteen, Labrinth.
+
+## Demo artist selection: manual exclusions (17-10-2026)
+
+Excluded by editorial criterion of the author, no reason recorded: Dr. Dre, Snoop Dogg, 50 Cent, Kanye West.
+Excluded for data reasons: Elton John, whose catalogue keeps repeated titles across years after cleaning.
+These exclusions are manual and were not produced by the eligibility rule.
+
+## Demo artist selection: data-quality criterion (17-10-2026)
+
+Decision: a candidate is kept if, in works_checkpoint.parquet:
+- it has works in at least 4 distinct years within 2018 to 2022;
+- it has at least 3 rows in the WHAT table for 2018 to 2023, from build_what_table(build_artist_years(works));
+- it appears in results/holdout_what/row_scores.csv.
+The criterion uses only data coverage, never model output or labels.
+Candidates that did not pass: Daft Punk, Adele, boygenius, Vampire Weekend, Brandi Carlile, Peso Pluma, Romeo Santos, Kendrick Lamar, Bon Iver, Arctic Monkeys, Justin Bieber, Beyonce, Usher, A$AP Rocky, Kacey Musgraves.
+Limitation: the criterion favours prolific artists.
+
+## Demo artist selection: final list (17-10-2026)
+
+Fixed before any score is viewed. 40 artists, Discogs ids in brackets:
+Pop: Taylor Swift (1124645), Billie Eilish (5590213), Lady Gaga (1103159), Olivia Rodrigo (7592689), Sabrina Carpenter (4378284), Dua Lipa (4357593), Harry Styles (2508414), Ed Sheeran (2184482).
+Hip hop: Drake (151199), Eminem (38661), Post Malone (4016434), Lil Nas X (7080995), Tyler, the Creator (1967268), Doja Cat (3970719), Cardi B (5153025).
+R&B / soul: H.E.R. (5495084), Lizzo (1097928), SZA (3272791), The Weeknd (2171152), Mary J. Blige (4778), Pharrell Williams (90037).
+Latino: Bad Bunny (5894905), Karol G (4452209), Rauw Alejandro (7153566), Farruko (2929902), Anuel AA (5794658), Ozuna (5395551), Shakira (5530), Rosalia (5648334).
+Rock / alternative: Coldplay (29735), Lana Del Rey (2445772), Imagine Dragons (2727700).
+Country: Morgan Wallen (6628105), Luke Combs (5940000).
+Electronic: Charli XCX (1345479), Kaytranada (3160392), Calvin Harris (222578).
+K-pop: BTS (5034422), BLACKPINK (5210284), Stray Kids (6838809).
+The criterion above was re-checked after collapsing same-title duplicates (definitions A and B of the duplicate audit of 17-10-2026). All 40 pass in the three states.
+Calvin Harris, BLACKPINK and Stray Kids are popularity filler chosen by the author and were not checked against a source.
+
+## Duplicate audit: sensitivity analysis (17-10-2026)
+
+Context: same-artist, same-title works in different years survive cleaning because the fuzzy filter skips pairs with a score of 100 and the exact dedup requires the same year.
+
+Decision: a sensitivity analysis on the development partition only, with duplicates collapsed to the earliest work under definition A (same artist_id and normalized title). The result is written to new files with exclusive mode. The rule is fixed before running: the effect is material if the paired change falls outside its 95% confidence interval, or if it changes the choice between the stage 0 and final configurations.
+The holdout is not re-evaluated. If a correction is adopted later, the frozen result and the corrected result are both reported, with no choice of the better one.
+Definition B is not used: stripping "mono" and "stereo" as whole words changes titles such as "Stereo Love".
+
+## Demo: re-recordings (17-10-2026)
+
+Decision: titles containing "taylor's version" are flagged as re-recordings in the demo and are not collapsed in the artist timeline. The model and the metrics do not change.
+Limitation: only re-recordings that carry the marker in the title are flagged.
+
+## Demo: WHEN regeneration control (17-10-2026)
+
+Decision: the new script writes with exclusive mode, fits the final WHEN configuration with training up to 2015 and scores only the demo artists. It first reproduces the saved holdout aggregate PR-AUC of 0.7851 to 4 decimals and stops if it does not match. No alternative tolerance is defined.
+
+## Duplicate audit: sensitivity result (17-10-2026)
+
+Script: scripts/run_duplicate_sensitivity.py. Outputs: results/duplicate_sensitivity/results.csv and verdicts.csv.
+Reproduction check: all 30 stored development per-fold PR-AUC values were reproduced on the original data to 4 decimals before the batch.
+Collapse (definition A): 78,300 clusters, 90,076 works removed out of 5,949,217. 11,117 clusters include a work dated 2018 or later. 1,299 titles normalize to an empty string, which groups all such works of one artist, so the removal count is slightly overstated.
+Primary rule: not material for WHEN next_1y, WHEN next_2y and WHAT. The collapsed pooled PR-AUC stays inside the 95% interval of the original in every case, and the preferred configuration by mean development PR-AUC is the same on both versions (the candidate m_lr_0.012 for WHAT).
+Secondary reading: the paired PR-AUC difference excludes zero in all cases, with magnitudes between 0.0009 and 0.0025 (down for WHEN, up for WHAT). Both readings are reported and neither was chosen after the fact.
+Gain over baseline: pooled paired differences between +0.0002 and +0.0014 (the interval for the WHAT candidate includes zero), because collapsing lowers the positive rate for WHEN.
+The holdout was not re-evaluated and no correction is adopted. The frozen results stand. The candidate m_lr_0.012 stays not adopted: it fails the unpaired adoption rule and the holdout was already viewed with stage 0. Limitations: definition A treats same-title works as duplicates, so it is an upper bound of true duplicates. The style forecast series were not audited.
+
 ## PENDING
 - Demo artist selection for the Streamlit Time Machine app: once snapshots_df exists, mine candidate artists algorithmically rather than picking by hand only: artists with the largest year_gap between consecutive works (hiatus/comeback candidates, good for demoing WHEN) and artists with the largest style-set discontinuity between consecutive works (genre-pivot candidates, good for demoing WHAT). Cross-reference with recognizable/well-known artists where possible, since a judge/recruiter audience responds better to a name they know than an equally-clean but obscure example.
 - Album covers and song previews for the artist timeline in the demo: not available from the bulk XML dump (no image/video fields there). Available via the separate Discogs REST API, per release: images[].uri for cover art, videos[].uri for (usually YouTube) links Discogs itself associates with that release. Only needed for the small number of hand/algorithmically-selected demo artists, not the full dataset, so the API's rate limit (60 req/min unauthenticated, 240/min with a free token) is not a constraint. Embed the YouTube link via iframe in Streamlit (legal, no audio downloading) rather than hosting audio files directly. Not implemented yet.
