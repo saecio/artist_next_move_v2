@@ -1,0 +1,1117 @@
+work_id,artist_id,title,year,genres,styles,is_rerecording,works_so_far_this_year,works_this_year,is_representative
+3858646,4778,Stairway To Heaven / Whole Lotta Love,2010,"[""Funk / Soul""]","[""Rhythm & Blues""]",False,4,4,True
+413762,4778,My Life II...The Journey Continues (Act 1),2011,"[""Funk / Soul""]","[""Contemporary R&B""]",False,6,6,True
+10012235347,4778,Why?,2012,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,2,2,True
+693348,4778,A Mary Christmas,2013,"[""Jazz"", ""Funk / Soul""]","[""Holiday""]",False,4,4,True
+10006215570,4778,Whole Damn Year,2014,"[""Pop""]",[],False,6,6,True
+10008717639,4778,I Love You (Remix) / Be Happy,2016,"[""Hip Hop""]","[""Contemporary R&B""]",False,6,6,True
+10010635678,4778,Love Yourself (Remix),2017,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Neo Soul"", ""Pop Rap""]",False,3,3,True
+10012266640,4778,Only Love,2018,"[""Pop""]",[],False,1,2,False
+10013128813,4778,Stronger Than I Ever Was,2018,"[""Pop"", ""Stage & Screen""]","[""Soundtrack""]",False,2,2,True
+1547287,4778,Thriving,2019,"[""Hip Hop""]","[""RnB/Swing""]",False,1,2,False
+10013980208,4778,Know,2019,"[""Hip Hop"", ""Funk / Soul""]","[""Soul""]",False,2,2,True
+10034784174,4778,Last Christmas (Amazon Original),2020,"[""Funk / Soul""]","[""Contemporary R&B""]",False,1,1,True
+10035358382,4778,Good Morning Gorgeous,2021,"[""Funk / Soul""]","[""Contemporary R&B""]",False,2,2,True
+10035358391,4778,Amazing,2021,"[""Funk / Soul""]","[""Contemporary R&B""]",False,1,2,False
+2511931,4778,Good Morning Gorgeous,2022,"[""Funk / Soul""]","[""Soul"", ""Contemporary R&B""]",False,2,2,True
+10035358397,4778,Rent Money,2022,"[""Funk / Soul""]","[""Contemporary R&B""]",False,1,2,False
+3633156,4778,Still Believe In Love,2023,"[""Hip Hop"", ""Funk / Soul""]","[""Soul""]",False,1,1,True
+3658170,4778,Gratitude,2024,"[""Funk / Soul""]","[""Contemporary R&B""]",False,2,3,False
+10031606684,4778,Breathing,2024,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,1,3,False
+10032353227,4778,Christmas Without You,2024,"[""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Holiday""]",False,3,3,True
+10036961797,4778,Want Love,2026,"[""Funk / Soul""]","[""Contemporary R&B""]",False,2,2,True
+10037344339,4778,More Than A Lover,2026,"[""Funk / Soul""]","[""Contemporary R&B""]",False,1,2,False
+257215,5530,Waka Waka (This Time For Africa),2010,"[""Rock"", ""Pop"", ""Folk, World, & Country""]","[""African""]",False,5,5,True
+10003634775,5530,Sale El Sol,2011,"[""Rock"", ""Latin"", ""Pop""]",[],False,3,3,True
+576985,5530,Addicted To You,2012,"[""Latin"", ""Pop""]","[""Latin""]",False,2,2,True
+763898,5530,Empire,2014,"[""Rock"", ""Pop""]","[""Pop Rock""]",False,4,4,True
+1110299,5530,Chantaje,2016,"[""Latin"", ""Pop""]",[],False,2,2,True
+10013727209,5530,Perro Fiel,2017,"[""Latin"", ""Pop""]",[],False,3,3,True
+2723114,5530,Clandestino,2018,"[""Latin"", ""Pop""]",[],False,1,1,True
+3168972,5530,Shakira In Concert: El Dorado World Tour,2019,"[""Electronic"", ""Rock"", ""Latin"", ""Pop""]","[""Pop Rock"", ""Reggaeton"", ""Synth-pop"", ""Reggae"", ""House"", ""Electro""]",False,1,1,True
+10014680057,5530,Me Gusta,2020,"[""Latin""]","[""Reggaeton""]",False,1,1,True
+2316757,5530,Don't Wait Up,2021,"[""Electronic""]","[""Dance-pop""]",False,1,1,True
+2675945,5530,Te Felicito,2022,"[""Latin"", ""Pop""]","[""Merengue""]",False,2,2,True
+2943595,5530,Monotonía,2022,"[""Electronic"", ""Latin"", ""Pop""]","[""Bachata""]",False,1,2,False
+3098337,5530,Acróstico,2023,"[""Latin""]","[""Latin Pop""]",False,2,3,False
+3153507,5530,Copa Vacía,2023,"[""Latin""]","[""Reggaeton""]",False,1,3,False
+3256336,5530,El Jefe,2023,"[""Latin"", ""Pop""]",[],False,3,3,True
+3433214,5530,Las Mujeres Ya No Lloran,2024,"[""Electronic"", ""Latin"", ""Pop""]","[""Bachata"", ""Reggaeton"", ""Latin Pop""]",False,2,4,False
+3611708,5530,Soltera,2024,"[""Latin""]","[""Latin Pop""]",False,3,4,False
+10030668836,5530,Puntería,2024,"[""Pop""]","[""Exotica""]",False,1,4,False
+10030668866,5530,(Entre Paréntesis),2024,"[""Latin"", ""Folk, World, & Country""]","[""Merengue"", ""Cumbia""]",False,4,4,True
+4122973,5530,Zoo,2025,"[""Pop"", ""Stage & Screen""]","[""Soundtrack""]",False,1,1,True
+4255380,5530,Dai Dai,2026,"[""Latin"", ""Pop""]",[],False,1,2,False
+10037613331,5530,Algo Tú,2026,"[""Latin"", ""Pop""]","[""Dancehall""]",False,2,2,True
+330582,29735,Christmas Lights,2010,"[""Rock"", ""Pop""]","[""Indie Rock"", ""Holiday""]",False,1,1,True
+1215122,29735,iTunes Festival: London 2011 EP,2011,"[""Rock"", ""Pop""]","[""Alternative Rock"", ""Pop Rock""]",False,7,7,True
+10031900546,29735,Princess Of China /Paradise,2012,"[""Rock""]","[""Alternative Rock"", ""Pop Rock"", ""Art Rock"", ""Acoustic""]",False,6,6,True
+601976,29735,Atlas,2013,"[""Rock"", ""Pop""]","[""Pop Rock"", ""Alternative Rock""]",False,1,1,True
+678897,29735,Midnight,2014,"[""Rock"", ""Pop""]",[],False,6,6,True
+922111,29735,A Head Full Of Dreams,2015,"[""Electronic"", ""Rock"", ""Funk / Soul"", ""Pop""]","[""Alternative Rock"", ""Funk"", ""Contemporary R&B""]",False,3,3,True
+1071225,29735,A Head Full Of Dreams,2016,"[""Electronic"", ""Pop""]","[""Synth-pop""]",False,3,3,True
+1212426,29735,A L I E N S,2017,"[""Rock"", ""Pop""]","[""Alternative Rock""]",False,5,5,True
+1467398,29735,Love In Tokyo,2018,"[""Rock"", ""Pop""]","[""Alternative Rock"", ""Europop""]",False,1,1,True
+1626386,29735,Arabesque / Orphans,2019,"[""Pop""]","[""Indie Pop""]",False,1,4,False
+1638967,29735,Everyday Life,2019,"[""Rock"", ""Pop""]","[""Alternative Rock"", ""Pop Rock""]",False,3,4,False
+1684928,29735,Daddy,2019,"[""Rock"", ""Pop""]",[],False,2,4,False
+1684929,29735,Champion Of The World,2019,"[""Rock"", ""Pop""]",[],False,4,4,True
+1888815,29735,Flags,2020,"[""Rock"", ""Pop""]","[""Alternative Rock"", ""Pop Rock""]",False,1,2,False
+10014866724,29735,Reimagined,2020,"[""Rock""]","[""Acoustic""]",False,2,2,True
+2114275,29735,Higher Power,2021,"[""Electronic"", ""Pop""]","[""Synth-pop"", ""Synthwave""]",False,2,5,False
+2225857,29735,Coloratura,2021,"[""Rock""]","[""Space Rock"", ""Alternative Rock"", ""Prog Rock""]",False,3,5,False
+2311492,29735,My Universe,2021,"[""Electronic"", ""Pop""]","[""Synth-pop""]",False,5,5,True
+2337988,29735,Music Of The Spheres,2021,"[""Rock"", ""Pop""]","[""Pop Rock""]",False,1,5,False
+10022368511,29735,Infinity Station Sessions - EP,2021,"[""Rock"", ""Funk / Soul"", ""Pop""]","[""Alternative Rock"", ""Gospel"", ""Glam""]",False,4,5,False
+2547752,29735,Let Somebody Go,2022,"[""Pop""]",[],False,1,1,True
+10028454332,29735,Earth / Percent x Earth Day,2023,"[""Rock"", ""Funk / Soul"", ""Pop""]",[],False,1,1,True
+3521332,29735,Feelslikeimfallinginlove,2024,"[""Pop""]",[],False,2,5,False
+3578974,29735,We Pray,2024,"[""Hip Hop"", ""Rock"", ""Funk / Soul"", ""Pop""]","[""Pop Rock""]",False,5,5,True
+3614440,29735,Moon Music,2024,"[""Electronic"", ""Rock"", ""Pop""]","[""Pop Rock"", ""Synth-pop"", ""Alt-Pop""]",False,3,5,False
+3642264,29735,All My Love,2024,"[""Rock""]","[""Alternative Rock""]",False,1,5,False
+10032683284,29735,All My Love / The Karate Kid,2024,"[""Rock"", ""Pop""]","[""Alternative Rock"", ""Pop Rock""]",False,4,5,False
+252158,38661,Not Afraid,2010,"[""Hip Hop""]","[""Pop Rap""]",False,6,6,True
+10020549593,38661,Bad Guy,2013,"[""Hip Hop""]",[],False,6,6,True
+788767,38661,Guts Over Fear,2014,"[""Hip Hop""]",[],False,4,4,True
+1169808,38661,Phenomenal,2015,"[""Hip Hop""]",[],False,1,1,True
+2429035,38661,Campaign Speech,2016,"[""Hip Hop""]",[],False,2,2,True
+1266380,38661,Walk On Water,2017,"[""Hip Hop""]",[],False,2,2,True
+1311497,38661,River,2018,"[""Hip Hop""]","[""Pop Rap""]",False,5,7,False
+1389256,38661,Nowhere Fast (Extended Version),2018,"[""Hip Hop""]",[],False,2,7,False
+1416558,38661,Kamikaze,2018,"[""Hip Hop""]",[],False,3,7,False
+1588723,38661,Fall,2018,"[""Hip Hop""]",[],False,4,7,False
+1620714,38661,Killshot,2018,"[""Hip Hop""]",[],False,7,7,True
+4185180,38661,Venom (Music From The Motion Picture),2018,"[""Hip Hop""]",[],False,1,7,False
+10011391541,38661,Chloraseptic (Remix),2018,"[""Hip Hop""]",[],False,6,7,False
+10014420894,38661,Just Don't Give A Fuck / Still Don't Give A Fuck,2019,"[""Hip Hop""]","[""Hardcore Hip-Hop"", ""Horrorcore""]",False,1,1,True
+1669732,38661,Music To Be Murdered By,2020,"[""Hip Hop""]","[""Hardcore Hip-Hop"", ""Horrorcore"", ""Pop Rap""]",False,1,2,False
+10016776162,38661,Darkness,2020,"[""Hip Hop""]",[],False,2,2,True
+2429041,38661,Killer (Remix),2021,"[""Hip Hop""]","[""Pop Rap"", ""Trap""]",False,1,1,True
+2701772,38661,From The D 2 The LBC,2022,"[""Hip Hop""]","[""Hardcore Hip-Hop"", ""Gangsta""]",False,1,2,False
+3862972,38661,The King & I (From The Original Motion Picture Soundtrack Elvis),2022,"[""Hip Hop"", ""Rock"", ""Stage & Screen""]","[""Pop Rap"", ""Rock & Roll"", ""Soundtrack""]",False,2,2,True
+10029175193,38661,The Monster / Bad Guy,2023,"[""Hip Hop""]",[],False,1,2,False
+10029209222,38661,The Ringer,2023,"[""Hip Hop""]","[""Hardcore Hip-Hop""]",False,2,2,True
+3502092,38661,Houdini,2024,"[""Hip Hop""]","[""Pop Rap"", ""Comedy""]",False,3,8,False
+3540523,38661,The Death Of Slim Shady (Coup De Grâce),2024,"[""Hip Hop"", ""Pop""]","[""Conscious"", ""Hardcore Hip-Hop""]",False,2,8,False
+3587860,38661,Slim Shady 45,2024,"[""Hip Hop""]","[""Hardcore Hip-Hop""]",False,4,8,False
+10031119029,38661,Tobey,2024,"[""Hip Hop""]","[""Trap""]",False,7,8,False
+10032196468,38661,3 A.M. / My Mom,2024,"[""Hip Hop""]","[""Hardcore Hip-Hop""]",False,5,8,False
+10033214635,38661,Houdini (Kay Stafford Club Mix),2024,"[""Electronic"", ""Hip Hop""]","[""Pop Rap"", ""House""]",False,1,8,False
+10034063963,38661,Fuel,2024,"[""Hip Hop""]",[],False,6,8,False
+10034090573,38661,Somebody Save Me,2024,"[""Hip Hop""]","[""Pop Rap""]",False,8,8,True
+1808522,38661,Godzilla,2025,"[""Hip Hop""]","[""Pop Rap"", ""Hardcore Hip-Hop""]",False,2,3,False
+4100641,38661,Stans (The Official Soundtrack),2025,"[""Hip Hop""]","[""Pop Rap"", ""Hardcore Hip-Hop"", ""Horrorcore"", ""Conscious""]",False,1,3,False
+10037709175,38661,Goo Goo Gaa Gaa I Want Spibidi ,2025,"[""Hip Hop"", ""Folk, World, & Country""]","[""Hardcore Hip-Hop""]",False,3,3,True
+10038204634,38661,My Dad's Gone Crazy / Mockingbird,2026,"[""Hip Hop""]","[""Pop Rap"", ""Conscious""]",False,1,1,True
+10004624855,90037,Despicable Me (Original Score),2010,"[""Stage & Screen""]","[""Soundtrack"", ""Score""]",False,2,2,True
+642963,90037,Happy,2013,"[""Funk / Soul""]","[""Soul""]",False,1,1,True
+660750,90037,G I R L,2014,"[""Electronic"", ""Funk / Soul""]","[""Contemporary R&B"", ""Neo Soul"", ""Soul""]",False,5,5,True
+865176,90037,Freedom,2015,"[""Hip Hop"", ""Pop""]","[""RnB/Swing""]",False,1,1,True
+10037323591,90037,There's Something Special,2016,"[""Stage & Screen""]","[""Soundtrack""]",False,3,3,True
+1366501,90037,Sangria Wine,2018,"[""Pop""]",[],False,1,1,True
+2104216,90037,Letter To My Godfather (From The Black Godfather),2019,"[""Hip Hop"", ""Funk / Soul"", ""Stage & Screen""]","[""RnB/Swing"", ""Soundtrack""]",False,1,1,True
+1832841,90037,Entrepreneur,2020,"[""Hip Hop""]",[],False,1,1,True
+2887675,90037,Down In Atlanta,2022,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""Pop Rap"", ""Synth-pop""]",False,2,3,False
+10022911770,90037,Just A Cloud Away,2022,"[""Pop""]",[],False,3,3,True
+10023667401,90037,Cash In Cash Out,2022,"[""Hip Hop""]","[""Hardcore Hip-Hop""]",False,1,3,False
+3342592,90037,Airplane Tickets,2023,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,1,1,True
+3729225,90037,Piece By Piece (Music From The Motion Picture),2024,"[""Pop""]",[],False,2,3,False
+3981655,90037,Doctor (Work It Out),2024,"[""Pop""]",[],False,1,3,False
+10031728182,90037,Piece By Piece,2024,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Pop Rap"", ""Funk"", ""Synth-pop""]",False,3,3,True
+289008,151199,Thank Me Later,2010,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Pop Rap""]",False,7,7,True
+394138,151199,Take Care,2011,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Pop Rap""]",False,5,5,True
+10007714102,151199,The Motto / Make Me Proud,2012,"[""Hip Hop""]",[],False,4,4,True
+1149407,151199,Started From The Bottom,2013,"[""Hip Hop""]","[""Pop Rap""]",False,5,5,True
+1328287,151199,How Bout Now (GrandBuda & Nick Wisdom Remix),2014,"[""Electronic"", ""Hip Hop""]","[""Breakbeat"", ""Trap""]",False,3,3,True
+1308092,151199,10 Bands (Chris Havok Remix),2015,"[""Hip Hop""]",[],False,8,8,True
+4200441,151199,Too Good,2016,"[""Hip Hop"", ""Pop""]",[],False,10,10,True
+1152182,151199,More Life: A Playlist By October Firm,2017,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Dancehall"", ""Pop Rap""]",False,2,2,True
+1332397,151199,Scary Hours,2018,"[""Hip Hop""]","[""Pop Rap""]",False,2,5,False
+1381998,151199,Nice For What,2018,"[""Hip Hop""]","[""Pop Rap""]",False,3,5,False
+1387765,151199,Scorpion,2018,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Pop Rap""]",False,4,5,False
+10013059210,151199,I'm Upset,2018,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,5,5,True
+10032987148,151199,Don't Matter To Me,2018,"[""Funk / Soul""]","[""Contemporary R&B""]",False,1,5,False
+2020084,151199,The Best In The World Pack,2019,"[""Hip Hop""]",[],False,1,1,True
+1710606,151199,Toosie Slide,2020,"[""Hip Hop""]","[""Trap""]",False,3,3,True
+1744308,151199,Dark Lane Demo Tapes,2020,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Trap"", ""Contemporary R&B"", ""Pop Rap""]",False,2,3,False
+2356867,151199,Laugh Now Cry Later,2020,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,1,3,False
+2020066,151199,Scary Hours 2,2021,"[""Hip Hop""]","[""Trap"", ""Pop Rap"", ""Contemporary R&B""]",False,1,2,False
+2283283,151199,Certified Lover Boy,2021,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Pop Rap""]",False,2,2,True
+2677319,151199,"Honestly, Nevermind",2022,"[""Electronic"", ""Hip Hop""]","[""House"", ""Deep House"", ""Pop Rap""]",False,2,2,True
+3022082,151199,Her Loss,2022,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,1,2,False
+3053549,151199,Search & Rescue,2023,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,3,4,False
+3310897,151199,For All The Dogs,2023,"[""Hip Hop"", ""Funk / Soul""]","[""Trap"", ""Pop Rap"", ""Contemporary R&B""]",False,4,4,True
+10027797925,151199,On The Radar Freestyle,2023,"[""Hip Hop""]","[""Drill""]",False,2,4,False
+10028285546,151199,Slime You Out,2023,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,1,4,False
+3601520,151199,100 Gigs,2024,"[""Hip Hop"", ""Funk / Soul""]","[""Pop Rap"", ""Trap"", ""Contemporary R&B"", ""African""]",False,3,4,False
+3862057,151199,Push Ups,2024,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,2,4,False
+3862066,151199,Family Matters,2024,"[""Hip Hop""]","[""Trap"", ""Drill"", ""Hardcore Hip-Hop"", ""Pop Rap""]",False,1,4,False
+10031627756,151199,No Face,2024,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,4,4,True
+3899596,151199,What Did I Miss?,2025,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,2,4,False
+3918730,151199,Which One,2025,"[""Hip Hop""]","[""Dancehall"", ""Pop Rap""]",False,1,4,False
+3966656,151199,Dog House,2025,"[""Hip Hop""]","[""Trap""]",False,4,4,True
+10033213645,151199,Gimme A Hug,2025,"[""Hip Hop""]","[""Pop Rap""]",False,3,4,False
+4226013,151199,Iceman,2026,"[""Hip Hop""]","[""Pop Rap"", ""Trap""]",False,1,3,False
+10037344318,151199,Maid Of Honour,2026,"[""Hip Hop""]",[],False,3,3,True
+10037344360,151199,Habibti,2026,"[""Hip Hop""]","[""RnB/Swing"", ""Pop Rap""]",False,2,3,False
+781117,222578,L.E.D. Festival Presents Calvin Harris,2010,"[""Electronic""]","[""House"", ""Electro""]",False,2,2,True
+343501,222578,Bounce,2011,"[""Electronic""]","[""Electro House"", ""Chiptune""]",False,3,3,True
+486865,222578,18 Months,2012,"[""Electronic""]","[""House"", ""Synth-pop"", ""Electro"", ""Progressive House""]",False,5,5,True
+554426,222578,I Need Your Love,2013,"[""Electronic""]","[""Electro"", ""EBM"", ""House""]",False,3,3,True
+845244,222578,Burnin',2014,"[""Electronic""]","[""Electro House""]",False,8,8,True
+10014241339,222578,How Deep Is Your Love / Pay No Mind,2015,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""House""]",False,3,3,True
+3567302,222578,T In The Park Festival,2016,"[""Electronic""]","[""Dance-pop""]",False,5,5,True
+1204100,222578,Funk Wav Bounces Vol. 1,2017,"[""Electronic"", ""Funk / Soul""]","[""Electro"", ""Dance-pop"", ""Funk""]",False,6,6,True
+1344397,222578,One Kiss,2018,"[""Electronic""]","[""House""]",False,3,3,True
+1435966,222578,Promises,2018,"[""Electronic"", ""Pop""]","[""House""]",False,1,3,False
+10011725440,222578,Nuh Ready Nuh Ready,2018,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""House"", ""Contemporary R&B""]",False,2,3,False
+1487285,222578, Giant,2019,"[""Electronic""]","[""House"", ""Electro""]",False,1,1,True
+1798028,222578,Over Now,2020,"[""Funk / Soul""]","[""Contemporary R&B""]",False,1,1,True
+2210413,222578,By Your Side,2021,"[""Electronic"", ""Pop""]","[""House""]",False,1,1,True
+2737550,222578,"Funk Wav Bounces, Vol. 2",2022,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Dance-pop"", ""Funk"", ""Nu-Disco"", ""Pop Rap"", ""Contemporary R&B"", ""Boogie""]",False,4,5,False
+2884489,222578,Stay With Me,2022,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Nu-Disco""]",False,2,5,False
+2963254,222578,Potion,2022,"[""Electronic""]","[""Dance-pop""]",False,1,5,False
+10023906252,222578,New Money,2022,"[""Hip Hop"", ""Funk / Soul""]","[""Pop Rap"", ""Funk""]",False,3,5,False
+10024032639,222578,New To You,2022,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Pop Rap"", ""Boogie"", ""Funk""]",False,5,5,True
+3034676,222578,Miracle,2023,"[""Electronic"", ""Pop""]","[""Eurodance"", ""Trance""]",False,2,3,False
+3183159,222578,Desire,2023,"[""Electronic"", ""Pop""]","[""Trance"", ""Dance-pop"", ""House""]",False,3,3,True
+10036282334,222578,Miracle On Carte Blanche (Nitrous Oxide Back To 2005 Mix),2023,"[""Electronic""]","[""Trance""]",False,1,3,False
+3495696,222578,Lovers In A Past Life,2024,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""House""]",False,2,2,True
+3558259,222578,Free,2024,"[""Electronic"", ""Pop""]","[""Eurodance"", ""Trance""]",False,1,2,False
+3964979,222578,Smoke The Pain Away,2025,"[""Electronic""]","[""Dance-pop""]",False,1,2,False
+3965945,222578,Ocean,2025,"[""Electronic""]","[""Dance-pop""]",False,2,2,True
+4129681,222578,Release The Pressure,2026,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""House""]",False,3,3,True
+4199622,222578,Blessings,2026,"[""Electronic""]","[""House""]",False,1,3,False
+10037292310,222578,Satisfy,2026,"[""Electronic"", ""Pop""]","[""House""]",False,2,3,False
+1805510,1097928,Due Process & Product,2012,"[""Hip Hop""]",[],False,1,1,True
+761932,1097928,Lizzobangers,2013,"[""Hip Hop""]","[""Pop Rap""]",False,1,1,True
+10005610973,1097928,Paris / Faded,2014,"[""Hip Hop""]",[],False,5,5,True
+10007727876,1097928,Ain't I,2015,"[""Hip Hop""]","[""Pop Rap""]",False,2,2,True
+10015060325,1097928,Daytrotter Session,2016,"[""Hip Hop""]",[],False,3,3,True
+1541781,1097928,Boys,2018,"[""Hip Hop"", ""Funk / Soul""]",[],False,2,2,True
+10014971138,1097928,Fitness,2018,"[""Hip Hop""]",[],False,1,2,False
+1489838,1097928,Juice,2019,"[""Funk / Soul"", ""Pop""]",[],False,3,4,False
+1545412,1097928,Cuz I Love You,2019,"[""Hip Hop"", ""Funk / Soul""]","[""Neo Soul"", ""Pop Rap"", ""Funk"", ""Trap"", ""Contemporary R&B""]",False,2,4,False
+1629108,1097928,Truth Hurts,2019,"[""Funk / Soul"", ""Pop""]",[],False,4,4,True
+10013754506,1097928,Soulmate,2019,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]",[],False,1,4,False
+2262793,1097928,Rumors,2021,"[""Hip Hop"", ""Pop""]",[],False,1,1,True
+2707919,1097928,Special,2022,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Pop Rap"", ""Disco"", ""Funk"", ""Soul"", ""Trap""]",False,1,4,False
+2769173,1097928,About Damn Time,2022,"[""Pop""]","[""Vocal""]",False,3,4,False
+10023623595,1097928,Grrrls,2022,"[""Pop""]",[],False,2,4,False
+10024895946,1097928,2 Be Loved (Am I Ready) (PNAU Remix),2022,"[""Electronic"", ""Funk / Soul""]","[""Disco""]",False,4,4,True
+3966959,1097928,Pink (From Barbie The Album),2023,"[""Pop""]",[],False,2,2,True
+10026047501,1097928,Special ,2023,"[""Pop""]",[],False,1,2,False
+3786170,1097928,Love In Real Life,2025,"[""Pop""]",[],False,3,3,True
+3923269,1097928,Still Bad,2025,"[""Pop""]",[],False,1,3,False
+3966092,1097928,My Face Hurts From Smiling,2025,"[""Hip Hop""]","[""Trap""]",False,2,3,False
+4174249,1097928,Don't Make Me Love U,2026,"[""Pop""]",[],False,1,3,False
+4242579,1097928,Hoes (From Scary Movie),2026,"[""Hip Hop"", ""Pop"", ""Stage & Screen""]","[""Soundtrack"", ""Pop Rap""]",False,3,3,True
+4247094,1097928,Bitch,2026,"[""Electronic"", ""Hip Hop"", ""Rock"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Pop Rock"", ""Synth-pop""]",False,2,3,False
+234339,1103159,Telephone,2010,"[""Electronic"", ""Pop""]","[""Electro"", ""Dance-pop""]",False,6,6,True
+1507787,1103159,On The Edge,2011,"[""Pop""]",[],False,14,14,True
+10012263014,1103159,Fame,2012,"[""Electronic"", ""Rock"", ""Pop""]","[""Synth-pop"", ""Dance-pop"", ""Glam"", ""Rock & Roll""]",False,1,1,True
+613067,1103159,Venus,2013,"[""Electronic"", ""Pop""]","[""Electro""]",False,5,5,True
+681605,1103159,G.U.Y.,2014,"[""Electronic"", ""Pop""]","[""Electro""]",False,3,3,True
+934297,1103159,Til It Happens To You,2015,"[""Pop""]","[""Ballad"", ""Europop""]",False,1,1,True
+1084286,1103159,Million Reasons,2016,"[""Pop""]","[""Ballad""]",False,4,4,True
+1306868,1103159,John Wayne,2017,"[""Pop""]",[],False,2,2,True
+1309185,1103159,Joanne (Where Do You Think You're Goin'?),2018,"[""Pop""]","[""Ballad""]",False,4,5,False
+1434179,1103159,Shallow,2018,"[""Pop"", ""Folk, World, & Country""]","[""Ballad"", ""Country Rock""]",False,1,5,False
+1659166,1103159,Always Remember Us This Way,2018,"[""Pop"", ""Stage & Screen""]","[""Soundtrack""]",False,5,5,True
+2829596,1103159,Your Song,2018,"[""Rock"", ""Pop""]","[""Pop Rock""]",False,3,5,False
+3799812,1103159,Gaga: Five Foot Two,2018,"[""Pop""]","[""Concert Film""]",False,2,5,False
+1580764,1103159,I'll Never Love Again,2019,"[""Pop"", ""Stage & Screen""]","[""Ballad"", ""Vocal""]",False,1,2,False
+10037766100,1103159,A Star Is Born Encore,2019,"[""Stage & Screen""]","[""Soundtrack""]",False,2,2,True
+1691089,1103159,Stupid Love,2020,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Electro""]",False,5,6,False
+1742623,1103159,Rain On Me,2020,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""House""]",False,1,6,False
+1746431,1103159,Chromatica,2020,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop"", ""House"", ""Nu-Disco"", ""Electro""]",False,2,6,False
+1754906,1103159,Sour Candy,2020,"[""Electronic"", ""Pop""]","[""Electro"", ""Synth-pop"", ""Dance-pop""]",False,4,6,False
+1811816,1103159,Free Woman (Honey Dijon Realness Remix),2020,"[""Electronic"", ""Pop""]","[""Electro House""]",False,3,6,False
+1871964,1103159,911 (WEISS Remix),2020,"[""Electronic"", ""Pop""]","[""House"", ""Tech House""]",False,6,6,True
+2287330,1103159,Dawn Of Chromatica,2021,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Electro"", ""House"", ""Tech House"", ""Trap"", ""Experimental"", ""Avantgarde"", ""Hardcore"", ""Hyperpop""]",False,1,1,True
+2623907,1103159,Hold My Hand,2022,"[""Rock"", ""Stage & Screen""]","[""Arena Rock"", ""Theme""]",False,1,1,True
+3041759,1103159,Bloody Mary,2023,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Electro""]",False,1,1,True
+3572399,1103159,Die With A Smile,2024,"[""Pop""]","[""Ballad""]",False,1,4,False
+3609260,1103159,Harlequin,2024,"[""Jazz"", ""Rock"", ""Pop"", ""Stage & Screen""]","[""Soundtrack"", ""Swing"", ""Jazz-Rock"", ""Pop Rock""]",False,3,4,False
+3636171,1103159,Disease,2024,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,2,4,False
+3689721,1103159,Santa Claus Is Coming To Town,2024,"[""Rock"", ""Pop""]","[""Holiday""]",False,4,4,True
+3742896,1103159,Abracadabra,2025,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop""]",False,3,3,True
+3772997,1103159,Mayhem,2025,"[""Electronic"", ""Rock"", ""Funk / Soul"", ""Pop""]","[""Dance-pop"", ""Electro"", ""Synth-pop"", ""Art Rock"", ""Nu-Disco"", ""Ballad""]",False,2,3,False
+4012717,1103159,The Dead Dance,2025,"[""Pop""]","[""Dance-pop""]",False,1,3,False
+4192938,1103159,Runway (Music From The Motion Picture The Devil Wears Prada 2),2026,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,1,1,True
+803762,1124645,CMT Crossroads,2010,"[""Rock"", ""Folk, World, & Country"", ""Stage & Screen""]","[""Country"", ""Hard Rock"", ""Country Rock"", ""Arena Rock"", ""Pop Rock"", ""Concert Film""]",False,8,8,True
+907021,1124645,Sparks Fly,2011,"[""Pop"", ""Folk, World, & Country""]","[""Country""]",False,7,7,True
+10026042755,1124645,Storytellers ,2012,"[""Pop""]",[],False,10,10,True
+875905,1124645,"Sweeter Than Fiction (From ""One Chance"")",2013,"[""Rock"", ""Pop""]","[""Pop Rock""]",False,4,4,True
+750386,1124645,1989,2014,"[""Pop""]","[""Dance-pop"", ""Synth-pop"", ""Ballad""]",False,4,4,True
+876371,1124645,Bad Blood,2015,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Pop Rap"", ""Contemporary R&B""]",False,8,8,True
+1291460,1124645,...Ready For It?,2017,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""Trap"", ""Pop Rap"", ""Contemporary R&B"", ""Electroclash""]",False,3,3,True
+1336119,1124645,Delicate (Seeb Remix),2018,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Tropical House""]",False,1,1,True
+1540102,1124645,Me!,2019,"[""Pop""]","[""Bubblegum"", ""Dance-pop""]",False,6,8,False
+1564292,1124645,You Need To Calm Down,2019,"[""Pop""]",[],False,2,8,False
+1585737,1124645,The Archer,2019,"[""Electronic"", ""Pop""]","[""Synth-pop"", ""Ambient""]",False,8,8,True
+1592159,1124645,Lover,2019,"[""Pop"", ""Folk, World, & Country""]","[""Folk"", ""Country"", ""Soul""]",False,5,8,False
+1647495,1124645,Christmas Tree Farm,2019,"[""Pop""]","[""Holiday""]",False,3,8,False
+1656533,1124645,Beautiful Ghosts,2019,"[""Pop"", ""Stage & Screen""]","[""Ballad"", ""Vocal"", ""Soundtrack""]",False,1,8,False
+3025514,1124645,All Of The Girls You Loved Before,2019,"[""Pop""]",[],False,7,8,False
+3569531,1124645,Reputation Stadium Tour,2019,"[""Pop"", ""Stage & Screen""]","[""Concert Film""]",False,4,8,False
+1676958,1124645,Only The Young,2020,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""Trap"", ""Vocal"", ""Electro""]",False,4,11,False
+1777815,1124645,Folklore,2020,"[""Rock"", ""Pop"", ""Folk, World, & Country""]","[""Vocal"", ""Ballad"", ""Folk""]",False,11,11,True
+1789291,1124645,Cardigan,2020,"[""Pop"", ""Folk, World, & Country""]",[],False,3,11,False
+1863903,1124645,Evermore,2020,"[""Rock"", ""Pop"", ""Folk, World, & Country""]","[""Folk""]",False,7,11,False
+1881534,1124645,Willow,2020,"[""Pop""]",[],False,6,11,False
+3064151,1124645,Folklore: The Long Pond Studio Sessions (From The Disney+ Special),2020,"[""Rock"", ""Pop"", ""Folk, World, & Country""]","[""Vocal"", ""Indie Pop"", ""Indie Rock"", ""Ballad"", ""Folk""]",False,2,11,False
+10016567914,1124645,Folklore: The Escapism Chapter,2020,"[""Pop""]",[],False,5,11,False
+10016567938,1124645,Folklore: The Sleepless Nights Chapter,2020,"[""Pop""]",[],False,1,11,False
+10016567947,1124645,Folklore: The Saltbox House Chapter,2020,"[""Pop""]",[],False,10,11,False
+10016567959,1124645,Betty,2020,"[""Pop"", ""Folk, World, & Country""]","[""Country"", ""Soft Rock""]",False,9,11,False
+10016567980,1124645,Folklore: The Yeah I Showed Up At Your Party Chapter,2020,"[""Pop""]",[],False,8,11,False
+2056777,1124645,Love Story (Taylor's Version),2021,"[""Pop"", ""Folk, World, & Country""]","[""Country"", ""Pop Rock""]",True,10,14,False
+2071156,1124645,Fearless (Taylor's Version),2021,"[""Pop"", ""Folk, World, & Country""]","[""Country"", ""Vocal""]",True,3,14,False
+2375884,1124645,Red (Taylor's Version),2021,"[""Electronic"", ""Pop"", ""Folk, World, & Country""]","[""Synth-pop"", ""Country""]",True,9,14,False
+2384629,1124645,All Too Well (Sad Girl Autumn Version) - Recorded At Long Pond Studios,2021,"[""Folk, World, & Country""]",[],False,12,14,False
+2413972,1124645,I Bet You Think About Me (Taylor's Version) (From The Vault),2021,"[""Folk, World, & Country""]","[""Country""]",True,7,14,False
+2600954,1124645,The Lakes,2021,"[""Pop"", ""Folk, World, & Country""]",[],False,11,14,False
+2830322,1124645,Wildest Dreams (Taylor's Version),2021,"[""Pop""]","[""Dream Pop""]",True,1,14,False
+10018123958,1124645,You All Over Me (Taylor's Version) (From The Vault),2021,"[""Pop"", ""Folk, World, & Country""]","[""Country""]",True,8,14,False
+10023954018,1124645,Mr. Perfectly Fine (Taylor's Version) (From The Vault),2021,"[""Folk, World, & Country""]","[""Country""]",True,6,14,False
+10026451674,1124645,If This Was A Movie (Taylor's Version) ,2021,"[""Folk, World, & Country""]",[],True,4,14,False
+10026451746,1124645,Eyes Open (Taylor's Version),2021,"[""Pop""]",[],True,14,14,True
+10026451773,1124645,Safe & Sound (Taylor's Version) ,2021,"[""Pop""]",[],True,5,14,False
+10026452346,1124645,The More Fearless (Taylor's Version) Chapter,2021,"[""Pop"", ""Folk, World, & Country""]","[""Country"", ""Folk""]",True,13,14,False
+10026452457,1124645,The More Red (Taylor's Version) Chapter,2021,"[""Pop"", ""Folk, World, & Country""]","[""Indie Pop"", ""Country""]",True,2,14,False
+2831294,1124645,This Love (Taylor's Version),2022,"[""Pop""]","[""Dream Pop"", ""Ballad""]",True,5,5,True
+2831825,1124645,Midnights,2022,"[""Electronic"", ""Pop""]","[""Synth-pop"", ""Vocal"", ""Downtempo"", ""Electro""]",False,4,5,False
+2857690,1124645,Carolina (From The Motion Picture “Where The Crawdads Sing”),2022,"[""Folk, World, & Country"", ""Stage & Screen""]","[""Folk"", ""Soundtrack""]",False,3,5,False
+2859019,1124645,Anti-Hero,2022,"[""Electronic"", ""Rock"", ""Pop""]","[""Synth-pop"", ""Pop Rock""]",False,2,5,False
+10021850324,1124645,Message In A Bottle (Taylor’s Version) (Fat Max G Remix),2022,"[""Electronic"", ""Pop""]","[""Dance-pop""]",True,1,5,False
+2988221,1124645,Lavender Haze,2023,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,3,8,False
+3159312,1124645,Speak Now (Taylor's Version),2023,"[""Pop"", ""Folk, World, & Country""]",[],True,8,8,True
+3287971,1124645,1989 (Taylor's Version),2023,"[""Electronic"", ""Pop""]","[""Synth-pop"", ""Ballad""]",True,2,8,False
+3346993,1124645,Cruel Summer,2023,"[""Electronic"", ""Pop""]","[""Synth-pop""]",False,6,8,False
+10026452034,1124645,The More Lover Chapter,2023,"[""Pop""]",[],False,7,8,False
+10027208206,1124645,Karma,2023,"[""Electronic"", ""Pop""]","[""Chillwave"", ""Synth-pop"", ""Bubblegum""]",False,4,8,False
+10028733548,1124645,"""Slut!"" (Taylor's Version) [From The Vault]",2023,"[""Pop""]","[""Synth-pop""]",True,1,8,False
+10029060254,1124645,You're Losing Me (From The Vault),2023,"[""Pop""]",[],False,5,8,False
+3461018,1124645,The Tortured Poets Department,2024,"[""Pop""]","[""Ballad"", ""Alt-Pop""]",False,1,3,False
+3493188,1124645,Fortnight,2024,"[""Electronic"", ""Pop""]","[""Synth-pop"", ""Indie Pop""]",False,3,3,True
+3644571,1124645,I Can Do It With A Broken Heart,2024,"[""Pop""]",[],False,2,3,False
+3990556,1124645,The Life Of A Showgirl,2025,"[""Electronic"", ""Pop""]","[""Synth-pop"", ""Ballad"", ""Downtempo"", ""Soft Rock"", ""Dance-pop""]",False,1,2,False
+4027618,1124645,The Fate Of Ophelia,2025,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop""]",False,2,2,True
+4124886,1124645,Opalite,2026,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop""]",False,2,3,False
+4198485,1124645,Elizabeth Taylor,2026,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop"", ""Acoustic""]",False,1,3,False
+4250067,1124645,"I Knew It, I Knew You",2026,"[""Pop"", ""Folk, World, & Country"", ""Stage & Screen""]","[""Country"", ""Soundtrack"", ""Vocal""]",False,3,3,True
+479285,1345479,Stay Away,2011,"[""Electronic""]","[""Synth-pop"", ""Electro""]",False,3,3,True
+10004496103,1345479,I'll Never Know,2012,"[""Electronic"", ""Pop""]","[""Synth-pop""]",False,7,7,True
+10004497975,1345479,True Romance: Album Minimix,2013,"[""Electronic"", ""Pop""]","[""Synth-pop""]",False,5,5,True
+1280421,1345479,Sucker,2014,"[""Pop""]",[],False,3,3,True
+771053,1345479,Sucker,2015,"[""Electronic"", ""Rock"", ""Pop""]","[""Europop"", ""Pop Rock"", ""Synth-pop""]",False,3,3,True
+1106406,1345479,After The Afterparty,2016,"[""Hip Hop"", ""Pop""]","[""Dance-pop""]",False,3,3,True
+1236750,1345479,Boys,2017,"[""Pop""]",[],False,4,4,True
+1374487,1345479,5 In The Morning,2018,"[""Hip Hop"", ""Pop""]",[],False,3,6,False
+1407548,1345479,Focus / No Angel,2018,"[""Pop""]",[],False,2,6,False
+1435551,1345479,1999,2018,"[""Pop""]",[],False,1,6,False
+1440493,1345479,Girls Night Out,2018,"[""Pop""]",[],False,5,6,False
+10012557466,1345479,Need Ur Luv (Japanese Wallpaper Remix) ,2018,"[""Electronic"", ""Pop""]","[""Indie Pop""]",False,4,6,False
+10012802960,1345479,Focus (Yaeji Remix),2018,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,6,6,True
+1579151,1345479,Gone,2019,"[""Pop""]",[],False,9,10,False
+1592074,1345479,Cross You Out,2019,"[""Pop""]",[],False,8,10,False
+1605251,1345479,Charli,2019,"[""Electronic"", ""Pop""]","[""Hyperpop"", ""Dance-pop"", ""Synth-pop""]",False,3,10,False
+1626132,1345479,Blame It On Your Love,2019,"[""Pop""]",[],False,10,10,True
+3241153,1345479,White Mercedes,2019,"[""Pop""]","[""Synth-pop""]",False,6,10,False
+3348832,1345479,Click (No Boys Remix),2019,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""Hyperpop"", ""Pop Rap""]",False,2,10,False
+10014065123,1345479,Warm,2019,"[""Pop""]",[],False,4,10,False
+10014107640,1345479,February 2017,2019,"[""Pop""]",[],False,5,10,False
+10014124962,1345479,2099,2019,"[""Pop""]",[],False,1,10,False
+10020494876,1345479,Porsche,2019,"[""Electronic"", ""Pop""]","[""Synth-pop""]",False,7,10,False
+1720469,1345479,Forever,2020,"[""Electronic"", ""Pop""]","[""Europop""]",False,4,4,True
+1724048,1345479,Claws,2020,"[""Electronic"", ""Pop""]","[""Europop""]",False,1,4,False
+1738844,1345479,How I'm Feeling Now,2020,"[""Electronic"", ""Pop""]","[""Indie Pop"", ""Dance-pop"", ""Vocal"", ""Hyperpop""]",False,2,4,False
+2285008,1345479,I Finally Understand,2020,"[""Electronic"", ""Pop""]","[""Hyperpop"", ""Drum n Bass"", ""UK Garage""]",False,3,4,False
+2326771,1345479,Good Ones,2021,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,1,2,False
+2486347,1345479,New Shapes,2021,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,2,2,True
+2553509,1345479,Beg For You,2022,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,4,4,True
+2554859,1345479,Crash,2022,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop""]",False,1,4,False
+10022350532,1345479,Baby,2022,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Nu-Disco"", ""Dance-pop""]",False,2,4,False
+10022534691,1345479,Every Rule,2022,"[""Electronic"", ""Pop""]","[""Ballad""]",False,3,4,False
+3200100,1345479,Speed Drive (From Barbie The Album),2023,"[""Electronic""]","[""Hyperpop"", ""Synth-pop""]",False,3,3,True
+10028071166,1345479,Bottoms (Original Motion Picture Score),2023,"[""Electronic"", ""Rock"", ""Pop"", ""Stage & Screen""]","[""Soundtrack"", ""Synth-pop"", ""Pop Rock""]",False,2,3,False
+10028648225,1345479,In The City,2023,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,1,3,False
+3426668,1345479,Von Dutch,2024,"[""Electronic"", ""Pop""]","[""Electro House"", ""Dance-pop""]",False,8,8,True
+3505440,1345479,Brat,2024,"[""Electronic"", ""Pop""]","[""Electro House"", ""Dance-pop"", ""Hyperpop"", ""Synth-pop"", ""Future Pop"", ""Electro"", ""Electroclash""]",False,2,8,False
+3510024,1345479,360,2024,"[""Electronic"", ""Pop""]","[""Hyperpop"", ""Dance-pop"", ""Electro""]",False,7,8,False
+3569150,1345479,Guess,2024,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Electro""]",False,3,8,False
+10030290075,1345479,Club Classics / B2b,2024,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Future Pop"", ""Acid House""]",False,1,8,False
+10031021567,1345479,"The Girl, So Confusing Version With Lorde",2024,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,6,8,False
+10031956656,1345479,Talk Talk,2024,"[""Pop""]","[""Future Pop"", ""Hyperpop""]",False,4,8,False
+10032261274,1345479,Guess / Spring Breakers,2024,"[""Electronic"", ""Pop""]","[""Hyperpop""]",False,5,8,False
+4035004,1345479,House,2025,"[""Electronic"", ""Rock"", ""Stage & Screen""]","[""Art Rock"", ""Soundtrack""]",False,1,3,False
+10035656588,1345479,Chains Of Love,2025,"[""Pop"", ""Stage & Screen""]","[""Alt-Pop"", ""Soundtrack""]",False,3,3,True
+10036564355,1345479,"Crash (Extended 12"" Mix)",2025,"[""Electronic"", ""Pop""]","[""Hyperpop""]",False,2,3,False
+4130530,1345479,Wuthering Heights,2026,"[""Electronic"", ""Pop"", ""Stage & Screen""]","[""Soundtrack"", ""Indie Pop""]",False,6,8,False
+4200177,1345479,Party 4 U,2026,"[""Pop""]",[],False,7,8,False
+4220241,1345479,Rock Music,2026,"[""Pop""]",[],False,1,8,False
+4233576,1345479,SS26,2026,"[""Rock"", ""Pop""]","[""Pop Rock""]",False,5,8,False
+4293615,1345479,"Music, Fashion, Film",2026,"[""Electronic"", ""Rock"", ""Pop""]","[""Hyperpop"", ""Indie Rock""]",False,8,8,True
+10036229633,1345479,Wall Of Sound,2026,"[""Pop"", ""Stage & Screen""]","[""Alt-Pop"", ""Soundtrack""]",False,2,8,False
+10037727244,1345479,Wink Wink,2026,"[""Rock"", ""Pop""]","[""Pop Rock""]",False,3,8,False
+10038111274,1345479,Camera,2026,"[""Pop""]",[],False,4,8,False
+10017239177,1967268,Splatter,2010,"[""Hip Hop""]","[""Horrorcore"", ""Hardcore Hip-Hop""]",False,2,2,True
+334758,1967268,Goblin,2011,"[""Hip Hop""]","[""Hardcore Hip-Hop"", ""Horrorcore""]",False,4,4,True
+2560751,1967268,Domo23,2013,"[""Hip Hop""]","[""Hardcore Hip-Hop""]",False,2,2,True
+825518,1967268,Cherry Bomb,2015,"[""Hip Hop"", ""Funk / Soul""]","[""Hardcore Hip-Hop"", ""Neo Soul"", ""Experimental"", ""Jazzy Hip-Hop"", ""Industrial""]",False,1,1,True
+10024369023,1967268,Tiny Desk Concert,2017,"[""Hip Hop""]",[],False,3,3,True
+1342336,1967268,Okra,2018,"[""Hip Hop""]","[""Hardcore Hip-Hop""]",False,1,7,False
+1416689,1967268,435,2018,"[""Hip Hop""]","[""Boom Bap""]",False,6,7,False
+3335362,1967268,Music Inspired By Illumination & Dr. Seuss' The Grinch,2018,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Neo Soul"", ""Pop Rap"", ""Holiday""]",False,3,7,False
+3398164,1967268,Potato Salad,2018,"[""Hip Hop""]","[""Boom Bap"", ""Jazzy Hip-Hop"", ""Pop Rap"", ""Abstract""]",False,4,7,False
+10011884541,1967268,Rose Tinted Cheeks*,2018,"[""Hip Hop"", ""Funk / Soul""]","[""Neo Soul"", ""Pop Rap""]",False,7,7,True
+10014670911,1967268,I Am The Grinch,2018,"[""Stage & Screen""]","[""Soundtrack""]",False,5,7,False
+10015795985,1967268,Peach Fuzz,2018,"[""Hip Hop"", ""Funk / Soul""]","[""Neo Soul""]",False,2,7,False
+1591877,1967268,Igor,2019,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Neo Soul""]",False,1,2,False
+10015796003,1967268,Earfquake (Channel Tres Remix),2019,"[""Electronic""]","[""Deep House""]",False,2,2,True
+10014719564,1967268,Best Interest,2020,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Neo Soul"", ""Pop Rap""]",False,1,2,False
+10017740585,1967268,Group B,2020,"[""Hip Hop"", ""Funk / Soul""]","[""Neo Soul"", ""Hardcore Hip-Hop""]",False,2,2,True
+2192617,1967268,Call Me If You Get Lost,2021,"[""Hip Hop"", ""Funk / Soul""]","[""Trap"", ""Contemporary R&B"", ""Jazzy Hip-Hop"", ""Neo Soul"", ""Hardcore Hip-Hop""]",False,3,4,False
+10017076666,1967268,Peach Fuzz / Wanna Be Your Man,2021,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Pop Rap"", ""Neo Soul""]",False,1,4,False
+10023872751,1967268,Tell Me How (Coca-Cola Commercial),2021,"[""Hip Hop""]",[],False,2,4,False
+10024836216,1967268,Lumberjack,2021,"[""Hip Hop""]","[""Hardcore Hip-Hop""]",False,4,4,True
+10026595575,1967268,Dogtooth,2023,"[""Hip Hop""]",[],False,1,1,True
+3639498,1967268,Chromakopia,2024,"[""Hip Hop"", ""Jazz"", ""Funk / Soul""]","[""Experimental"", ""Hardcore Hip-Hop"", ""Neo Soul"", ""Contemporary R&B"", ""Jazzy Hip-Hop"", ""Psychedelic"", ""Conscious""]",False,1,2,False
+10032070204,1967268,Noid,2024,"[""Hip Hop"", ""Rock"", ""Funk / Soul""]","[""Psychedelic Rock"", ""Neo Soul"", ""Conscious""]",False,2,2,True
+3915187,1967268,Don't Tap The Glass,2025,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Dance-pop"", ""Pop Rap"", ""Contemporary R&B"", ""Freestyle"", ""Hip-House"", ""Funk"", ""Miami Bass"", ""Neo Soul"", ""Electro""]",False,1,1,True
+874599,2171152,Thursday,2011,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Darkwave"", ""Ambient"", ""Goth Rock""]",False,3,3,True
+1007937,2171152,Wicked Games,2012,"[""Funk / Soul""]","[""Contemporary R&B""]",False,2,2,True
+10021668353,2171152,Love In The Sky,2013,"[""Funk / Soul""]","[""Contemporary R&B""]",False,4,4,True
+1815822,2171152,King Of The Fall,2014,"[""Electronic"", ""Hip Hop"", ""Funk / Soul""]","[""Trap"", ""Contemporary R&B"", ""Pop Rap""]",False,3,3,True
+877638,2171152,Beauty Behind The Madness,2015,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Trap"", ""Downtempo"", ""Soul"", ""Electro"", ""Hip Hop"", ""Rhythm & Blues""]",False,7,7,True
+1066598,2171152,Starboy,2016,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Synth-pop"", ""Pop Rap""]",False,4,4,True
+3900967,2171152,Reminder (Remix),2017,"[""Hip Hop"", ""Funk / Soul""]","[""Pop Rap"", ""Contemporary R&B""]",False,4,4,True
+1339555,2171152,"My Dear Melancholy,",2018,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Synth-pop"", ""Pop Rap"", ""Electro"", ""Downtempo"", ""Darkwave""]",False,2,2,True
+2434528,2171152,Pray For Me,2018,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Pop Rap"", ""Synth-pop""]",False,1,2,False
+1694710,2171152,Heartless,2019,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Synth-pop"", ""Pop Rap"", ""Trap""]",False,1,1,True
+1644565,2171152,Blinding Lights,2020,"[""Electronic"", ""Pop""]","[""Synthwave"", ""New Wave"", ""Synth-pop""]",False,1,4,False
+1700544,2171152,Heartless / Blinding Lights,2020,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Synthwave"", ""New Wave"", ""Synth-pop"", ""Pop Rap"", ""Contemporary R&B""]",False,2,4,False
+1702022,2171152,After Hours,2020,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Synthwave"", ""New Wave"", ""Pop Rap"", ""Disco"", ""Contemporary R&B"", ""Synth-pop"", ""Electro"", ""Dream Pop"", ""Trap"", ""Drum n Bass"", ""Dance-pop"", ""Electro House""]",False,4,4,True
+1824900,2171152,In Your Eyes (Remix),2020,"[""Pop""]",[],False,3,4,False
+2246293,2171152,Take My Breath,2021,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Synthwave"", ""Funk"", ""Dance-pop""]",False,2,2,True
+2329000,2171152,Save Your Tears (Remix),2021,"[""Pop""]",[],False,1,2,False
+2452996,2171152,Dawn FM,2022,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Spoken Word"", ""Synthwave"", ""New Wave"", ""Disco"", ""Dance-pop"", ""Synth-pop"", ""Nu-Disco"", ""Electro""]",False,1,7,False
+2629691,2171152,Out Of Time (Remix Bundle),2022,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""City Pop"", ""House""]",False,6,7,False
+10024666989,2171152,Starry Eyes (Mike Dean Remix),2022,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""City Pop"", ""House""]",False,5,7,False
+10024667004,2171152,Dawn FM (OPN Remix),2022,"[""Electronic"", ""Pop""]","[""Synth-pop""]",False,4,7,False
+10024667019,2171152,How Do I Make You Love Me? (Sebastian Ingrosso & Salvatore Ganacci Remix),2022,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""City Pop"", ""House""]",False,2,7,False
+10024667043,2171152,Best Friends (Remix),2022,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""City Pop"", ""House""]",False,3,7,False
+10031952777,2171152,The Dawn FM Experience,2022,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Synth-pop"", ""Contemporary R&B""]",False,7,7,True
+3070295,2171152,Double Fantasy,2023,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Synthwave""]",False,4,5,False
+3119103,2171152,Popular (Music From The HBO Original Series The Idol),2023,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop"", ""Stage & Screen""]","[""Contemporary R&B"", ""Pop Rap"", ""Dance-pop"", ""Soundtrack""]",False,1,5,False
+3161127,2171152,The Idol Episode 5 Pt.1 (Music From The HBO Original Series),2023,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop"", ""Stage & Screen""]","[""Soundtrack"", ""Trap"", ""Pop Rap"", ""Synth-pop"", ""Contemporary R&B""]",False,2,5,False
+3168015,2171152,The Idol Episode 5 Pt.2 (Music From The HBO Original Series),2023,"[""Electronic"", ""Funk / Soul"", ""Pop"", ""Stage & Screen""]","[""Soundtrack"", ""Contemporary R&B"", ""Alt-Pop"", ""Ambient"", ""Synth-pop""]",False,3,5,False
+3626267,2171152,One Of The Girls,2023,"[""Electronic"", ""Funk / Soul"", ""Stage & Screen""]","[""Soundtrack"", ""Synth-pop"", ""Contemporary R&B""]",False,5,5,True
+3521047,2171152,One Of The Girls + Popular,2024,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Alt-Pop"", ""Synth-pop"", ""Dance-pop"", ""Pop Rap""]",False,3,4,False
+3600101,2171152,Dancing In The Flames,2024,"[""Electronic"", ""Pop""]","[""Synth-pop"", ""Dance-pop""]",False,4,4,True
+3608969,2171152,Timeless,2024,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Trap"", ""Pop Rap"", ""Contemporary R&B"", ""Synthwave""]",False,2,4,False
+3642333,2171152,São Paulo,2024,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Synthwave""]",False,1,4,False
+3737196,2171152,Hurry Up Tomorrow,2025,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Synth-pop"", ""Synthwave""]",False,7,8,False
+3978022,2171152,Enjoy The Show,2025,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Neo Soul""]",False,8,8,True
+10033061446,2171152,Wake Me Up,2025,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Synthwave"", ""Synth-pop"", ""Dance-pop"", ""Disco""]",False,2,8,False
+10033061464,2171152,Open Hearts,2025,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Synthwave"", ""Synth-pop"", ""Dance-pop""]",False,3,8,False
+10034961540,2171152,Tell Your Friends / Acquainted ,2025,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Soul""]",False,6,8,False
+10034961609,2171152,Can't Feel My Face / Earned It,2025,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B""]",False,5,8,False
+10034961633,2171152,Often / The Hills,2025,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B""]",False,4,8,False
+10035036723,2171152,Give Me Mercy,2025,"[""Pop""]",[],False,1,8,False
+10038086677,2171152,Starboy / Die For You,2026,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Dance-pop"", ""Contemporary R&B""]",False,1,1,True
+964925,2184482,No.5 Collaborations Project,2010,"[""Hip Hop"", ""Rock"", ""Pop""]","[""Acoustic"", ""Grime""]",False,4,4,True
+380740,2184482,+,2011,"[""Hip Hop"", ""Rock"", ""Pop""]",[],False,11,11,True
+1172129,2184482,iTunes Festival 2012,2012,"[""Hip Hop"", ""Pop""]","[""Vocal""]",False,3,3,True
+10009904839,2184482,Daytrotter Studio 1/7/2013,2013,"[""Rock""]","[""Acoustic"", ""Pop Rock""]",False,1,1,True
+763819,2184482,Thinking Out Loud,2014,"[""Rock"", ""Pop""]",[],False,5,5,True
+816092,2184482,Bloodstream,2015,"[""Pop""]",[],False,2,2,True
+1122614,2184482,Castle On The Hill,2017,"[""Pop""]",[],False,6,6,True
+1580103,2184482,Happier,2018,"[""Pop""]",[],False,1,1,True
+1547600,2184482,I Don't Care,2019,"[""Pop""]",[],False,9,9,True
+1571729,2184482,Beautiful People,2019,"[""Pop""]",[],False,3,9,False
+1573158,2184482,Cross Me,2019,"[""Pop""]",[],False,1,9,False
+1574776,2184482,Blow,2019,"[""Rock""]",[],False,4,9,False
+1576004,2184482,No.6 Collaborations Project,2019,"[""Hip Hop"", ""Pop""]",[],False,2,9,False
+1594823,2184482,Take Me Back To London (Remix),2019,"[""Hip Hop""]","[""Grime""]",False,6,9,False
+10013840174,2184482,Best Part Of Me,2019,"[""Pop""]",[],False,8,9,False
+10014583767,2184482,Antisocial (Ghali Remix),2019,"[""Hip Hop"", ""Pop""]","[""Trap"", ""Pop Rap""]",False,7,9,False
+10014832907,2184482,Remember The Name,2019,"[""Hip Hop"", ""Pop""]",[],False,5,9,False
+2428273,2184482,Afterglow,2020,"[""Pop""]",[],False,1,1,True
+2192299,2184482,Bad Habits,2021,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,4,7,False
+2322634,2184482,Shivers,2021,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,3,7,False
+2356768,2184482,= (Equals),2021,"[""Pop""]",[],False,7,7,True
+2409043,2184482,Merry Christmas,2021,"[""Rock"", ""Pop""]","[""Holiday""]",False,6,7,False
+2428282,2184482,Overpass Graffiti,2021,"[""Pop""]",[],False,2,7,False
+10020529268,2184482,Visiting Hours,2021,"[""Pop""]",[],False,5,7,False
+10031571440,2184482,Bad Habits (Joel Corry Extended Remix),2021,"[""Electronic""]","[""Dance-pop""]",False,1,7,False
+2513902,2184482,The Joker And The Queen,2022,"[""Pop""]","[""Ballad""]",False,1,3,False
+2623514,2184482,2Step,2022,"[""Electronic"", ""Pop""]","[""Dance-pop""]",False,3,3,True
+2810441,2184482,Celestial,2022,"[""Pop""]","[""Ballad""]",False,2,3,False
+3031040,2184482,Eyes Closed,2023,"[""Rock"", ""Pop""]",[],False,5,6,False
+3082271,2184482,- (Subtract),2023,"[""Pop""]","[""Vocal""]",False,6,6,True
+3121155,2184482,F64,2023,"[""Pop""]","[""Pop Rap""]",False,1,6,False
+3255931,2184482,Autumn Variations,2023,"[""Rock"", ""Pop"", ""Folk, World, & Country""]","[""Acoustic""]",False,3,6,False
+10026836052,2184482,Boat,2023,"[""Pop""]","[""Ballad""]",False,2,6,False
+10027273123,2184482,A Beautiful Game,2023,"[""Pop""]","[""Ballad""]",False,4,6,False
+3838242,2184482,Azizam,2025,"[""Rock"", ""Pop""]",[],False,2,7,False
+3908578,2184482,Old Phone,2025,"[""Pop""]",[],False,6,7,False
+3969131,2184482,Play,2025,"[""Rock""]",[],False,3,7,False
+4058173,2184482,Sapphire,2025,"[""Rock"", ""Pop""]",[],False,7,7,True
+10035840428,2184482,A Little More,2025,"[""Pop""]",[],False,4,7,False
+10035840461,2184482,Camera,2025,"[""Pop""]",[],False,1,7,False
+10036826474,2184482,Symmetry (Remix),2025,"[""Pop"", ""Folk, World, & Country""]","[""Bhangra""]",False,5,7,False
+10037262229,2184482,Shape Of You/Sing,2026,"[""Electronic"", ""Reggae"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Dancehall"", ""Tropical House""]",False,1,1,True
+10034148794,2445772,Put The Radio On,2010,"[""Pop""]","[""Alt-Pop""]",False,10,10,True
+3053906,2445772,Video Games,2011,"[""Funk / Soul"", ""Pop""]","[""Vocal""]",False,2,2,True
+474916,2445772,National Anthem,2012,"[""Pop""]","[""Trip Hop"", ""Ballad""]",False,9,9,True
+10006521442,2445772,Tropico,2013,"[""Electronic"", ""Pop""]","[""Indie Pop"", ""Ballad""]",False,4,4,True
+895411,2445772,Once Upon A Dream,2014,"[""Pop"", ""Stage & Screen""]",[],False,9,9,True
+901165,2445772,Terrence Loves You,2015,"[""Pop""]",[],False,4,4,True
+1137811,2445772,Love,2017,"[""Electronic"", ""Pop""]","[""Downtempo"", ""Indie Pop""]",False,3,3,True
+1607430,2445772,Mariners Apartment Complex,2018,"[""Rock""]","[""Psychedelic Rock"", ""Alternative Rock""]",False,1,2,False
+4133935,2445772,Venice Bitch,2018,"[""Rock"", ""Pop""]","[""Dream Pop"", ""Psychedelic Rock""]",False,2,2,True
+1588806,2445772,Looking For America,2019,"[""Pop""]",[],False,4,5,False
+1588808,2445772,Season Of The Witch,2019,"[""Pop""]",[],False,2,5,False
+1597875,2445772,Norman F*****g Rockwell!,2019,"[""Rock"", ""Pop""]","[""Psychedelic Rock"", ""Dream Pop"", ""Folk Rock"", ""Soft Rock"", ""Trip Hop"", ""Alt-Pop"", ""Ballad""]",False,5,5,True
+1665652,2445772,Doin' Time,2019,"[""Pop""]",[],False,1,5,False
+10013052308,2445772,Hope Is A Dangerous Thing For A Woman Like Me To Have - But I Have It,2019,"[""Pop""]","[""Ballad"", ""Vocal""]",False,3,5,False
+1960255,2445772,Let Me Love You Like A Woman,2020,"[""Pop""]","[""Ballad""]",False,3,3,True
+2515900,2445772,You’ll Never Walk Alone,2020,"[""Pop""]",[],False,1,3,False
+10029340550,2445772,Summertime (The Gershwin Version),2020,"[""Pop""]",[],False,2,3,False
+1925898,2445772,Chemtrails Over The Country Club,2021,"[""Pop""]","[""Indie Pop""]",False,3,5,False
+2344513,2445772,Blue Banisters,2021,"[""Rock"", ""Pop"", ""Folk, World, & Country""]","[""Alternative Rock"", ""Indie Pop"", ""Folk"", ""Ballad""]",False,1,5,False
+2358001,2445772,Arcadia,2021,"[""Rock""]","[""Psychedelic Rock"", ""Alternative Rock""]",False,4,5,False
+3036728,2445772,Wildflower Wildfire,2021,"[""Pop""]",[],False,5,5,True
+3036734,2445772,Text Book,2021,"[""Pop""]",[],False,2,5,False
+2897365,2445772,Did You Know That There's A Tunnel Under Ocean Blvd,2022,"[""Pop""]","[""Ballad""]",False,3,3,True
+3035657,2445772,"Watercolor Eyes (From ""Euphoria"" An HBO Original Series)",2022,"[""Pop""]","[""Indie Pop"", ""Ballad""]",False,2,3,False
+3844260,2445772,Buddy's Rendezvous,2022,"[""Folk, World, & Country""]",[],False,1,3,False
+2979793,2445772,A&W,2023,"[""Hip Hop"", ""Pop""]","[""Ballad"", ""Trap""]",False,1,6,False
+3028427,2445772,Did You Know That There's A Tunnel Under Ocean Blvd,2023,"[""Rock"", ""Pop""]","[""Baroque Pop"", ""Indie Pop"", ""Alt-Pop"", ""Ballad""]",False,4,6,False
+3035651,2445772,The Grants ,2023,"[""Pop""]","[""Ballad""]",False,3,6,False
+3101781,2445772,Say Yes To Heaven,2023,"[""Pop""]","[""Ballad"", ""Dream Pop"", ""Alt-Pop"", ""Indie Pop""]",False,2,6,False
+4273755,2445772,Candy Necklace,2023,"[""Pop""]","[""Alt-Pop"", ""Indie Pop"", ""Ballad""]",False,6,6,True
+10029078401,2445772,"Take Me Home, Country Roads",2023,"[""Folk, World, & Country""]",[],False,5,6,False
+10034774832,2445772,Blue Skies,2024,"[""Pop""]","[""Ballad""]",False,1,1,True
+3844257,2445772,Bluebird,2025,"[""Pop""]","[""Ballad""]",False,1,2,False
+3844263,2445772,"Henry, Come On",2025,"[""Pop""]","[""Ballad""]",False,2,2,True
+10036539227,2445772,White Feather Hawk Tail Deer Hunter,2026,"[""Pop""]","[""Ballad"", ""Indie Pop""]",False,2,2,True
+10037083537,2445772,First Light,2026,"[""Stage & Screen""]","[""Soundtrack""]",False,1,2,False
+10010260784,2508414,Sweet Creature,2017,"[""Pop""]",[],False,3,3,True
+10038155218,2508414,Two Ghosts,2018,"[""Rock"", ""Pop""]","[""Pop Rock"", ""Vocal""]",False,1,1,True
+1619829,2508414,Lights Up,2019,"[""Rock"", ""Pop""]",[],False,2,3,False
+1649896,2508414,Fine Line,2019,"[""Rock"", ""Pop""]","[""Indie Pop"", ""Soft Rock"", ""Pop Rock"", ""Soul""]",False,1,3,False
+1714443,2508414,Adore You,2019,"[""Pop""]","[""Pop Rock""]",False,3,3,True
+1784493,2508414,Watermelon Sugar,2020,"[""Rock"", ""Pop""]","[""Indie Pop""]",False,1,1,True
+2594381,2508414,As It Was,2022,"[""Rock"", ""Pop""]",[],False,1,4,False
+2640143,2508414,Harry's House,2022,"[""Electronic"", ""Rock"", ""Funk / Soul"", ""Pop""]","[""Indie Pop"", ""Pop Rock"", ""Funk"", ""Synth-pop"", ""Downtempo""]",False,3,4,False
+2771708,2508414,Late Night Talking,2022,"[""Rock"", ""Pop""]",[],False,2,4,False
+10025383175,2508414,Music For A Sushi Restaurant,2022,"[""Rock"", ""Pop""]",[],False,4,4,True
+4153480,2508414,"Kiss All The Time. Disco, Occasionally.",2026,"[""Electronic"", ""Rock"", ""Funk / Soul"", ""Pop""]","[""Alt-Pop"", ""Pop Rock"", ""Disco"", ""Funk"", ""Synth-pop"", ""Berlin-School""]",False,1,3,False
+4327431,2508414,American Girls,2026,"[""Electronic"", ""Pop""]","[""Disco""]",False,2,3,False
+10036297079,2508414,Aperture,2026,"[""Pop""]",[],False,3,3,True
+666585,2727700,Hell And Silence,2010,"[""Rock""]","[""Alternative Rock"", ""Indie Rock"", ""Arena Rock""]",False,1,1,True
+2433517,2727700,It's Time EP,2011,"[""Rock""]","[""Alternative Rock"", ""Indie Rock"", ""Arena Rock""]",False,1,1,True
+1650929,2727700,Hear Me - EP,2012,"[""Rock""]","[""Indie Rock""]",False,7,7,True
+611888,2727700,On Top Of The World,2013,"[""Rock""]","[""Indie Rock"", ""Alternative Rock""]",False,7,7,True
+10007679348,2727700,Warriors,2014,"[""Rock""]","[""Alternative Rock""]",False,4,4,True
+10007679297,2727700,I Was Me,2015,"[""Rock""]","[""Alternative Rock""]",False,4,4,True
+1125069,2727700,Levitate,2016,"[""Rock"", ""Pop""]","[""Alternative Rock"", ""Pop Rock""]",False,1,1,True
+1359943,2727700,Thunder / Young Dumb & Broke (Medley),2017,"[""Rock""]","[""Alternative Rock""]",False,6,6,True
+1337842,2727700,Next To Me,2018,"[""Rock""]","[""Alternative Rock""]",False,6,6,True
+1436292,2727700," Zero (From the Original Motion Picture ""Ralph Breaks The Internet"")",2018,"[""Rock"", ""Pop"", ""Stage & Screen""]","[""Soundtrack""]",False,2,6,False
+1451270,2727700,Origins,2018,"[""Rock""]","[""Alternative Rock""]",False,4,6,False
+1464601,2727700,Bad Liar,2018,"[""Rock"", ""Pop""]","[""Pop Rock""]",False,1,6,False
+1485198,2727700,Machine,2018,"[""Rock""]",[],False,3,6,False
+1573801,2727700,Natural,2018,"[""Rock"", ""Pop""]","[""Alternative Rock"", ""Pop Rock""]",False,5,6,False
+1573802,2727700,Birds,2019,"[""Rock"", ""Pop""]",[],False,1,1,True
+10016031972,2727700,Radioactive / Demons / Thunder / Bad Liar,2020,"[""Rock"", ""Pop""]","[""Alternative Rock""]",False,1,1,True
+2083231,2727700,Follow You / Cutthroat,2021,"[""Rock"", ""Pop""]","[""Alternative Rock""]",False,1,3,False
+2282830,2727700,Mercury - Act 1,2021,"[""Rock""]",[],False,2,3,False
+2740781,2727700,Enemy,2021,"[""Rock"", ""Pop""]","[""Alternative Rock"", ""Indie Rock"", ""Pop Rock""]",False,3,3,True
+2693759,2727700,Mercury - Acts 1 & 2,2022,"[""Rock"", ""Pop""]","[""Alternative Rock"", ""Indie Rock"", ""Pop Rock""]",False,3,3,True
+2898043,2727700,Mercury - Act 2,2022,"[""Rock""]","[""Indie Rock"", ""Alternative Rock""]",False,2,3,False
+10035034110,2727700,Bones,2022,"[""Rock"", ""Pop""]","[""Alternative Rock""]",False,1,3,False
+10028751005,2727700,Bones - Single ,2023,"[""Rock""]","[""Alternative Rock""]",False,1,1,True
+3527840,2727700,Loom,2024,"[""Rock"", ""Pop""]",[],False,1,1,True
+3846474,2727700,Smoke + Mirrors (Ten),2025,"[""Electronic"", ""Rock"", ""Pop""]","[""Alternative Rock"", ""Pop Rock"", ""Soft Rock""]",False,1,2,False
+10033135435,2727700,Loom Amazon Music Songline,2025,"[""Rock"", ""Pop""]",[],False,2,2,True
+1735771,2929902,El Talento Del Bloque,2010,"[""Hip Hop"", ""Latin""]","[""Reggaeton""]",False,1,1,True
+2520178,2929902,TMPR* (The Most Powerful Rookie),2012,"[""Hip Hop"", ""Latin""]","[""Reggaeton""]",False,2,2,True
+1747700,2929902,Imperio Nazza: Farruko Edition,2013,"[""Latin""]","[""Reggaeton""]",False,2,2,True
+1191892,2929902,Los Menores,2014,"[""Hip Hop"", ""Reggae"", ""Latin""]","[""Reggaeton""]",False,1,1,True
+1481832,2929902,Visionary,2015,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Reggaeton""]",False,1,1,True
+10011536402,2929902,Krippy Kush (Remix),2017,"[""Hip Hop"", ""Latin""]","[""Trap"", ""Latin""]",False,2,2,True
+10037432743,2929902,Fuego,2018,"[""Latin""]","[""Reggaeton""]",False,1,1,True
+10014694935,2929902,Gangalee,2019,"[""Reggae"", ""Latin""]","[""Reggaeton"", ""Dancehall""]",False,2,2,True
+10021852094,2929902,En Letra De Otro,2019,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Reggaeton"", ""RnB/Swing"", ""Salsa"", ""Ballad""]",False,1,2,False
+2328607,2929902,Pepas,2021,"[""Electronic"", ""Latin""]","[""Guaracha"", ""Tribal"", ""Latin"", ""Electro House""]",False,3,3,True
+2328616,2929902,Pepas (Remix),2021,"[""Electronic"", ""Latin""]","[""Guaracha"", ""Tribal"", ""Latin"", ""Electro House""]",False,2,3,False
+2467858,2929902,La 167,2021,"[""Electronic"", ""Hip Hop"", ""Latin""]","[""Reggaeton"", ""Trap"", ""Electro House"", ""Guaracha"", ""Tribal"", ""Salsa""]",False,1,3,False
+10028652683,2929902,Suelta,2022,"[""Latin""]","[""Reggaeton""]",False,1,1,True
+10005347069,3160392,At All / Hilarity Duff,2013,"[""Electronic"", ""Hip Hop""]","[""House"", ""Hip Hop""]",False,4,4,True
+10005999720,3160392,Leave Me Alone,2014,"[""Electronic""]","[""Deep House""]",False,2,2,True
+10008486007,3160392,Drive Me Crazy,2015,"[""Electronic"", ""Hip Hop""]","[""Hip Hop""]",False,1,1,True
+1000756,3160392,99.9%,2016,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""House"", ""Contemporary R&B"", ""Funk"", ""Hip-House"", ""Deep House""]",False,3,3,True
+1513091,3160392,Nothin Like U / Chances,2018,"[""Electronic"", ""Hip Hop"", ""Funk / Soul""]","[""House""]",False,1,1,True
+1660007,3160392,Bubba,2019,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Hip Hop"", ""House"", ""Dance-pop"", ""Neo Soul"", ""Hip-House""]",False,2,3,False
+1845382,3160392,Dysfunctional,2019,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""House"", ""Hip Hop"", ""Contemporary R&B""]",False,1,3,False
+10014531157,3160392,10%,2019,"[""Electronic""]","[""House""]",False,3,3,True
+10024115685,3160392,Intimidated,2021,"[""Electronic"", ""Hip Hop""]","[""RnB/Swing""]",False,1,1,True
+10024119228,3160392,Twin Flame,2022,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""House"", ""Hip Hop"", ""Contemporary R&B""]",False,1,1,True
+3786290,3160392,Lover/Friend,2023,"[""Electronic""]","[""Electro House"", ""Electro""]",False,1,1,True
+3510960,3160392,Timeless,2024,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""House"", ""Contemporary R&B""]",False,1,1,True
+3980134,3160392,Ain't No Damn Way!,2025,"[""Electronic""]","[""Downtempo"", ""House"", ""Instrumental""]",False,1,1,True
+10005907045,3272791,See.SZA.Run,2012,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Downtempo"", ""Contemporary R&B""]",False,1,1,True
+10004531171,3272791,S,2013,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Downtempo"", ""Contemporary R&B""]",False,1,1,True
+690475,3272791,Z,2014,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Downtempo"", ""Contemporary R&B""]",False,1,1,True
+1847652,3272791,Drew Barrymore,2017,"[""Funk / Soul""]","[""Soul""]",False,5,5,True
+3697296,3272791,Power Is Power,2019,"[""Hip Hop"", ""Pop"", ""Stage & Screen""]","[""Soundtrack""]",False,1,1,True
+1690670,3272791,The Other Side,2020,"[""Funk / Soul"", ""Stage & Screen""]","[""Contemporary R&B"", ""Disco""]",False,3,3,True
+1890402,3272791,Good Days,2020,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,2,3,False
+1892850,3272791,Hit Different,2020,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,1,3,False
+2939104,3272791,I Hate U,2021,"[""Funk / Soul""]","[""Contemporary R&B""]",False,1,1,True
+2902876,3272791,Shirt,2022,"[""Funk / Soul""]","[""Contemporary R&B""]",False,1,2,False
+2929684,3272791,SOS,2022,"[""Funk / Soul""]","[""Contemporary R&B""]",False,2,2,True
+2947675,3272791,Kill Bill,2023,"[""Funk / Soul"", ""Pop""]","[""Alt-Pop"", ""Neo Soul""]",False,1,2,False
+3221056,3272791,Snooze,2023,"[""Funk / Soul""]","[""Contemporary R&B""]",False,2,2,True
+3594218,3272791,Saturn,2024,"[""Funk / Soul""]","[""Contemporary R&B""]",False,1,1,True
+10036831178,3272791,Save The Day,2026,"[""Pop"", ""Stage & Screen""]","[""Soundtrack""]",False,1,1,True
+2426398,3970719,Purrr!,2014,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,2,2,True
+1689565,3970719,Amala,2018,"[""Hip Hop"", ""Funk / Soul""]","[""Soul"", ""Contemporary R&B""]",False,3,5,False
+3248113,3970719,Candy,2018,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,1,5,False
+3248116,3970719,Go To Town,2018,"[""Hip Hop"", ""Funk / Soul""]",[],False,2,5,False
+3248119,3970719,Mooo!,2018,"[""Funk / Soul""]","[""Soul"", ""Contemporary R&B""]",False,5,5,True
+3248128,3970719,Roll With Us,2018,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,4,5,False
+1600059,3970719,Juicy,2019,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,3,6,False
+1668864,3970719,Bottom Bitch,2019,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,2,6,False
+1692792,3970719,Hot Pink,2019,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B"", ""Pop Rap"", ""Disco"", ""Funk"", ""Soul""]",False,1,6,False
+1970710,3970719,Rules,2019,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,5,6,False
+1973266,3970719,Tia Tamera,2019,"[""Hip Hop""]","[""Trap"", ""Hardcore Hip-Hop"", ""Pop Rap""]",False,6,6,True
+10014863240,3970719,Cyber Sex,2019,"[""Pop""]",[],False,4,6,False
+1692791,3970719,Say So,2020,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,2,4,False
+2054575,3970719,Freak,2020,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,3,4,False
+3249208,3970719,Say So / Like That (Mashup),2020,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,4,4,True
+10025719559,3970719,Boss Bitch,2020,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""Pop Rap"", ""Dance-pop""]",False,1,4,False
+2189101,3970719,Planet Her,2021,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Pop Rap"", ""Contemporary R&B"", ""Dance-pop""]",False,4,4,True
+2901514,3970719,Kiss Me More,2021,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,1,4,False
+10021401893,3970719,Need To Know,2021,"[""Hip Hop""]",[],False,3,4,False
+10021401908,3970719,You're The One That I Want,2021,"[""Hip Hop""]",[],False,2,4,False
+2870968,3970719,Vegas (From The Original Motion Picture Soundtrack Elvis),2022,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Pop Rap"", ""Soul"", ""Trap"", ""Contemporary R&B""]",False,2,2,True
+3249307,3970719,Celebrity Skin,2022,"[""Pop""]","[""Alternative Rock""]",False,1,2,False
+3135234,3970719,Attention,2023,"[""Hip Hop""]",[],False,1,5,False
+3135714,3970719,I Don't Do Drugs (Y2K Remix),2023,"[""Pop""]",[],False,4,5,False
+3191847,3970719,Paint The Town Red,2023,"[""Hip Hop""]",[],False,3,5,False
+3247138,3970719,Scarlet,2023,"[""Hip Hop"", ""Pop""]","[""Pop Rap"", ""Trap"", ""Contemporary R&B"", ""Trip Hop"", ""Jazzy Hip-Hop""]",False,5,5,True
+10028149907,3970719,Demons,2023,"[""Hip Hop""]",[],False,2,5,False
+3983038,3970719,Vie,2025,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,3,3,True
+10034957685,3970719,Kiss Me More + Streets,2025,"[""Hip Hop"", ""Pop""]",[],False,1,3,False
+10035198662,3970719,Jealous Type,2025,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,2,3,False
+949232,4016434,White Iverson,2015,"[""Hip Hop""]","[""Cloud Rap"", ""Trap"", ""Pop Rap""]",False,2,2,True
+10009449695,4016434,Patient,2016,"[""Hip Hop""]","[""Trap"", ""Cloud Rap"", ""Pop Rap""]",False,5,5,True
+1722726,4016434,Congratulations (Remix),2017,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,4,4,True
+1355120,4016434,Beerbongs & Bentleys,2018,"[""Hip Hop"", ""Pop""]","[""Cloud Rap"", ""Trap"", ""Pop Rap""]",False,2,4,False
+1358663,4016434,Psycho,2018,"[""Hip Hop"", ""Funk / Soul""]","[""Trap"", ""Cloud Rap"", ""Pop Rap"", ""Contemporary R&B""]",False,4,4,True
+1512099,4016434,Sunflower (Spider-Man: Into The Spider-Verse),2018,"[""Hip Hop"", ""Pop"", ""Stage & Screen""]","[""Soundtrack"", ""Pop Rap""]",False,1,4,False
+1621404,4016434,Wow.,2018,"[""Hip Hop""]","[""Pop Rap""]",False,3,4,False
+1611652,4016434,Hollywood's Bleeding,2019,"[""Hip Hop"", ""Rock"", ""Pop""]","[""Trap"", ""Pop Rap"", ""Contemporary R&B"", ""Cloud Rap"", ""Alt-Pop""]",False,3,3,True
+1660042,4016434,Goodbyes,2019,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,1,3,False
+1697678,4016434,Circles,2019,"[""Rock"", ""Pop""]","[""Pop Rock"", ""Indie Pop""]",False,2,3,False
+10015563128,4016434,Saint-Tropez,2020,"[""Hip Hop""]","[""Pop Rap"", ""Cloud Rap"", ""Trap""]",False,2,2,True
+10016072494,4016434,Goodbyes & Saint-Tropez,2020,"[""Hip Hop""]","[""Pop Rap"", ""Trap"", ""Cloud Rap""]",False,1,2,False
+2324200,4016434,Motley Crew,2021,"[""Hip Hop""]","[""Trap"", ""Cloud Rap"", ""Pop Rap""]",False,3,3,True
+2512885,4016434,One Right Now,2021,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""Pop Rap"", ""Synth-pop""]",False,1,3,False
+10026314250,4016434,Only Wanna Be With You (Pokémon 25 Version),2021,"[""Rock"", ""Pop"", ""Stage & Screen""]","[""Pop Rock""]",False,2,3,False
+2659262,4016434,Twelve Carat Toothache,2022,"[""Hip Hop"", ""Pop""]","[""Pop Rap"", ""Alt-Pop"", ""Trap"", ""Synth-pop""]",False,1,2,False
+10024894752,4016434,Cooped Up / Return Of The Mack,2022,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Pop Rap"", ""Contemporary R&B""]",False,2,2,True
+3183240,4016434,Austin,2023,"[""Rock"", ""Pop""]","[""Alt-Pop"", ""Indie Pop"", ""Indie Rock"", ""Pop Rock"", ""Folk Rock""]",False,2,4,False
+10026762327,4016434,Chemical,2023,"[""Pop""]","[""Indie Pop""]",False,4,4,True
+10026838059,4016434,Waiting For Never / Hateful,2023,"[""Hip Hop"", ""Pop""]","[""Trap"", ""Pop Rap""]",False,1,4,False
+10027128046,4016434,Mourning,2023,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,3,4,False
+3570692,4016434,F-1 Trillion,2024,"[""Folk, World, & Country""]","[""Country""]",False,1,3,False
+3576325,4016434,I Had Some Help,2024,"[""Folk, World, & Country""]","[""Country""]",False,2,3,False
+10031720268,4016434,Pour Me A Drink,2024,"[""Folk, World, & Country""]","[""Country""]",False,3,3,True
+4059052,4016434,Long Bed,2025,"[""Folk, World, & Country""]","[""Country""]",False,1,1,True
+10036232648,4016434,I Had Some Help / Losers,2026,"[""Pop"", ""Folk, World, & Country""]","[""Country""]",False,1,1,True
+970916,4357593,Be The One,2015,"[""Electronic"", ""Pop""]","[""Indie Pop"", ""Dance-pop"", ""Synth-pop""]",False,2,2,True
+10033600387,4357593,Dua Lipa ,2016,"[""Pop""]",[],False,5,5,True
+10012532780,4357593,Homesick,2017,"[""Pop""]","[""Europop""]",False,6,6,True
+1424137,4357593,Want To,2018,"[""Pop""]",[],False,2,2,True
+1682852,4357593,Kiss And Make Up,2018,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""K-pop""]",False,1,2,False
+1492609,4357593,"Swan Song (From The Motion Picture ""Alita: Battle Angel"") ",2019,"[""Pop""]",[],False,2,4,False
+1630209,4357593,Don't Start Now,2019,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Disco"", ""Nu-Disco""]",False,4,4,True
+1689809,4357593,Future Nostalgia,2019,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Dance-pop"", ""Electro"", ""Synth-pop"", ""Disco"", ""Funk""]",False,3,4,False
+1970947,4357593,I'm Free,2019,"[""Pop""]",[],False,1,4,False
+1679486,4357593,Physical,2020,"[""Rock"", ""Pop""]","[""Power Pop"", ""Synth-pop""]",False,7,10,False
+1705638,4357593,Future Nostalgia,2020,"[""Electronic"", ""Rock"", ""Funk / Soul"", ""Pop""]","[""Power Pop"", ""Dance-pop"", ""Synth-pop"", ""Disco"", ""Funk""]",False,3,10,False
+1788052,4357593,Levitating (The Blessed Madonna Remix),2020,"[""Electronic"", ""Pop""]","[""House"", ""Dance-pop""]",False,2,10,False
+1798796,4357593,Club Future Nostalgia (DJ Mix),2020,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""House"", ""Nu-Disco""]",False,4,10,False
+1849371,4357593,Break My Heart,2020,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Disco"", ""Synth-pop""]",False,8,10,False
+1951537,4357593,Fever,2020,"[""Pop""]",[],False,6,10,False
+2584964,4357593,Hallucinate,2020,"[""Pop""]",[],False,5,10,False
+10015956092,4357593,Don't Start Now / Future Nostalgia ,2020,"[""Electronic"", ""Funk / Soul"", ""Pop""]","[""Dance-pop"", ""Synth-pop"", ""Nu-Disco"", ""Funk""]",False,10,10,True
+10017907967,4357593,Pretty Please (Masters at Work Remix),2020,"[""Electronic""]","[""House""]",False,1,10,False
+10036425821,4357593,Urban Outfitters Remix Single,2020,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""House"", ""Nu-Disco""]",False,9,10,False
+3552993,4357593,Love Again,2021,"[""Pop""]",[],False,2,2,True
+10022384858,4357593,We're Good (Dillon Francis Remix),2021,"[""Electronic""]","[""Deep House""]",False,1,2,False
+3206406,4357593,Dance The Night (From Barbie The Album),2023,"[""Electronic"", ""Pop"", ""Stage & Screen""]","[""Soundtrack"", ""Nu-Disco"", ""Dance-pop""]",False,1,2,False
+3306523,4357593,Houdini,2023,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop"", ""Nu-Disco"", ""Funk""]",False,2,2,True
+3396910,4357593,Training Season,2024,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop"", ""Nu-Disco"", ""Funk""]",False,3,4,False
+3457394,4357593,Illusion,2024,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop"", ""Nu-Disco"", ""Funk""]",False,2,4,False
+3472783,4357593,Radical Optimism,2024,"[""Pop""]","[""Disco"", ""House"", ""Europop""]",False,4,4,True
+10032556840,4357593,These Walls,2024,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop"", ""Nu-Disco"", ""Funk""]",False,1,4,False
+10033556632,4378284,Catch My Breath,2010,"[""Pop""]",[],False,1,1,True
+10012917027,4378284,Make You Feel My Love,2011,"[""Pop""]",[],False,2,2,True
+10012917047,4378284,Safe And Sound,2012,"[""Pop""]",[],False,1,1,True
+10012917064,4378284,Silver Nights,2014,"[""Pop""]",[],False,2,2,True
+1340723,4378284,Eyes Wide Open,2015,"[""Rock"", ""Pop"", ""Folk, World, & Country""]","[""Pop Rock""]",False,2,2,True
+10032689767,4378284,A Dream Is A Wish Your Heart Makes / So This Is Love Medley,2016,"[""Pop"", ""Stage & Screen""]",[],False,4,4,True
+1187716,4378284,Thumbs,2017,"[""Electronic"", ""Pop""]","[""House"", ""Dance-pop""]",False,3,3,True
+1405800,4378284,Alien,2018,"[""Pop""]",[],False,3,4,False
+1450319,4378284,Almost Love,2018,"[""Pop""]","[""Dance-pop""]",False,2,4,False
+1463124,4378284,Singular Act I,2018,"[""Pop""]","[""Indie Pop""]",False,1,4,False
+10012769204,4378284,Paris,2018,"[""Pop""]",[],False,4,4,True
+1580813,4378284,Singular Act II,2019,"[""Pop""]",[],False,4,4,True
+10013578676,4378284,Exhale,2019,"[""Pop""]",[],False,3,4,False
+10013733237,4378284,In My Bed,2019,"[""Pop""]",[],False,2,4,False
+10013910712,4378284,Pushing 20,2019,"[""Hip Hop"", ""Pop""]",[],False,1,4,False
+3700389,4378284,Honeymoon Fades,2020,"[""Funk / Soul""]","[""Rhythm & Blues""]",False,1,2,False
+10032679126,4378284,Let Me Move You,2020,"[""Pop"", ""Stage & Screen""]",[],False,2,2,True
+2518705,4378284,Skinny Dipping,2021,"[""Pop""]","[""Indie Pop"", ""Vocal"", ""Ballad""]",False,1,2,False
+3036920,4378284,Skin,2021,"[""Pop""]",[],False,2,2,True
+2710871,4378284,Emails I Can't Send,2022,"[""Pop""]","[""Indie Pop"", ""Ballad""]",False,1,2,False
+10022232830,4378284,Fast Times,2022,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Vocal"", ""Disco""]",False,2,2,True
+3334696,4378284,Fruitcake,2023,"[""Pop""]","[""Holiday""]",False,1,4,False
+3462479,4378284,Feather,2023,"[""Pop""]","[""Dance-pop"", ""Disco""]",False,3,4,False
+3678324,4378284,Nonsense / A Nonsense Christmas,2023,"[""Pop""]","[""Holiday""]",False,4,4,True
+10026618927,4378284,Nonsense (Remix),2023,"[""Pop""]",[],False,2,4,False
+3455141,4378284,Espresso,2024,"[""Funk / Soul"", ""Pop""]","[""Bubblegum"", ""Synth-pop""]",False,3,3,True
+3519535,4378284,Please Please Please,2024,"[""Pop""]",[],False,2,3,False
+3577354,4378284,Short N' Sweet,2024,"[""Electronic"", ""Pop"", ""Folk, World, & Country""]","[""Country"", ""Dance-pop"", ""Synth-pop"", ""Contemporary R&B"", ""Bubblegum"", ""Disco""]",False,1,3,False
+3718974,4378284,Taste,2025,"[""Pop""]",[],False,2,5,False
+3719019,4378284,Bed Chem,2025,"[""Pop""]",[],False,1,5,False
+3871054,4378284,Manchild,2025,"[""Pop""]",[],False,3,5,False
+3954800,4378284,Man's Best Friend,2025,"[""Pop""]",[],False,5,5,True
+10035856652,4378284,Tears ,2025,"[""Pop""]",[],False,4,5,False
+10037701483,4378284,House Tour,2026,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""Synth-pop""]",False,1,1,True
+10007116740,4452209,Ya No Te Creo,2015,"[""Latin""]",[],False,2,2,True
+10027978672,4452209,Hello,2016,"[""Latin""]","[""Reggaeton""]",False,3,3,True
+3205296,4452209,Ahora Me Llama,2017,"[""Latin""]","[""Reggaeton""]",False,4,4,True
+3205302,4452209,Tu Pum Pum,2018,"[""Latin""]","[""Reggaeton""]",False,4,4,True
+3595310,4452209,Mi Cama (Remix),2018,"[""Latin""]","[""Reggaeton""]",False,2,4,False
+10026222192,4452209,Créeme,2018,"[""Latin""]","[""Reggaeton""]",False,3,4,False
+10026228087,4452209,Pineapple,2018,"[""Latin""]","[""Reggaeton""]",False,1,4,False
+3205227,4452209,Tusa,2019,"[""Latin"", ""Pop""]","[""Reggaeton""]",False,3,3,True
+3264070,4452209,Ocean,2019,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Reggaeton"", ""Trap""]",False,2,3,False
+10027982215,4452209,Ocean (Remix),2019,"[""Latin""]","[""Reggaeton""]",False,1,3,False
+2035990,4452209,Bichota,2020,"[""Latin""]","[""Reggaeton""]",False,2,3,False
+2035993,4452209,"Ay, DiOs Mío!",2020,"[""Latin""]",[],False,3,3,True
+10027982173,4452209,Follow,2020,"[""Latin""]","[""Reggaeton""]",False,1,3,False
+2165338,4452209,KG0516,2021,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Reggaeton""]",False,1,3,False
+3205236,4452209,Sejodioto,2021,"[""Latin""]","[""Reggaeton""]",False,3,3,True
+10027982269,4452209,Location,2021,"[""Latin""]","[""Reggaeton""]",False,2,3,False
+10025813180,4452209,Gatúbela,2022,"[""Latin"", ""Pop""]",[],False,4,4,True
+10025813213,4452209,La Vida Es Una,2022,"[""Latin"", ""Pop""]",[],False,2,4,False
+10025813234,4452209,Cairo,2022,"[""Latin"", ""Pop""]",[],False,1,4,False
+10025813258,4452209,Provenza,2022,"[""Latin"", ""Pop""]",[],False,3,4,False
+3015128,4452209,Mañana Será Bonito,2023,"[""Latin"", ""Pop""]","[""Reggaeton""]",False,5,9,False
+3205242,4452209,X Si Volvemos,2023,"[""Latin""]","[""Reggaeton""]",False,4,9,False
+3207825,4452209,Mañana Será Bonito (Bichota Season),2023,"[""Electronic"", ""Hip Hop"", ""Reggae"", ""Latin""]","[""Reggaeton"", ""Trap"", ""Dancehall"", ""Tejano"", ""House"", ""Dub""]",False,2,9,False
+10027269022,4452209,Watati (From Barbie The Album),2023,"[""Latin"", ""Pop""]","[""Reggaeton""]",False,6,9,False
+10027668046,4452209,S91,2023,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,1,9,False
+10035304034,4452209,Que Chimba De Vida,2023,"[""Latin""]",[],False,9,9,True
+10035304055,4452209,Dispo,2023,"[""Latin""]","[""Reggaeton""]",False,3,9,False
+10035304070,4452209,Qlona,2023,"[""Latin""]",[],False,8,9,False
+10035304082,4452209,Una Noche En Medellín (Remix),2023,"[""Latin""]",[],False,7,9,False
+3859306,4452209,Si Antes Te Hubiera Conocido,2024,"[""Latin""]","[""Merengue""]",False,3,3,True
+3928254,4452209,+57,2024,"[""Latin""]","[""Reggaeton""]",False,2,3,False
+10031218679,4452209,Contigo,2024,"[""Electronic"", ""Latin"", ""Pop""]","[""House"", ""Dance-pop""]",False,1,3,False
+3928236,4452209,Milagros,2025,"[""Latin""]",[],False,9,9,True
+3983167,4452209,Tropicoqueta,2025,"[""Latin"", ""Pop""]","[""Reggaeton"", ""Cumbia"", ""Latin Pop"", ""Bachata"", ""Merengue""]",False,8,9,False
+10034090144,4452209,Latina Foreva,2025,"[""Latin""]",[],False,1,9,False
+10034722639,4452209,⁠Verano Rosa,2025,"[""Latin""]","[""Reggaeton""]",False,4,9,False
+10034722663,4452209,FKN Movie,2025,"[""Latin""]","[""Reggaeton""]",False,3,9,False
+10034722786,4452209,Dile Luna,2025,"[""Latin""]",[],False,7,9,False
+10034723296,4452209,Coleccionando Heridas,2025,"[""Latin""]",[],False,6,9,False
+10034723317,4452209,Amiga Mía,2025,"[""Latin""]",[],False,2,9,False
+10034723341,4452209,Viajando Por El Mundo,2025,"[""Latin""]",[],False,5,9,False
+1528163,5034422,"O!RUL8,2?",2013,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""K-pop"", ""Contemporary R&B""]",False,1,1,True
+1017059,5034422,Skool Luv Affair,2014,"[""Hip Hop"", ""Pop""]","[""K-pop""]",False,8,8,True
+10020528407,5034422,[NOW 2]: BTS In Europe & America,2015,"[""Pop"", ""Stage & Screen""]","[""Concert Film"", ""K-pop""]",False,8,8,True
+1077633,5034422,Wings,2016,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop"", ""Dance-pop""]",False,6,6,True
+10018676903,5034422,You Never Walk Alone,2017,"[""Pop""]","[""K-pop""]",False,8,8,True
+1350090,5034422,Face Yourself,2018,"[""Hip Hop"", ""Pop""]","[""K-pop""]",False,1,6,False
+1385652,5034422,Love Yourself 轉 'Tear',2018,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop"", ""Dance-pop"", ""Pop Rap""]",False,2,6,False
+1461823,5034422,Fake Love / Airplane pt.2,2018,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""J-pop"", ""Hip Hop""]",False,5,6,False
+1771881,5034422,Memories Of 2017,2018,"[""Pop""]","[""K-pop""]",False,3,6,False
+1842379,5034422,4th Muster [Happy Ever After],2018,"[""Pop""]","[""K-pop""]",False,6,6,True
+2055169,5034422,Japan Official Fanmeeting Vol. 4 [Happy Ever After],2018,"[""Pop""]","[""K-pop""]",False,4,6,False
+1532766,5034422,Map Of The Soul: Persona,2019,"[""Electronic"", ""Hip Hop"", ""Rock"", ""Pop""]","[""K-pop"", ""Pop Rap""]",False,5,12,False
+1567265,5034422,A Brand New Day (BTS World Original Soundtrack) (Pt. 2),2019,"[""Pop""]",[],False,2,12,False
+1573154,5034422,Dream Glow (BTS World Original Soundtrack) (Pt. 1),2019,"[""Pop""]",[],False,8,12,False
+1577590,5034422,Lights / Boy With Luv,2019,"[""Hip Hop"", ""Pop""]","[""K-pop"", ""Pop Rap""]",False,10,12,False
+1844091,5034422,BTS World Tour 'Love Yourself' ～Japan Edition～,2019,"[""Pop"", ""Stage & Screen""]","[""K-pop"", ""Concert Film""]",False,12,12,True
+1844140,5034422,Memories Of 2018,2019,"[""Pop""]","[""K-pop""]",False,11,12,False
+1844380,5034422,BTS World Tour 'Love Yourself' Europe,2019,"[""Pop"", ""Stage & Screen""]","[""Concert Film"", ""K-pop""]",False,9,12,False
+1844386,5034422,BTS World Tour 'Love Yourself' New York,2019,"[""Pop"", ""Stage & Screen""]","[""Concert Film"", ""K-pop""]",False,1,12,False
+2055190,5034422,BTS World Tour 'Love Yourself' Seoul,2019,"[""Pop"", ""Stage & Screen""]","[""Concert Film"", ""K-pop""]",False,7,12,False
+10013610461,5034422,Boy With Luv,2019,"[""Electronic"", ""Pop""]","[""K-pop"", ""Dance-pop""]",False,4,12,False
+10015204675,5034422,BTS World Tour 'Love Yourself: Speak Yourself' Sao Paulo,2019,"[""Pop"", ""Stage & Screen""]","[""Concert Film"", ""K-pop""]",False,6,12,False
+10017956951,5034422,Make It Right (Remix),2019,"[""Pop""]","[""Dance-pop"", ""Contemporary R&B"", ""K-pop""]",False,3,12,False
+1692300,5034422,Map Of The Soul: 7,2020,"[""Hip Hop"", ""Rock"", ""Pop""]","[""K-pop""]",False,8,12,False
+1812787,5034422,Map Of The Soul 7 ~ The Journey ~,2020,"[""Hip Hop"", ""Pop""]","[""K-pop"", ""J-pop""]",False,1,12,False
+1813599,5034422,Dynamite,2020,"[""Pop""]","[""K-pop""]",False,2,12,False
+1823537,5034422,Memories Of 2019,2020,"[""Pop"", ""Stage & Screen""]","[""K-pop"", ""Concert Film""]",False,6,12,False
+1836109,5034422,BTS World Tour 'Love Yourself: Speak Yourself' London,2020,"[""Pop"", ""Stage & Screen""]","[""Concert Film"", ""K-pop""]",False,5,12,False
+1838291,5034422,"2019 5th Muster ""Magic Shop""",2020,"[""Pop""]","[""K-pop""]",False,11,12,False
+1901916,5034422,Life Goes On,2020,"[""Pop""]","[""K-pop""]",False,12,12,True
+1995718,5034422,BE,2020,"[""Pop""]","[""K-pop""]",False,7,12,False
+2037475,5034422,Japan Official Fanmeeting Vol. 5 [Magic Shop],2020,"[""Pop""]","[""K-pop""]",False,10,12,False
+2199154,5034422,BTS World Tour 'Love Yourself: Speak Yourself' ～Japan Edition～,2020,"[""Pop"", ""Stage & Screen""]","[""Concert Film"", ""K-pop""]",False,4,12,False
+10014673582,5034422,Black Swan,2020,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""Trap"", ""K-pop""]",False,9,12,False
+10015538774,5034422,On,2020,"[""Hip Hop"", ""Pop""]","[""K-pop""]",False,3,12,False
+2199655,5034422,Butter,2021,"[""Pop""]","[""K-pop""]",False,3,4,False
+2331811,5034422,Memories Of 2020,2021,"[""Pop""]","[""K-pop""]",False,4,4,True
+2370295,5034422,Map Of The Soul ON:E,2021,"[""Pop""]","[""K-pop""]",False,1,4,False
+4192494,5034422,Permission To Dance,2021,"[""Pop""]","[""K-pop""]",False,2,4,False
+10023677484,5034422,Yet To Come (The Most Beautiful Moment),2022,"[""Pop""]","[""K-pop""]",False,1,1,True
+10035208619,5034422,2025 BTS Festa: Capsule Album Vol. 1,2025,"[""Pop""]","[""K-pop""]",False,1,1,True
+4169260,5034422,Arirang,2026,"[""Rock"", ""Pop""]","[""K-pop"", ""Pop Rock""]",False,2,4,False
+4174171,5034422,Swim,2026,"[""Pop""]","[""K-pop"", ""Ballad""]",False,1,4,False
+10036966507,5034422,Swim / Normal,2026,"[""Pop""]","[""K-pop""]",False,4,4,True
+10037626363,5034422,Come Over,2026,"[""Electronic"", ""Hip Hop"", ""Rock"", ""Pop""]","[""K-pop"", ""Pop Rock""]",False,3,4,False
+10027755526,5153025,Bronx Season,2016,"[""Hip Hop""]",[],False,4,4,True
+1286798,5153025,"Gangsta Bitch Music, Vol. 2",2017,"[""Hip Hop""]","[""Trap""]",False,4,4,True
+1348255,5153025,Invasion Of Privacy,2018,"[""Hip Hop""]","[""Trap""]",False,1,5,False
+1348269,5153025,Be Careful,2018,"[""Hip Hop"", ""Pop""]",[],False,2,5,False
+1416053,5153025,I Like It,2018,"[""Hip Hop"", ""Latin""]","[""Trap"", ""Salsa"", ""Boogaloo""]",False,4,5,False
+1450745,5153025,Money,2018,"[""Hip Hop""]","[""Trap""]",False,5,5,True
+10032730780,5153025,Drip,2018,"[""Hip Hop""]",[],False,3,5,False
+1505440,5153025,Please Me,2019,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,2,2,True
+1694041,5153025,Press,2019,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,1,2,False
+1808659,5153025,WAP,2020,"[""Hip Hop""]","[""Trap""]",False,1,1,True
+1967209,5153025,Up,2021,"[""Hip Hop""]",[],False,1,1,True
+2698337,5153025,Hot Shit,2022,"[""Hip Hop""]","[""Trap"", ""Hardcore Hip-Hop"", ""Gangsta""]",False,1,1,True
+3232603,5153025,Bongos,2023,"[""Hip Hop""]",[],False,1,1,True
+3491495,5153025,Enough (Miami),2024,"[""Hip Hop""]",[],False,2,2,True
+3491501,5153025,Like What (Freestyle),2024,"[""Hip Hop""]",[],False,1,2,False
+3744882,5153025,Toot It Up,2025,"[""Hip Hop""]",[],False,7,13,False
+3884833,5153025,Outside,2025,"[""Hip Hop""]",[],False,8,13,False
+3977024,5153025,Am I The Drama?,2025,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,2,13,False
+10034903763,5153025,Imaginary Playerz,2025,"[""Hip Hop""]",[],False,5,13,False
+10035170201,5153025,What’s Goin On,2025,"[""Hip Hop""]",[],False,1,13,False
+10035170219,5153025,Shower Tears,2025,"[""Hip Hop""]",[],False,3,13,False
+10035170246,5153025,Safe,2025,"[""Hip Hop""]",[],False,9,13,False
+10035170255,5153025,Principal,2025,"[""Hip Hop""]",[],False,12,13,False
+10035170261,5153025,Pick It Up,2025,"[""Hip Hop""]",[],False,11,13,False
+10035170273,5153025,On My Back,2025,"[""Hip Hop""]",[],False,6,13,False
+10035172799,5153025,Nice Guy,2025,"[""Hip Hop""]",[],False,13,13,True
+10035172808,5153025,Dead,2025,"[""Hip Hop""]",[],False,4,13,False
+10035172826,5153025,Better Than You,2025,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,10,13,False
+10038093211,5153025,Ah Ha,2026,"[""Hip Hop""]",[],False,1,1,True
+1065723,5210284,Square One,2016,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""Trap"", ""Electro House"", ""Pop Rap"", ""Dance-pop"", ""K-pop""]",False,2,2,True
+1230790,5210284,Blackpink,2017,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""J-pop"", ""K-pop"", ""Dance-pop"", ""Electro""]",False,2,2,True
+1381874,5210284,Square Up,2018,"[""Pop""]","[""K-pop""]",False,5,5,True
+1412350,5210284,Ddu-Du Ddu-Du ,2018,"[""Electronic"", ""Pop""]","[""K-pop"", ""Hip Hop""]",False,1,5,False
+1467653,5210284,Blackpink In Your Area,2018,"[""Electronic"", ""Hip Hop"", ""Pop"", ""Stage & Screen""]","[""J-pop"", ""K-pop"", ""Dance-pop"", ""Electro"", ""Music Video""]",False,4,5,False
+10012527190,5210284,뚜두뚜두 [Ddu-Du Ddu-Du] (Luqu Chaos Remix),2018,"[""Electronic""]","[""Hardstyle""]",False,3,5,False
+10013214405,5210284,‘붐바야'​(​BOOMBAYAH) (DJ NAVASOFT #HI​-​NRG REMIX) ,2018,"[""Electronic""]","[""Dance-pop"", ""Electro"", ""Trance""]",False,2,5,False
+1527451,5210284,BLACKPINK Arena Tour 2018 Special Final In Kyocera Dome Osaka,2019,"[""Electronic"", ""Hip Hop"", ""Pop"", ""Stage & Screen""]","[""K-pop"", ""Ballad"", ""J-pop"", ""Synth-pop"", ""Dance-pop"", ""Concert Film""]",False,4,4,True
+1528392,5210284,Kill This Love,2019,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop"", ""Dance-pop"", ""Pop Rap""]",False,2,4,False
+3671256,5210284,Kill This Love (Japan Version),2019,"[""Hip Hop"", ""Pop""]","[""K-pop"", ""Pop Rap""]",False,3,4,False
+10014164233,5210284,Blackpink 2018 Tour In Your Area Seoul,2019,"[""Electronic"", ""Hip Hop"", ""Pop"", ""Stage & Screen""]","[""K-pop"", ""Ballad"", ""Dance-pop"", ""Concert Film""]",False,1,4,False
+1749540,5210284,Blackpink 2019-2020 World Tour In Your Area -Tokyo Dome-,2020,"[""Electronic"", ""Hip Hop"", ""Pop"", ""Stage & Screen""]","[""Ballad"", ""Dance-pop"", ""Synth-pop"", ""K-pop"", ""J-pop"", ""Vocal"", ""Electro"", ""Concert Film""]",False,1,4,False
+1775617,5210284,How You Like That ,2020,"[""Pop""]","[""K-pop""]",False,2,4,False
+1814682,5210284,The Album,2020,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop"", ""Dance-pop"", ""Synth-pop"", ""Pop Rap"", ""Ballad""]",False,4,4,True
+3392716,5210284,Ice Cream,2020,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop"", ""Dance-pop"", ""Hip Hop""]",False,3,4,False
+2176168,5210284,Blackpink: The Show,2021,"[""Pop""]","[""K-pop""]",False,1,3,False
+2244253,5210284,The Album -JP Ver.-,2021,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop"", ""Synth-pop"", ""Pop Rap"", ""Dance-pop"", ""J-pop""]",False,3,3,True
+10037339677,5210284,Summer Diary 2021 In Everland,2021,"[""Pop""]","[""K-pop""]",False,2,3,False
+2787407,5210284,Born Pink,2022,"[""Pop""]","[""K-pop"", ""Dance-pop"", ""Trap"", ""Pop Rap""]",False,2,3,False
+2799911,5210284,Pink Venom,2022,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop""]",False,3,3,True
+3157641,5210284,Blackpink The Movie ,2022,"[""Pop"", ""Stage & Screen""]","[""Concert Film"", ""K-pop""]",False,1,3,False
+3671160,5210284,The Girls (Blackpink The Game OST),2023,"[""Pop""]","[""Soundtrack"", ""K-pop""]",False,1,1,True
+3953684,5210284,Jump,2025,"[""Electronic"", ""Pop""]","[""K-pop"", ""Dance-pop"", ""Hard Techno""]",False,1,1,True
+4147249,5210284,Deadline,2026,"[""Electronic"", ""Pop""]","[""Dance-pop"", ""K-pop"", ""Electro"", ""Synth-pop"", ""Techno""]",False,1,1,True
+10015388279,5395551,Detras Del Mic,2014,"[""Latin""]",[],False,2,2,True
+10015220846,5395551,Si Te Dejas Llevar,2015,"[""Latin""]",[],False,2,2,True
+1771929,5395551,Odisea,2017,"[""Reggae"", ""Latin"", ""Pop""]","[""Reggaeton""]",False,1,1,True
+10012637919,5395551,Aura,2018,"[""Latin""]","[""Rumba""]",False,1,1,True
+1693478,5395551,Nibiru,2019,"[""Latin""]","[""Reggaeton""]",False,3,3,True
+10013832951,5395551,Amor Genuino,2019,"[""Latin""]",[],False,1,3,False
+10013967451,5395551,Muito Calor,2019,"[""Latin"", ""Pop""]",[],False,2,3,False
+1831289,5395551,ENOC,2020,"[""Latin""]","[""Reggaeton""]",False,1,2,False
+10027982239,5395551,Caramelo (Remix),2020,"[""Latin""]","[""Reggaeton""]",False,2,2,True
+10023159390,5395551,Tiempo,2021,"[""Latin""]","[""Reggaeton""]",False,1,1,True
+4003039,5395551,Ozutochi,2022,"[""Latin""]","[""Reggaeton""]",False,1,2,False
+10025323790,5395551,Arhbo (Music From The FIFA World Cup Qatar 2022 Official Soundtrack),2022,"[""Hip Hop"", ""Latin"", ""Pop""]",[],False,2,2,True
+10031933081,5395551,Cosmo,2023,"[""Latin""]","[""Reggaeton""]",False,1,1,True
+10037194975,5395551,Stendhal,2025,"[""Latin""]","[""Reggaeton""]",False,1,1,True
+4234830,5395551,Stendhal,2026,"[""Latin""]","[""Reggaeton""]",False,1,1,True
+10009787572,5495084,Pigment,2016,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B"", ""Neo Soul""]",False,2,2,True
+10010749239,5495084,H.E.R. Vol. 2,2017,"[""Electronic"", ""Funk / Soul""]","[""Contemporary R&B""]",False,1,1,True
+10011840081,5495084,Focus,2018,"[""Funk / Soul""]","[""Contemporary R&B""]",False,2,2,True
+10013306789,5495084,I Used To Know Her - Part 2,2018,"[""Hip Hop""]","[""RnB/Swing""]",False,1,2,False
+3630504,5495084,I Used To Know Her,2019,"[""Hip Hop"", ""Funk / Soul"", ""Pop""]","[""Contemporary R&B""]",False,2,2,True
+10013640091,5495084,Hard Place,2019,"[""Hip Hop"", ""Funk / Soul""]",[],False,1,2,False
+10014815547,5495084,Slide (Remix),2020,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,1,2,False
+10024482291,5495084,I Can't Breathe,2020,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,2,2,True
+3189201,5495084,"Fight For You (From The Original Motion Picture ""Judas And The Black Messiah"")",2021,"[""Funk / Soul""]","[""Contemporary R&B""]",False,2,3,False
+4172914,5495084,Back Of My Mind (Apple Music Edition),2021,"[""Funk / Soul""]","[""Contemporary R&B""]",False,1,3,False
+10037390968,5495084,Fight For You (For Your Consideration - Best Original Song),2021,"[""Stage & Screen""]",[],False,3,3,True
+3350158,5495084,The Glass,2023,"[""Rock""]",[],False,2,2,True
+4068238,5495084,The Journey,2023,"[""Hip Hop"", ""Funk / Soul""]","[""Contemporary R&B""]",False,1,2,False
+10014738610,5590213,Fingers Crossed,2015,"[""Electronic"", ""Pop""]","[""Indie Pop"", ""Alt-Pop""]",False,1,1,True
+1574747,5590213,Ocean Eyes,2016,"[""Pop""]","[""Indie Pop""]",False,2,2,True
+1350903,5590213,Copycat,2017,"[""Pop""]","[""Indie Pop""]",False,9,9,True
+1395678,5590213,You Should See Me In A Crown,2018,"[""Pop""]","[""Indie Pop""]",False,5,6,False
+1467757,5590213,Lovely ,2018,"[""Pop""]","[""Indie Pop""]",False,6,6,True
+1477526,5590213,Come Out And Play ,2018,"[""Pop"", ""Stage & Screen""]","[""Indie Pop"", ""Theme""]",False,3,6,False
+1527059,5590213,When The Party's Over,2018,"[""Rock"", ""Pop""]","[""Indie Pop"", ""Dream Pop"", ""Ballad""]",False,4,6,False
+3201294,5590213,Party Favor,2018,"[""Pop""]","[""Indie Pop""]",False,2,6,False
+3335344,5590213,Bitches Broken Hearts,2018,"[""Pop""]","[""Indie Pop"", ""Ballad""]",False,1,6,False
+1508452,5590213,Bury A Friend,2019,"[""Electronic"", ""Pop""]","[""Trap"", ""Indie Pop""]",False,2,7,False
+1524311,5590213,"When We All Fall Asleep, Where Do We Go?",2019,"[""Electronic"", ""Pop""]","[""Indie Pop"", ""Alt-Pop"", ""Downtempo"", ""Vocal"", ""Ballad""]",False,3,7,False
+1567083,5590213,Bad Guy,2019,"[""Pop""]","[""Indie Pop""]",False,5,7,False
+1607057,5590213,All The Good Girls Go To Hell,2019,"[""Electronic"", ""Pop""]","[""Indie Pop""]",False,6,7,False
+1636505,5590213,Everything I Wanted,2019,"[""Electronic"", ""Pop""]","[""Indie Pop""]",False,7,7,True
+1953193,5590213,Wish You Were Gay,2019,"[""Pop""]","[""Indie Pop""]",False,1,7,False
+10013048780,5590213,When I Was Older (Music Inspired By The Film Roma),2019,"[""Electronic"", ""Pop""]","[""Ambient"", ""Synth-pop"", ""Indie Pop""]",False,4,7,False
+1683623,5590213,No Time To Die,2020,"[""Pop"", ""Stage & Screen""]","[""Ballad"", ""Theme""]",False,1,4,False
+1795054,5590213,My Future,2020,"[""Pop""]","[""Indie Pop""]",False,2,4,False
+2914522,5590213,Therefore I Am,2020,"[""Pop""]",[],False,4,4,True
+10016532595,5590213,Everything I Wanted / No Time To Die,2020,"[""Electronic"", ""Pop""]","[""Indie Pop""]",False,3,4,False
+2234794,5590213,Happier Than Ever,2021,"[""Pop""]","[""Indie Pop""]",False,3,5,False
+3918637,5590213,Lo Vas A Olvidar,2021,"[""Pop"", ""Stage & Screen""]","[""Theme"", ""Alt-Pop""]",False,1,5,False
+10018522649,5590213,Your Power,2021,"[""Pop""]","[""Acoustic"", ""Vocal""]",False,5,5,True
+10018990136,5590213,Lost Cause,2021,"[""Pop""]","[""Acoustic"", ""Vocal""]",False,2,5,False
+10019450660,5590213,NDA,2021,"[""Pop""]",[],False,4,5,False
+2889004,5590213,Guitar Songs,2022,"[""Rock"", ""Pop""]","[""Acoustic""]",False,1,1,True
+3169278,5590213,"What Was I Made For? (From The Motion Picture ""Barbie"")",2023,"[""Pop"", ""Stage & Screen""]","[""Soundtrack"", ""Ballad""]",False,1,2,False
+10027036306,5590213,Hotline,2023,"[""Pop""]","[""Indie Pop""]",False,2,2,True
+3487663,5590213,Hit Me Hard And Soft,2024,"[""Electronic"", ""Pop""]","[""Alt-Pop"", ""Indie Pop"", ""Synth-pop""]",False,1,6,False
+3655356,5590213,Birds Of A Feather,2024,"[""Pop""]","[""Ballad""]",False,4,6,False
+10030754191,5590213,L'Amour De Ma Vie (Over Now Extended Edit),2024,"[""Rock"", ""Pop""]","[""Alt-Pop""]",False,2,6,False
+10032977290,5590213,Chihiro,2024,"[""Pop""]",[],False,3,6,False
+10034765205,5590213,Wildflower,2024,"[""Rock""]",[],False,6,6,True
+10037052493,5590213,Hit Me Hard And Soft (Album Sampler),2024,"[""Electronic"", ""Hip Hop"", ""Funk / Soul"", ""Pop"", ""Folk, World, & Country"", ""Stage & Screen""]","[""Ambient"", ""Alt-Pop"", ""Contemporary R&B"", ""Pop Rap""]",False,5,6,False
+10012362349,5648334,Aunque Es De Noche,2017,"[""Pop"", ""Folk, World, & Country""]","[""Flamenco"", ""Alt-Pop""]",False,2,2,True
+1447781,5648334,El Mal Querer,2018,"[""Electronic"", ""Latin"", ""Pop"", ""Folk, World, & Country""]","[""Flamenco"", ""Alt-Pop""]",False,2,5,False
+1461044,5648334,Malamente,2018,"[""Pop"", ""Folk, World, & Country""]","[""Flamenco"", ""Alt-Pop""]",False,3,5,False
+10012306464,5648334,Pienso En Tu Mirá,2018,"[""Pop"", ""Folk, World, & Country""]","[""Flamenco"", ""Alt-Pop""]",False,4,5,False
+10012736501,5648334,Di Mi Nombre ,2018,"[""Hip Hop"", ""Pop"", ""Folk, World, & Country""]","[""Trap"", ""Flamenco"", ""Alt-Pop""]",False,1,5,False
+10013746544,5648334,¡Ay Paquita!,2018,"[""Pop"", ""Folk, World, & Country""]","[""Rumba""]",False,5,5,True
+1807817,5648334,Yo X Ti Tu X Mi,2019,"[""Latin"", ""Pop""]","[""Reggaeton"", ""Alt-Pop""]",False,1,5,False
+2080969,5648334,Con Altura,2019,"[""Latin"", ""Pop""]","[""Reggaeton"", ""Alt-Pop""]",False,5,5,True
+10013697453,5648334,Aute Cuture,2019,"[""Pop""]","[""Alt-Pop""]",False,2,5,False
+10013840157,5648334,Fucking Money Man,2019,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Alt-Pop""]",False,3,5,False
+10014369199,5648334,A Palé,2019,"[""Pop""]","[""Alt-Pop""]",False,4,5,False
+1704722,5648334,Dolerme,2020,"[""Pop""]","[""Alt-Pop""]",False,2,3,False
+10014696343,5648334,Juro Que,2020,"[""Electronic"", ""Pop"", ""Folk, World, & Country""]","[""Flamenco"", ""Alt-Pop""]",False,3,3,True
+10015385843,5648334,TKN,2020,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Trap"", ""Reggaeton"", ""Alt-Pop""]",False,1,3,False
+10020958427,5648334,La Fama,2021,"[""Latin"", ""Pop""]","[""Bachata"", ""Alt-Pop""]",False,1,1,True
+2555024,5648334,Motomami,2022,"[""Electronic"", ""Hip Hop"", ""Latin"", ""Pop""]","[""Trap"", ""Flamenco"", ""Bachata"", ""Reggaeton"", ""Alt-Pop""]",False,4,5,False
+10022021924,5648334,Saoko,2022,"[""Latin"", ""Pop""]","[""Reggaeton"", ""Alt-Pop""]",False,5,5,True
+10024066857,5648334,Despechá,2022,"[""Latin"", ""Pop""]","[""Merengue"", ""Alt-Pop""]",False,3,5,False
+10025480204,5648334,Despechá RMX,2022,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Merengue"", ""Alt-Pop""]",False,1,5,False
+10025813120,5648334,Bizcochito (LeoRD Y Haraca Kiko Remix),2022,"[""Latin"", ""Pop""]","[""Alt-Pop"", ""Reggaeton""]",False,2,5,False
+3032468,5648334,RR,2023,"[""Latin"", ""Pop""]","[""Reggaeton"", ""Bachata"", ""Alt-Pop""]",False,2,3,False
+3151323,5648334,Tuya,2023,"[""Latin"", ""Pop""]","[""Reggaeton"", ""Alt-Pop""]",False,1,3,False
+3151362,5648334,LLYLM,2023,"[""Pop""]","[""Alt-Pop""]",False,3,3,True
+10031819898,5648334,Omega,2024,"[""Pop""]",[],False,1,1,True
+10036550144,5648334,Sauvignon Blanc,2026,"[""Pop""]","[""Ballad""]",False,1,1,True
+10014884215,5794658,Demonia,2011,"[""Latin""]","[""Reggaeton""]",False,1,1,True
+10010374147,5794658,Coronamos (Remix),2016,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,1,1,True
+1746989,5794658,Real Hasta La Muerte,2018,"[""Hip Hop"", ""Latin""]","[""Trap"", ""Reggaeton"", ""Pop Rap""]",False,1,1,True
+3205170,5794658,China,2019,"[""Latin""]","[""Reggaeton""]",False,1,2,False
+10027543198,5794658,Secreto,2019,"[""Latin""]","[""Reggaeton""]",False,2,2,True
+1780538,5794658,Emmanuel,2020,"[""Hip Hop"", ""Latin""]","[""Reggaeton"", ""Trap""]",False,1,1,True
+2543290,5794658,Los Dioses,2021,"[""Latin""]","[""Reggaeton""]",False,1,2,False
+3257227,5794658,Las Leyendas Nunca Mueren,2021,"[""Electronic"", ""Hip Hop"", ""Latin"", ""Pop""]","[""Reggaeton"", ""Trap"", ""Electro"", ""Pop Rap""]",False,2,2,True
+10027678000,5794658,Mas Rica Que Ayer,2023,"[""Latin""]","[""Reggaeton""]",False,2,3,False
+10027678024,5794658,Mejor Que Yo,2023,"[""Latin""]","[""Reggaeton""]",False,3,3,True
+10027678033,5794658,Baby,2023,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,1,3,False
+10035202451,5794658,Headshot,2024,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,1,3,False
+10035202460,5794658,Shampoo De Coco,2024,"[""Latin""]","[""Reggaeton""]",False,2,3,False
+10035202469,5794658,Baby Demon,2024,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,3,3,True
+10034444066,5794658,Little Demon,2025,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,1,3,False
+10035200414,5794658,Portate Bonito,2025,"[""Latin""]",[],False,3,3,True
+10035202433,5794658,Bugatti,2025,"[""Latin""]","[""Reggaeton""]",False,2,3,False
+10025353874,5894905,Diles ,2016,"[""Hip Hop"", ""Latin""]","[""Reggaeton""]",False,3,3,True
+10012239686,5894905,Chambea,2017,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,2,2,True
+1531965,5894905,Mia,2018,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Reggaeton"", ""Latin Pop"", ""Pop Rap""]",False,3,6,False
+1611526,5894905,X 100pre,2018,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Trap"", ""Reggaeton"", ""Latin Pop""]",False,1,6,False
+10012239713,5894905,Amorfoda,2018,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Reggaeton"", ""Ballad""]",False,5,6,False
+10012239811,5894905,Estamos Bien,2018,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,4,6,False
+10012239832,5894905,Dime Si Te Acuerdas,2018,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,6,6,True
+10027949092,5894905,Solo de Mí,2018,"[""Hip Hop"", ""Latin""]","[""Trap"", ""Reggaeton""]",False,2,6,False
+10013832920,5894905,Callaita,2019,"[""Latin""]","[""Reggaeton""]",False,2,2,True
+10021035908,5894905,Estamos Arriba,2019,"[""Hip Hop"", ""Latin""]","[""Trap""]",False,1,2,False
+1691517,5894905,YHLQMDLG,2020,"[""Hip Hop"", ""Reggae"", ""Latin""]","[""Reggaeton"", ""Reggae-Pop""]",False,3,6,False
+1735691,5894905,Las Que No Iban A Salir,2020,"[""Hip Hop"", ""Latin""]","[""Reggaeton"", ""Trap""]",False,6,6,True
+2532028,5894905,El Último Tour Del Mundo,2020,"[""Hip Hop"", ""Latin""]","[""Trap"", ""Reggaeton""]",False,1,6,False
+10021035983,5894905,Ignorantes,2020,"[""Latin"", ""Pop""]","[""Reggaeton""]",False,4,6,False
+10021036022,5894905,DÁKITI,2020,"[""Electronic"", ""Latin""]","[""Reggaeton"", ""Dark Ambient""]",False,2,6,False
+10025330306,5894905,Yo Perreo Sola (Remix),2020,"[""Latin""]","[""Reggaeton""]",False,5,6,False
+10021035857,5894905,Yonaguni,2021,"[""Latin""]","[""Reggaeton""]",False,1,1,True
+2670629,5894905,Un Verano Sin Ti,2022,"[""Electronic"", ""Hip Hop"", ""Reggae"", ""Latin"", ""Pop""]","[""Reggaeton"", ""Trap"", ""Synth-pop"", ""House"", ""Reggae"", ""Mambo"", ""Latin Pop""]",False,1,1,True
+3424638,5894905,Nadie Sabe Lo Que Va A Pasar Mañana,2023,"[""Hip Hop"", ""Latin""]","[""Trap"", ""Reggaeton""]",False,1,3,False
+10035065637,5894905,Un Preview,2023,"[""Latin""]",[],False,2,3,False
+10035065646,5894905,Where She Goes,2023,"[""Hip Hop"", ""Latin"", ""Pop""]","[""Jersey Club"", ""EBM"", ""Drill"", ""Reggaeton""]",False,3,3,True
+10032485956,5894905,El Clúb,2024,"[""Electronic"", ""Latin""]","[""House"", ""Reggaeton""]",False,2,2,True
+10035065619,5894905,Una Velita,2024,"[""Latin"", ""Folk, World, & Country""]","[""Bomba"", ""Plena"", ""Reggaeton""]",False,1,2,False
+3716847,5894905,Debí Tirar Más Fotos,2025,"[""Electronic"", ""Hip Hop"", ""Latin"", ""Pop""]","[""Reggaeton"", ""Salsa"", ""Aguinaldo"", ""Bomba"", ""Plena"", ""Trap"", ""Hip Hop"", ""House"", ""Latin Pop""]",False,2,2,True
+10034557628,5894905,Alambre Púa,2025,"[""Latin""]","[""Reggaeton"", ""Bomba""]",False,1,2,False
+10015786250,5940000,The Way She Rides,2016,"[""Rock"", ""Folk, World, & Country""]","[""Country"", ""Country Rock""]",False,2,2,True
+1251982,5940000,This One's For You,2017,"[""Folk, World, & Country""]","[""Country""]",False,4,4,True
+1637167,5940000,What You See Is What You Get,2019,"[""Folk, World, & Country""]",[],False,3,5,False
+1647678,5940000,The Prequel,2019,"[""Folk, World, & Country""]","[""Country""]",False,1,5,False
+10013717395,5940000,Beer Never Broke My Heart,2019,"[""Folk, World, & Country""]","[""Country""]",False,5,5,True
+10015786379,5940000,Let's Just Be Friends (From The Angry Birds Movie 2),2019,"[""Folk, World, & Country""]","[""Country""]",False,2,5,False
+10016100197,5940000,The Writer's Cut,2019,"[""Rock"", ""Folk, World, & Country""]","[""Country"", ""Country Rock""]",False,4,5,False
+10015786180,5940000,Six Feet Apart,2020,"[""Folk, World, & Country""]","[""Country""]",False,1,1,True
+10017223829,5940000,The Great Divide,2021,"[""Folk, World, & Country""]","[""Bluegrass"", ""Folk"", ""Country""]",False,3,4,False
+10019292530,5940000,Forever After All,2021,"[""Folk, World, & Country""]","[""Country""]",False,4,4,True
+10019998358,5940000,South On Ya,2021,"[""Folk, World, & Country""]","[""Country Rock"", ""Country""]",False,2,4,False
+10020935831,5940000,Doin’ This,2021,"[""Folk, World, & Country""]","[""Country""]",False,1,4,False
+2685296,5940000,Growin' Up,2022,"[""Folk, World, & Country""]","[""Country"", ""Country Rock""]",False,2,3,False
+10022969850,5940000,Tomorrow Me,2022,"[""Folk, World, & Country""]","[""Country""]",False,3,3,True
+10023633594,5940000,The Kind Of Love We Make,2022,"[""Folk, World, & Country""]","[""Country""]",False,1,3,False
+3030449,5940000,Gettin' Old,2023,"[""Folk, World, & Country""]","[""Country""]",False,1,1,True
+3583921,5940000,Fathers & Sons,2024,"[""Folk, World, & Country""]","[""Country""]",False,1,3,False
+10033923892,5940000,Ain't No Love In Oaklahoma,2024,"[""Rock"", ""Folk, World, & Country""]","[""Country"", ""Country Rock""]",False,3,3,True
+10034653820,5940000,The Man He Sees In Me,2024,"[""Folk, World, & Country""]","[""Country""]",False,2,3,False
+10034653793,5940000,Back In The Saddle,2025,"[""Folk, World, & Country""]","[""Country""]",False,1,1,True
+4169476,5940000,The Way I Am,2026,"[""Rock"", ""Folk, World, & Country""]","[""Country Rock"", ""Country""]",False,1,1,True
+10016071390,6628105,Hey Brother (The Voice Performance),2014,"[""Folk, World, & Country""]","[""Country""]",False,4,4,True
+1823259,6628105,Stand Alone,2015,"[""Folk, World, & Country""]","[""Country""]",False,1,1,True
+10016071337,6628105,Chain Smokin',2016,"[""Folk, World, & Country""]","[""Country""]",False,3,3,True
+1755764,6628105,If I Know Me,2018,"[""Folk, World, & Country""]","[""Country""]",False,1,2,False
+10016992417,6628105,Whiskey Glasses,2018,"[""Folk, World, & Country""]","[""Country""]",False,2,2,True
+10016071238,6628105,Cover Me Up,2019,"[""Folk, World, & Country""]","[""Country""]",False,2,2,True
+10016071307,6628105,This Bar,2019,"[""Folk, World, & Country""]","[""Country""]",False,1,2,False
+3960137,6628105,More Than My Hometown,2020,"[""Folk, World, & Country""]","[""Country""]",False,1,2,False
+10016071326,6628105,7 Summers,2020,"[""Folk, World, & Country""]","[""Country""]",False,2,2,True
+1914828,6628105,Dangerous: The Double Album,2021,"[""Folk, World, & Country""]",[],False,1,1,True
+3960116,6628105,Thought You Should Know,2022,"[""Folk, World, & Country""]","[""Country""]",False,2,5,False
+10022750808,6628105,Your Bartender (Milan Variable Remix),2022,"[""Folk, World, & Country""]","[""Country""]",False,3,5,False
+10034996973,6628105,One Thing At A Time (Sampler),2022,"[""Folk, World, & Country""]","[""Country""]",False,4,5,False
+10034996988,6628105,You Proof,2022,"[""Folk, World, & Country""]","[""Country""]",False,1,5,False
+10034997018,6628105,Don't Think Jesus,2022,"[""Folk, World, & Country""]","[""Country""]",False,5,5,True
+3005540,6628105,One Thing At A Time,2023,"[""Rock"", ""Folk, World, & Country""]","[""Country"", ""Country Rock""]",False,1,1,True
+10034636171,6628105,Smile,2024,"[""Folk, World, & Country""]","[""Country""]",False,1,4,False
+10034662964,6628105,Love Somebody,2024,"[""Folk, World, & Country""]","[""Country""]",False,4,4,True
+10034663027,6628105,Lies Lies Lies,2024,"[""Folk, World, & Country""]","[""Country""]",False,3,4,False
+10034663036,6628105,Spin You Around (1/24),2024,"[""Folk, World, & Country""]","[""Country""]",False,2,4,False
+3848892,6628105,I'm The Problem,2025,"[""Folk, World, & Country""]","[""Country""]",False,3,4,False
+3918916,6628105,Miami (Remix),2025,"[""Hip Hop"", ""Folk, World, & Country""]","[""Country""]",False,4,4,True
+10033198705,6628105,I'm The Problem (Milan Variable Remix),2025,"[""Folk, World, & Country""]","[""Country""]",False,2,4,False
+10034770743,6628105,Graveyard Whistling,2025,"[""Folk, World, & Country""]","[""Country""]",False,1,4,False
+1506452,6838809,Mixtape,2018,"[""Electronic"", ""Hip Hop"", ""Rock"", ""Pop""]","[""K-pop""]",False,3,4,False
+1506458,6838809,I Am Who,2018,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop""]",False,1,4,False
+1506460,6838809,I Am You,2018,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop""]",False,4,4,True
+1635345,6838809,I Am Not,2018,"[""Electronic"", ""Hip Hop"", ""Rock"", ""Pop""]","[""K-pop""]",False,2,4,False
+1555397,6838809,Clé 1 : Miroh,2019,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop"", ""Electro"", ""Trap""]",False,3,3,True
+1717094,6838809,Clé 2 : Yellow Wood,2019,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop"", ""Electro""]",False,1,3,False
+1782722,6838809,Clé : Levanter,2019,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop"", ""Electro""]",False,2,3,False
+1782860,6838809,Top,2020,"[""Pop"", ""Stage & Screen""]","[""J-pop"", ""K-pop"", ""Theme"", ""Vocal""]",False,3,3,True
+2029591,6838809,GO生,2020,"[""Hip Hop"", ""Pop""]","[""K-pop""]",False,2,3,False
+2178361,6838809,All In,2020,"[""Electronic"", ""Hip Hop"", ""Rock"", ""Pop""]","[""J-pop"", ""K-pop""]",False,1,3,False
+2312458,6838809,NOEASY,2021,"[""Hip Hop"", ""Pop""]","[""K-pop""]",False,1,4,False
+2500909,6838809,Christmas EveL,2021,"[""Pop""]","[""K-pop""]",False,2,4,False
+2808047,6838809,Scars / ソリクン,2021,"[""Pop""]","[""J-pop"", ""K-pop""]",False,4,4,True
+10037085679,6838809,"World Tour ""District 9 : Unlock""",2021,"[""Pop""]","[""K-pop""]",False,3,4,False
+2573066,6838809,Oddinary,2022,"[""Pop""]","[""K-pop""]",False,4,4,True
+2841145,6838809,MAXIDENT DIGITAL ALBUM,2022,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop""]",False,1,4,False
+2933002,6838809,Circus,2022,"[""Pop""]","[""J-pop"", ""K-pop""]",False,3,4,False
+3678840,6838809,SKZ-Replay,2022,"[""Pop""]","[""K-pop""]",False,2,4,False
+3086298,6838809,The Sound,2023,"[""Pop""]","[""K-pop"", ""J-pop""]",False,1,4,False
+3133752,6838809,5-Star,2023,"[""Hip Hop"", ""Pop""]","[""K-pop""]",False,4,4,True
+3344341,6838809,Rock-Star,2023,"[""Electronic"", ""Hip Hop"", ""Pop""]","[""K-pop"", ""Pop Rap""]",False,2,4,False
+3957449,6838809,Social Path / Superbowl (Japanese Ver.),2023,"[""Pop""]","[""K-pop"", ""J-pop""]",False,3,4,False
+3554257,6838809,Ate,2024,"[""Pop""]","[""K-pop""]",False,2,5,False
+3678834,6838809,GIANT,2024,"[""Electronic"", ""Hip Hop"", ""Rock"", ""Pop""]","[""J-pop""]",False,1,5,False
+3690486,6838809,Hop,2024,"[""Hip Hop"", ""Pop""]","[""K-pop""]",False,4,5,False
+10031155974,6838809,Lose My Breath,2024,"[""Pop""]","[""K-pop""]",False,3,5,False
+10032612256,6838809,Come Play,2024,"[""Rock"", ""Pop""]",[],False,5,5,True
+3886669,6838809,Hollow,2025,"[""Pop""]","[""J-pop""]",False,2,3,False
+3950204,6838809,Karma,2025,"[""Hip Hop"", ""Rock"", ""Pop""]","[""K-pop"", ""K-Rock""]",False,3,3,True
+4049113,6838809,Do It,2025,"[""Pop""]","[""K-pop""]",False,1,3,False
+4309236,6838809,This & That,2026,"[""Pop""]","[""K-pop""]",False,1,2,False
+10038237985,6838809,This And That (Felix Ver.),2026,"[""Pop""]","[""K-pop""]",False,2,2,True
+2053405,7080995,Old Town Road,2018,"[""Hip Hop"", ""Folk, World, & Country""]","[""Trap"", ""Country""]",False,3,5,False
+10016237317,7080995,Nasarati,2018,"[""Hip Hop""]","[""Trap""]",False,5,5,True
+10018079168,7080995,October 31st,2018,"[""Hip Hop""]","[""Trap""]",False,4,5,False
+10018079294,7080995,Shame,2018,"[""Hip Hop""]","[""Trap""]",False,2,5,False
+10018079417,7080995,Freddy Krueger (Jimmy Wopo Remix),2018,"[""Hip Hop""]","[""Thug Rap""]",False,1,5,False
+1666132,7080995,7,2019,"[""Hip Hop"", ""Rock"", ""Funk / Soul"", ""Folk, World, & Country""]","[""Pop Rock"", ""Pop Rap"", ""Alternative Rock"", ""Contemporary R&B"", ""Country""]",False,1,2,False
+1841418,7080995,Panini,2019,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,2,2,True
+3004700,7080995,Holiday,2020,"[""Hip Hop""]","[""Trap"", ""Pop Rap""]",False,1,2,False
+3585574,7080995,Rodeo,2020,"[""Hip Hop"", ""Folk, World, & Country""]","[""Trap"", ""Pop Rap"", ""Country""]",False,2,2,True
+2259709,7080995,Montero (Call Me By Your Name),2021,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,2,4,False
+2720402,7080995,Montero,2021,"[""Hip Hop"", ""Rock"", ""Pop""]","[""Contemporary R&B"", ""Alternative Rock"", ""Pop Rock"", ""Pop Rap"", ""Trap""]",False,3,4,False
+2756951,7080995,Industry Baby,2021,"[""Hip Hop""]","[""Pop Rap""]",False,1,4,False
+3004694,7080995,SUN GOES DOWN,2021,"[""Hip Hop"", ""Pop""]",[],False,4,4,True
+3177591,7080995,Late To Da Party (F*CK BET),2022,"[""Hip Hop""]","[""Pop Rap""]",False,1,2,False
+10024718445,7080995,Star Walkin' (League Of Legends Worlds Anthem),2022,"[""Hip Hop""]","[""Pop Rap""]",False,2,2,True
+3896416,7080995,J Christ,2024,"[""Hip Hop"", ""Pop""]","[""Pop Rap"", ""Trap""]",False,4,4,True
+3896422,7080995,"Here We Go! (From The Netflix Film ""Beverly Hills Cop: Axel F"")",2024,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,1,4,False
+3896428,7080995,Light Again!,2024,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,3,4,False
+3896431,7080995,Need Dat Boy,2024,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,2,4,False
+3896434,7080995,Hotbox,2025,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,3,7,False
+10033397526,7080995,Dreamboy,2025,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,2,7,False
+10033397580,7080995,Big Dummy!,2025,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,4,7,False
+10033397601,7080995,Swish,2025,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,1,7,False
+10033397616,7080995,Right There!,2025,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,5,7,False
+10033475994,7080995,Lean On My Body,2025,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,7,7,True
+10034427524,7080995,Days Before Dreamboy,2025,"[""Hip Hop"", ""Pop""]","[""Pop Rap""]",False,6,7,False
+1795944,7153566,El Efecto,2019,"[""Latin""]","[""Reggaeton""]",False,1,1,True
+2491264,7153566,Afrodisíaco,2020,"[""Reggae"", ""Latin"", ""Pop""]","[""Reggaeton""]",False,1,3,False
+10027814770,7153566,Fantasías (Remix),2020,"[""Latin""]","[""Reggaeton""]",False,3,3,True
+10031938607,7153566,Ponte Pa' Mi,2020,"[""Latin""]","[""Reggaeton""]",False,2,3,False
+2572097,7153566,Vice Versa,2021,"[""Reggae"", ""Latin"", ""Pop""]","[""Reggaeton""]",False,1,3,False
+10019585108,7153566,Todo De Ti,2021,"[""Electronic"", ""Latin"", ""Funk / Soul"", ""Pop""]","[""Funk"", ""Latin"", ""Disco""]",False,3,3,True
+10027818229,7153566,Desesperados,2021,"[""Latin""]","[""Reggaeton""]",False,2,3,False
+10022693238,7153566,Trap Cake Vol. 2,2022,"[""Hip Hop"", ""Latin"", ""Funk / Soul""]","[""Reggaeton"", ""Trap"", ""Funk""]",False,1,1,True
+10027603258,7153566,Playa Saturno,2023,"[""Latin""]","[""Reggaeton""]",False,4,5,False
+10035109080,7153566,Quiero Volver A Repetir (Remix),2023,"[""Latin""]",[],False,5,5,True
+10035109101,7153566,Hayami Hana,2023,"[""Latin""]",[],False,3,5,False
+10035109110,7153566,Baby Hello,2023,"[""Latin""]",[],False,2,5,False
+10035109131,7153566,Tamo En Nota,2023,"[""Latin""]",[],False,1,5,False
+3665619,7153566,Cosa Nuestra,2024,"[""Hip Hop"", ""Jazz"", ""Latin""]","[""Bolero"", ""Merengue"", ""Reggaeton"", ""Salsa"", ""Trap""]",False,3,3,True
+10035083730,7153566,Touching The Sky,2024,"[""Latin"", ""Pop""]","[""Latin Pop""]",False,2,3,False
+10035083739,7153566,Déjame Entrar,2024,"[""Latin""]",[],False,1,3,False
+4217322,7153566,Cosa Nuestra: Capítulo 0,2025,"[""Latin"", ""Pop""]","[""Bachata"", ""Reggaeton"", ""Plena"", ""Salsa""]",False,4,4,True
+10034705965,7153566,Buenos Términos,2025,"[""Latin""]",[],False,2,4,False
+10034705989,7153566,Carita Linda,2025,"[""Latin""]","[""Bomba""]",False,3,4,False
+10035089265,7153566,GuabanSexxx,2025,"[""Electronic"", ""Latin""]","[""Bomba"", ""House""]",False,1,4,False
+10019083730,7592689,Let It Glow (From “Frozen Northern Lights”),2016,"[""Pop""]",[],False,2,2,True
+2165614,7592689,"All I Want  (From ""High School Musical: The Musical: The Series"")",2019,"[""Stage & Screen""]","[""Musical"", ""Soundtrack""]",False,1,1,True
+10019083760,7592689,"I Think I Kinda, You Know - Just For A Moment Mashup (From “High School Musical: The Series”)",2020,"[""Stage & Screen""]","[""Musical""]",False,1,1,True
+2062657,7592689,Drivers License,2021,"[""Pop""]","[""Ballad""]",False,8,11,False
+2136718,7592689,Sour,2021,"[""Rock"", ""Pop""]","[""Power Pop"", ""Pop Punk"", ""Acoustic"", ""Ballad"", ""Pop Rock""]",False,2,11,False
+10018111877,7592689,Deja Vu,2021,"[""Electronic"", ""Rock"", ""Funk / Soul"", ""Pop""]","[""Indie Pop"", ""Pop Rock"", ""Indie Rock"", ""Synth-pop""]",False,4,11,False
+10018747901,7592689,Good 4 U,2021,"[""Rock"", ""Pop""]","[""Power Pop"", ""Pop Punk"", ""Pop Rock"", ""Grunge"", ""Emo""]",False,11,11,True
+10019083796,7592689,Even When / The Best Part (From “High School Musical: The Musical The Series”),2021,"[""Stage & Screen""]","[""Musical""]",False,6,11,False
+10019083814,7592689,"The Best Part (From ""High School Musical: The Musical: The Series” Soundtrack)",2021,"[""Stage & Screen""]","[""Musical""]",False,10,11,False
+10019083826,7592689,YAC Alma Mater (From “High School Musical: The Musical: The Series” Season 2 Soundtrack),2021,"[""Stage & Screen""]","[""Musical""]",False,5,11,False
+10019083835,7592689,Granted (From “High School Musical: The Musical: The Series” Season 2 Soundtrack),2021,"[""Stage & Screen""]","[""Musical""]",False,3,11,False
+10019654912,7592689,The Rose Song,2021,"[""Pop""]",[],False,7,11,False
+10022949921,7592689,Singles 4 You,2021,"[""Pop""]","[""Indie Pop""]",False,9,11,False
+10033023766,7592689,サワー,2021,"[""Rock"", ""Pop""]","[""Power Pop"", ""Acoustic"", ""Ballad"", ""Pop Punk""]",False,1,11,False
+10025699732,7592689,The Bels,2022,"[""Pop""]",[],False,1,1,True
+3151725,7592689,Vampire,2023,"[""Rock"", ""Pop""]","[""Indie Pop""]",False,5,6,False
+3231790,7592689,Guts,2023,"[""Rock"", ""Pop""]","[""Alt-Pop"", ""Ballad"", ""Indie Pop"", ""Pop Rock"", ""Power Pop""]",False,3,6,False
+3299926,7592689,Can't Catch Me Now,2023,"[""Pop""]","[""Soundtrack""]",False,2,6,False
+3307135,7592689,Bad Idea Right?,2023,"[""Rock"", ""Pop""]","[""Power Pop"", ""Garage Rock"", ""Pop Rock""]",False,1,6,False
+10028990315,7592689,Guts: The Secret Tracks,2023,"[""Rock"", ""Pop""]","[""Indie Pop"", ""Pop Rock""]",False,4,6,False
+10035203837,7592689,Olivia Rodrigo,2023,"[""Pop""]",[],False,6,6,True
+3562046,7592689,Stick Season / Lacy,2024,"[""Pop""]","[""Alt-Pop"", ""Folk""]",False,1,1,True
+4198317,7592689,Drop Dead,2026,"[""Rock"", ""Pop""]",[],False,3,6,False
+4235421,7592689,The Cure,2026,"[""Pop""]","[""Indie Pop""]",False,5,6,False
+4253262,7592689,You Seem Pretty Sad For A Girl So In Love,2026,"[""Pop""]",[],False,6,6,True
+4259943,7592689,Honeybee,2026,"[""Pop""]",[],False,4,6,False
+4324752,7592689,Serena Joy,2026,"[""Pop""]",[],False,1,6,False
+10038081097,7592689,Purple (Happy Version),2026,"[""Pop""]","[""Ballad""]",False,2,6,False

@@ -198,7 +198,7 @@ Definition B is not used: stripping "mono" and "stereo" as whole words changes t
 
 ## Demo: re-recordings (17-10-2026)
 
-Decision: titles containing "taylor's version" are flagged as re-recordings in the demo and are not collapsed in the artist timeline. The model and the metrics do not change.
+Decision: titles containing "taylor's version" (case-insensitive, matching both the straight apostrophe and the typographic one, which is normalized to the straight one before matching) are flagged as re-recordings in the demo and are not collapsed in the artist timeline. The model and the metrics do not change.
 Limitation: only re-recordings that carry the marker in the title are flagged.
 
 ## Demo: WHEN regeneration control (17-10-2026)
@@ -233,6 +233,13 @@ Folder results/demo/live/style/ (sizes from disk): random_forest_2018.joblib 6,3
 Control before saving (results/demo/live/style/control.csv): 1,444 rows per method and 2,888 in total matched against results/style_forecast/predictions.csv, no unmatched row on either side, row counts per target year equal to the stored ones. Maximum absolute difference against the limit of 0.00005: random_forest expected_growth 2.22e-16, expected_works 1.82e-12, range_low 1.82e-12, range_high 1.82e-12; repeat_last expected_growth 4.44e-16, expected_works 0, range_low 1.82e-12, range_high 1.82e-12. Rank, reported apart and not part of the pass rule, matches in all rows (maximum difference 0) for both methods.
 Reload check after saving (models loaded from disk, rows rescored from panel_rows.csv and percentiles.csv): same 1,444 matched rows per method, no unmatched row. Maximum absolute difference: random_forest expected_growth 2.22e-16, expected_works 1.82e-12, range_low 3.64e-12, range_high 1.82e-12, rank 0; repeat_last expected_growth 0, expected_works 0, range_low 1.82e-12, range_high 1.82e-12, rank 0.
 Limitations: only the Random Forest with the locked configuration and repeat_last are scored live (Bayesian Ridge and XGBoost are not). The ranges depend on the stored percentile table, which is not recomputed in the app.
+
+## Demo: works file of the demo artists (17-10-2026)
+
+Decision: a small file results/demo/works_demo.csv holds the Works of the 40 demo artists (the ids of app/demo_config.yaml) and feeds the timeline cards, so the app never reads works_checkpoint.parquet or snapshots.parquet. It complements the entries "Demo: timeline rule per artist and year, and baseline label (17-10-2026)" and "Demo: re-recordings (17-10-2026)" without changing them.
+Rows: every dated Work from 2018 onward; for 2010 to 2017 only the representative Work of each artist-year (works_so_far_this_year equals works_this_year); nothing before 2010. Reason: 2018 is the first year of the demo scores (holdout start) and 2010 to 2017 gives readable context in the timeline. Limitation: years before 2010 are not in the file and the 2010 cut is a display choice.
+Columns: work_id, artist_id, title, year, genres, styles, is_rerecording, works_so_far_this_year, works_this_year, is_representative. The per-artist training row count is not in this file, it stays in results/demo/when_demo_scores.csv (artist_train_rows).
+Re-recordings: the rule of the entry "Demo: re-recordings (17-10-2026)" is applied unchanged (is_rerecording, both apostrophe forms matched). Rows are kept and flagged, not deleted, because scores are per Work and the representative Work is defined over all Works of the year; whether the screen shows or hides flagged rows is decided when the screens are built. Reason for the flag: a re-recording repeats the styles of the original, so by the definition of the WHAT label (a style absent from every earlier style) it is not expected to add a new style; this was not checked case by case.
 
 ## Duplicate audit: sensitivity result (17-10-2026)
 

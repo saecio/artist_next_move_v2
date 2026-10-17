@@ -11,8 +11,11 @@ paths:
   style_predictions: "results/style_forecast/predictions.csv"  # stored style forecast table
   style_bundle: "results/style_forecast/models/random_forest.joblib"  # stored Random Forest fitted on origins up to 2022, read only (2024 rows)
   style_live: "results/demo/live/style"  # live scoring assets of the style forecast
+  works_demo: "results/demo/works_demo.csv"  # Works of the demo artists for the timeline cards
+  when_live_features: "results/demo/live/when_features.csv"  # WHEN feature rows of the demo artists (control source)
 
 years:
+  demo_works_first_year: 2010  # first year shown in the demo timeline (display choice)
   last_complete: 2025  # last fully observed year (the dump is dated 2026-09-01)
   partial: 2026  # partly observed year, demo only
   development_last: 2017  # last development year, nothing later is used for tuning
