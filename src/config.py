@@ -14,3 +14,4 @@ def load_config() -> dict:
 
 
 CONFIG = load_config()  # read once at import, shared by the modules that import it
+assert CONFIG["years"]["development_last"] == CONFIG["years"]["holdout_start"] - 1, "years.development_last must equal years.holdout_start - 1"  # one development boundary for WHEN, WHAT and the style forecast
