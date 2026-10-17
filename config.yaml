@@ -8,6 +8,9 @@ paths:
   works: "data/processed/works_checkpoint.parquet"  # cleaned Works table
   snapshots: "data/processed/snapshots.parquet"  # cached snapshots
   results: "results"  # result files and trial logs
+  style_predictions: "results/style_forecast/predictions.csv"  # stored style forecast table
+  style_bundle: "results/style_forecast/models/random_forest.joblib"  # stored Random Forest fitted on origins up to 2022, read only (2024 rows)
+  style_live: "results/demo/live/style"  # live scoring assets of the style forecast
 
 years:
   last_complete: 2025  # last fully observed year (the dump is dated 2026-09-01)

@@ -1,0 +1,23 @@
+{
+ "random_forest": [
+  "lc0",
+  "lc1",
+  "lc2",
+  "lg0",
+  "lg1",
+  "lg2",
+  "age",
+  "share",
+  "genre_Blues",
+  "genre_Electronic",
+  "genre_Folk, World, & Country",
+  "genre_Funk / Soul",
+  "genre_Hip Hop",
+  "genre_Jazz",
+  "genre_Latin",
+  "genre_Pop",
+  "genre_Reggae",
+  "genre_Rock",
+  "genre_Stage & Screen"
+ ]
+}

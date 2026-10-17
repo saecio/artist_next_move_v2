@@ -1,0 +1,11 @@
+check,method,column,max_abs_diff,matched,only_live,only_stored
+control,random_forest,expected_growth,2.220446049250313e-16,1444,0,0
+control,random_forest,expected_works,1.8189894035458565e-12,1444,0,0
+control,random_forest,range_low,1.8189894035458565e-12,1444,0,0
+control,random_forest,range_high,1.8189894035458565e-12,1444,0,0
+control,random_forest,rank,0.0,1444,0,0
+control,repeat_last,expected_growth,4.440892098500626e-16,1444,0,0
+control,repeat_last,expected_works,0.0,1444,0,0
+control,repeat_last,range_low,1.8189894035458565e-12,1444,0,0
+control,repeat_last,range_high,1.8189894035458565e-12,1444,0,0
+control,repeat_last,rank,0.0,1444,0,0
