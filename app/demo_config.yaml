@@ -1,0 +1,70 @@
+# Demo app settings: paths, years, texts and the artist list
+paths:  # input files, relative to the project root
+  row_scores: results/holdout_what/row_scores.csv  # WHAT holdout scores, one row per artist and year
+  predictions: results/style_forecast/predictions.csv  # global style forecast
+validation_years: [2018, 2022]  # first and last year selectable in the demo
+row_scores_columns: [artist_id, year, label, stage0_score, baseline_c_score]  # columns read and shown, raw names
+predictions_columns: [style, target_year, method, expected_growth, expected_works, range_low, range_high, rank]  # columns read and shown
+tabs:  # tab titles, in display order
+  - Problem and question  # tab title
+  - Data and cleaning  # tab title
+  - EDA  # tab title
+  - Method  # tab title
+  - Results  # tab title
+  - Time Machine demo  # tab title
+  - Global style forecast  # tab title
+  - Limits and next steps  # tab title
+notices:  # texts shown verbatim
+  what_notice: "WHAT scores are not calibrated: use them only to rank, never as real percentages."  # tab 6
+  style_notice: "The style forecast is global, not per artist. It predicts what gets catalogued in Discogs."  # tab 7
+  projection_notice: "Years after 2022 are projection without ground truth."  # tabs 6 and 7
+  pending_notice: "Pending."  # tabs without content yet
+ui:  # interface labels
+  genre_label: "Genre"  # genre selector
+  all_genres: "All genres"  # genre selector, no filter option
+  artist_label: "Artist"  # artist selector
+  id_caption: "Discogs id: {id}"  # selected artist id, {id} is replaced
+  year_label: "Year"  # year selector
+  empty_rows: "No rows for this artist in this year."  # shown when the filter returns nothing
+  projection_column: "is_projection"  # boolean column added to the forecast table
+artists:  # demo artists: display name, Discogs id, genre
+  - {name: "Taylor Swift", discogs_id: 1124645, genre: "Pop"}  # Pop
+  - {name: "Billie Eilish", discogs_id: 5590213, genre: "Pop"}  # Pop
+  - {name: "Lady Gaga", discogs_id: 1103159, genre: "Pop"}  # Pop
+  - {name: "Olivia Rodrigo", discogs_id: 7592689, genre: "Pop"}  # Pop
+  - {name: "Sabrina Carpenter", discogs_id: 4378284, genre: "Pop"}  # Pop
+  - {name: "Dua Lipa", discogs_id: 4357593, genre: "Pop"}  # Pop
+  - {name: "Harry Styles", discogs_id: 2508414, genre: "Pop"}  # Pop
+  - {name: "Ed Sheeran", discogs_id: 2184482, genre: "Pop"}  # Pop
+  - {name: "Drake", discogs_id: 151199, genre: "Hip hop"}  # Hip hop
+  - {name: "Eminem", discogs_id: 38661, genre: "Hip hop"}  # Hip hop
+  - {name: "Post Malone", discogs_id: 4016434, genre: "Hip hop"}  # Hip hop
+  - {name: "Lil Nas X", discogs_id: 7080995, genre: "Hip hop"}  # Hip hop
+  - {name: "Tyler, the Creator", discogs_id: 1967268, genre: "Hip hop"}  # Hip hop
+  - {name: "Doja Cat", discogs_id: 3970719, genre: "Hip hop"}  # Hip hop
+  - {name: "Cardi B", discogs_id: 5153025, genre: "Hip hop"}  # Hip hop
+  - {name: "H.E.R.", discogs_id: 5495084, genre: "R&B / soul"}  # R&B / soul
+  - {name: "Lizzo", discogs_id: 1097928, genre: "R&B / soul"}  # R&B / soul
+  - {name: "SZA", discogs_id: 3272791, genre: "R&B / soul"}  # R&B / soul
+  - {name: "The Weeknd", discogs_id: 2171152, genre: "R&B / soul"}  # R&B / soul
+  - {name: "Mary J. Blige", discogs_id: 4778, genre: "R&B / soul"}  # R&B / soul
+  - {name: "Pharrell Williams", discogs_id: 90037, genre: "R&B / soul"}  # R&B / soul
+  - {name: "Bad Bunny", discogs_id: 5894905, genre: "Latino"}  # Latino
+  - {name: "Karol G", discogs_id: 4452209, genre: "Latino"}  # Latino
+  - {name: "Rauw Alejandro", discogs_id: 7153566, genre: "Latino"}  # Latino
+  - {name: "Farruko", discogs_id: 2929902, genre: "Latino"}  # Latino
+  - {name: "Anuel AA", discogs_id: 5794658, genre: "Latino"}  # Latino
+  - {name: "Ozuna", discogs_id: 5395551, genre: "Latino"}  # Latino
+  - {name: "Shakira", discogs_id: 5530, genre: "Latino"}  # Latino
+  - {name: "Rosalía", discogs_id: 5648334, genre: "Latino"}  # Latino
+  - {name: "Coldplay", discogs_id: 29735, genre: "Rock / alternative"}  # Rock / alternative
+  - {name: "Lana Del Rey", discogs_id: 2445772, genre: "Rock / alternative"}  # Rock / alternative
+  - {name: "Imagine Dragons", discogs_id: 2727700, genre: "Rock / alternative"}  # Rock / alternative
+  - {name: "Morgan Wallen", discogs_id: 6628105, genre: "Country"}  # Country
+  - {name: "Luke Combs", discogs_id: 5940000, genre: "Country"}  # Country
+  - {name: "Charli XCX", discogs_id: 1345479, genre: "Electronic"}  # Electronic
+  - {name: "Kaytranada", discogs_id: 3160392, genre: "Electronic"}  # Electronic
+  - {name: "Calvin Harris", discogs_id: 222578, genre: "Electronic"}  # Electronic
+  - {name: "BTS", discogs_id: 5034422, genre: "K-pop"}  # K-pop
+  - {name: "BLACKPINK", discogs_id: 5210284, genre: "K-pop"}  # K-pop
+  - {name: "Stray Kids", discogs_id: 6838809, genre: "K-pop"}  # K-pop
