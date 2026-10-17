@@ -209,11 +209,12 @@ Decision: the new script writes with exclusive mode, fits the final WHEN configu
 
 Script: scripts/run_duplicate_sensitivity.py. Outputs: results/duplicate_sensitivity/results.csv and verdicts.csv.
 Reproduction check: all 30 stored development per-fold PR-AUC values were reproduced on the original data to 4 decimals before the batch.
-Collapse (definition A): 78,300 clusters, 90,076 works removed out of 5,949,217. 11,117 clusters include a work dated 2018 or later. 1,299 titles normalize to an empty string, which groups all such works of one artist, so the removal count is slightly overstated.
+Collapse (definition A, same artist_id and normalized title): 78,300 clusters, 90,076 works removed out of 5,949,217. 11,117 clusters include a work dated 2018 or later. 1,299 titles normalize to an empty string, which groups all such works of one artist, so the removal count is slightly overstated.
 Primary rule: not material for WHEN next_1y, WHEN next_2y and WHAT. The collapsed pooled PR-AUC stays inside the 95% interval of the original in every case, and the preferred configuration by mean development PR-AUC is the same on both versions (the candidate m_lr_0.012 for WHAT).
-Secondary reading: the paired PR-AUC difference excludes zero in all cases, with magnitudes between 0.0009 and 0.0025 (down for WHEN, up for WHAT). Both readings are reported and neither was chosen after the fact.
-Gain over baseline: pooled paired differences between +0.0002 and +0.0014 (the interval for the WHAT candidate includes zero), because collapsing lowers the positive rate for WHEN.
-The holdout was not re-evaluated and no correction is adopted. The frozen results stand. The candidate m_lr_0.012 stays not adopted: it fails the unpaired adoption rule and the holdout was already viewed with stage 0. Limitations: definition A treats same-title works as duplicates, so it is an upper bound of true duplicates. The style forecast series were not audited.
+Secondary reading: the paired PR-AUC difference excludes zero in all cases, with magnitudes between 0.0009 and 0.0026 (down for WHEN, up for WHAT). Both readings are reported and neither was chosen after the fact.
+Gain over baseline: pooled paired differences between +0.0002 and +0.0014, and the interval for the WHAT candidate includes zero. The positive rate of the baseline is lower after collapsing for WHEN (next_1y 0.4753 to 0.4716, next_2y 0.6123 to 0.6090) and higher for WHAT (0.3175 to 0.3188).
+The holdout was not re-evaluated and no correction is adopted. The frozen results stand. The candidate m_lr_0.012 stays not adopted: it fails the unpaired adoption rule and the holdout was already viewed with stage 0.
+Limitations: definition A treats same-title works as duplicates, so it is an upper bound of true duplicates. The style forecast series were not audited at the time of this entry.
 
 ## PENDING
 - Demo artist selection for the Streamlit Time Machine app: once snapshots_df exists, mine candidate artists algorithmically rather than picking by hand only: artists with the largest year_gap between consecutive works (hiatus/comeback candidates, good for demoing WHEN) and artists with the largest style-set discontinuity between consecutive works (genre-pivot candidates, good for demoing WHAT). Cross-reference with recognizable/well-known artists where possible, since a judge/recruiter audience responds better to a name they know than an equally-clean but obscure example.
@@ -280,3 +281,17 @@ The holdout was not re-evaluated and no correction is adopted. The frozen result
 
 ### Known limitation: catalogue date (17-10-2026)
 Discogs is a community-maintained database, so releases are catalogued after their release date, in some cases years later. Counts per year come from the 01-09-2026 dump and include works dated to a given year but catalogued afterwards. The series is therefore not point-in-time by catalogue date, and the state of the database at past dates cannot be reconstructed. This is a property of the source, not of the pipeline, and it applies to every model. It is consistent with the load delay and the 2023 anomaly already recorded.
+
+## Style forecast: duplicate audit design (17-10-2026)
+
+Context: same-title works in different years survive cleaning and the style forecast counts works per style and year, so duplicates may inflate the series of their styles.
+Step A counts only: per style and year, works counted on the original table and on the table with definition A clusters collapsed to the earliest work, with no model. For years up to 2017, also the rank correlation and top-10 overlap of the year-over-year growth between both versions. For 2018 and later, only counts of affected works: no growth, no ranking, no hits, no model output.
+Step B only after explicit approval: refit on development years only, with the same seeds and parameters, comparing hits@10 per method on the development folds.
+Rule fixed before any run: the effect is material if the collapsed pooled development hits@10 of any method falls outside the 95% interval of the original, or the pass or fail status of any condition that can be evaluated on development years changes, or the ranking of methods by mean development hits@10 changes. The reading where the paired difference excludes zero is reported as secondary and neither reading is chosen afterwards.
+The spent style test script is not run and the test years are not evaluated.
+
+## Demo: WHEN scores file (17-10-2026)
+
+The file results/demo/when_demo_scores.csv has one row per work, keyed by artist_id, snapshot_year, work_id and target, because snapshots are one row per work and many artist-years repeat. Any aggregation to one row per artist-year is decided later and recorded before use.
+Rows keep their label wherever it is resolved, in every year. is_projection is true only when the label is unresolved. The column label_after_holdout marks snapshots dated after the last holdout year, whose resolved labels are partial and affected by cataloguing delay, and which enter no metric.
+The script refits the final configuration on the original training rows and compares train rows, holdout rows and the aggregate PR-AUC of each target with the stored values before writing, and stops if any differs. The control passed on 17-10-2026: 0.7851 for next_1y and 0.8352 for next_2y, with 3,786,030 train rows and 1,020,151 holdout rows.
