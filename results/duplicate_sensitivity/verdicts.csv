@@ -1,0 +1,4 @@
+target,outside_ci,choice_orig,choice_coll,material,paired_ci_excludes_zero,outside_ci_no_fold5,choice_orig_no_fold5,choice_coll_no_fold5,material_no_fold5,paired_ci_excludes_zero_no_fold5
+next_1y,"stage0=False,final=False",final,final,False,"stage0=True,final=True","stage0=False,final=False",final,final,False,"stage0=True,final=True"
+next_2y,"stage0=False,final=False",final,final,False,"stage0=True,final=True","stage0=False,final=False",final,final,False,"stage0=True,final=True"
+new_style_year,"stage0=False,final=False",final,final,False,"stage0=True,final=True","stage0=False,final=False",final,final,False,"stage0=True,final=True"
