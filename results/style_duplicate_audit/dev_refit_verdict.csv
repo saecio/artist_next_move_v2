@@ -1,0 +1,31 @@
+section,setting,key,original_mean,original_ci_low,original_ci_high,collapsed_mean,diff_mean,diff_ci_low,diff_ci_high,spearman_original,spearman_collapsed,primary_outside_ci,setting_status_changed,primary_material,secondary_ci_excludes_zero,original,collapsed,changed,original_value,collapsed_value
+method,default,random,0.5430002851705629,0.5159852552051634,0.5728771265328506,0.5455019967986195,0.002501711628056731,0.0013186340748964577,0.003979582054590628,,,False,True,True,True,,,,,
+method,default,repeat_last,6.0,5.48,6.52,5.8,-0.2,-0.44,0.0,0.7069108155083421,0.7052729346226115,False,True,True,False,,,,,
+method,default,mean_growth,4.52,4.0,5.04,4.4,-0.12,-0.32,0.08,0.5504619684885569,0.548569228647309,False,True,True,False,,,,,
+method,default,bayes_ridge,6.12,5.52,6.72,6.04,-0.08,-0.28,0.08,0.6945773261020292,0.6918471893862441,False,True,True,False,,,,,
+method,default,xgboost,6.0,5.48,6.52,5.72,-0.28,-0.64,0.12,0.6986667529171744,0.6933035173155087,False,True,True,False,,,,,
+method,default,random_forest,6.16,5.6,6.72,5.8,-0.36,-0.6,-0.16,0.7117157053888756,0.7111135092927063,False,True,True,True,,,,,
+condition,default,1 mean hits@10 at least 0.5 above best baseline,,,,,,,,,,,,,,False,False,False,0.16000000000000014,0.2400000000000002
+condition,default,2 at least as many hits as best baseline in 15+ years,,,,,,,,,,,,,,True,True,False,20,20
+condition,default,3 lower bound of paired difference above 0,,,,,,,,,,,,,,False,False,False,-0.24,-0.12
+condition,default,4 at least 1.0 above random and lower bound above 0,,,,,,,,,,,,,,True,True,False,"(np.float64(5.616999714829437), np.float64(5.078233738766668))","(np.float64(5.494498003201381), np.float64(4.869083156512341))"
+condition,default,5 mean Spearman not below best baseline,,,,,,,,,,,,,,True,False,True,"(np.float64(0.7117157053888756), np.float64(0.7069108155083421))","(np.float64(0.6918471893862441), np.float64(0.7052729346226115))"
+rule,default,candidate,,,,,,,,,,,,,,random_forest,bayes_ridge,True,,
+rule,default,baseline,,,,,,,,,,,,,,repeat_last,repeat_last,False,,
+rule,default,recommended,,,,,,,,,,,,,,repeat_last,repeat_last,False,,
+ranking,default,methods by mean dev hits@10,,,,,,,,,,,,,,"random_forest,bayes_ridge,repeat_last,xgboost,mean_growth,random","bayes_ridge,repeat_last,random_forest,xgboost,mean_growth,random",True,,
+method,locked,random,0.5430002851705629,0.5159852552051634,0.5728771265328506,0.5455019967986195,0.002501711628056731,0.0013186340748964577,0.003979582054590628,,,False,False,False,True,,,,,
+method,locked,repeat_last,6.0,5.48,6.52,5.8,-0.2,-0.44,0.0,0.7069108155083421,0.7052729346226115,False,False,False,False,,,,,
+method,locked,mean_growth,4.52,4.0,5.04,4.4,-0.12,-0.32,0.08,0.5504619684885569,0.548569228647309,False,False,False,False,,,,,
+method,locked,bayes_ridge,6.12,5.52,6.72,6.04,-0.08,-0.28,0.08,0.6945773261020292,0.6918471893862441,False,False,False,False,,,,,
+method,locked,xgboost,6.0,5.48,6.52,5.72,-0.28,-0.64,0.12,0.6986667529171744,0.6933035173155087,False,False,False,False,,,,,
+method,locked,random_forest,6.28,5.8,6.84,6.2,-0.08,-0.32,0.16,0.7296646821963049,0.7270907407122864,False,False,False,False,,,,,
+condition,locked,1 mean hits@10 at least 0.5 above best baseline,,,,,,,,,,,,,,False,False,False,0.28000000000000025,0.40000000000000036
+condition,locked,2 at least as many hits as best baseline in 15+ years,,,,,,,,,,,,,,True,True,False,21,22
+condition,locked,3 lower bound of paired difference above 0,,,,,,,,,,,,,,False,False,False,-0.12,0.0
+condition,locked,4 at least 1.0 above random and lower bound above 0,,,,,,,,,,,,,,True,True,False,"(np.float64(5.736999714829437), np.float64(5.246095348795808))","(np.float64(5.654498003201381), np.float64(5.143585703346921))"
+condition,locked,5 mean Spearman not below best baseline,,,,,,,,,,,,,,True,True,False,"(np.float64(0.7296646821963049), np.float64(0.7069108155083421))","(np.float64(0.7270907407122864), np.float64(0.7052729346226115))"
+rule,locked,candidate,,,,,,,,,,,,,,random_forest,random_forest,False,,
+rule,locked,baseline,,,,,,,,,,,,,,repeat_last,repeat_last,False,,
+rule,locked,recommended,,,,,,,,,,,,,,repeat_last,repeat_last,False,,
+ranking,locked,methods by mean dev hits@10,,,,,,,,,,,,,,"random_forest,bayes_ridge,repeat_last,xgboost,mean_growth,random","random_forest,bayes_ridge,repeat_last,xgboost,mean_growth,random",False,,

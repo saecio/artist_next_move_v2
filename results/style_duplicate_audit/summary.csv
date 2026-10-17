@@ -1,0 +1,52 @@
+section,key,original,collapsed,removed_share,count,eligible,spearman,top10_overlap
+partition,<2016,5230851.0,5162425.0,0.013081236685961806,,,,
+partition,2016-2017,511729.0,508454.0,0.006399871807147924,,,,
+partition,2018-2022,1339286.0,1329916.0,0.006996265174130096,,,,
+partition,>2022,703360.0,695732.0,0.0108450864422202,,,,
+top_removed_share_to_2017,Interview,230.0,201.0,0.12608695652173912,,,,
+top_removed_share_to_2017,Bengali Music,1036.0,922.0,0.11003861003861004,,,,
+top_removed_share_to_2017,Cobla,207.0,187.0,0.0966183574879227,,,,
+top_removed_share_to_2017,Sertanejo,999.0,904.0,0.09509509509509509,,,,
+top_removed_share_to_2017,Carimbó,249.0,229.0,0.08032128514056225,,,,
+top_removed_share_to_2017,Midwest Emo,38.0,35.0,0.07894736842105263,,,,
+top_removed_share_to_2017,Brega,204.0,188.0,0.0784313725490196,,,,
+top_removed_share_to_2017,Jota,334.0,308.0,0.07784431137724551,,,,
+top_removed_share_to_2017,String Instrument,13.0,12.0,0.07692307692307693,,,,
+top_removed_share_to_2017,Kolo,799.0,742.0,0.07133917396745933,,,,
+top_removed_share_to_2017,Seresta,157.0,146.0,0.07006369426751592,,,,
+top_removed_share_to_2017,Huayno,1164.0,1087.0,0.0661512027491409,,,,
+top_removed_share_to_2017,MPB,12660.0,11867.0,0.06263823064770932,,,,
+top_removed_share_to_2017,Morna,245.0,230.0,0.061224489795918366,,,,
+top_removed_share_to_2017,Villancicos,317.0,298.0,0.05993690851735016,,,,
+top_removed_share_to_2017,Zamba,760.0,718.0,0.05526315789473684,,,,
+top_removed_share_to_2017,Fado,3558.0,3364.0,0.054525014052838675,,,,
+top_removed_share_to_2017,Concert Film,626.0,593.0,0.052715654952076675,,,,
+top_removed_share_to_2017,Yoruba,19.0,18.0,0.05263157894736842,,,,
+top_removed_share_to_2017,Lambada,689.0,653.0,0.05224963715529753,,,,
+styles_over_5pct,any_year,,,,476.0,,,
+styles_over_5pct,to_2017,,,,455.0,,,
+growth_agreement,1993,,,,,136.0,0.9990398824489267,10.0
+growth_agreement,1994,,,,,143.0,0.9983994878361077,10.0
+growth_agreement,1995,,,,,155.0,0.9980591973023746,10.0
+growth_agreement,1996,,,,,167.0,0.9984501716663552,10.0
+growth_agreement,1997,,,,,171.0,0.9985216118271055,10.0
+growth_agreement,1998,,,,,174.0,0.9982117901145865,10.0
+growth_agreement,1999,,,,,172.0,0.9987288425392017,10.0
+growth_agreement,2000,,,,,174.0,0.9978017597311994,10.0
+growth_agreement,2001,,,,,176.0,0.9985642739184177,9.0
+growth_agreement,2002,,,,,173.0,0.9982524532867321,10.0
+growth_agreement,2003,,,,,178.0,0.9985977664270387,10.0
+growth_agreement,2004,,,,,179.0,0.9973699049760704,10.0
+growth_agreement,2005,,,,,186.0,0.9980553772247573,9.0
+growth_agreement,2006,,,,,192.0,0.9989238018660369,10.0
+growth_agreement,2007,,,,,197.0,0.9984739390463223,10.0
+growth_agreement,2008,,,,,203.0,0.9990618302630033,10.0
+growth_agreement,2009,,,,,204.0,0.9990416344799229,10.0
+growth_agreement,2010,,,,,209.0,0.9991216017935243,10.0
+growth_agreement,2011,,,,,202.0,0.99930115796669,10.0
+growth_agreement,2012,,,,,209.0,0.9991702373844582,9.0
+growth_agreement,2013,,,,,213.0,0.9991667515230688,9.0
+growth_agreement,2014,,,,,214.0,0.9993072538754302,10.0
+growth_agreement,2015,,,,,215.0,0.9990521384240141,9.0
+growth_agreement,2016,,,,,216.0,0.9993284035294536,10.0
+growth_agreement,2017,,,,,223.0,0.9989817246080536,10.0
