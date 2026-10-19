@@ -1,0 +1,15 @@
+control,rows,unmatched,max_abs_diff,limit,passed
+1a pool A features equal what_features_all_years.csv,299,0,1.1102230246251565e-16,1e-09,True
+"1b pool A labels, flags and next_active_year exactly equal what_labels.csv",299,0,0.0,0.0,True
+1c pool A scores equal stage0_score of row_scores.csv,160,0,2.8025054943370264e-08,5e-05,True
+"2 point-in-time, data cut at 2017",0,0,0.0,1e-09,True
+"2 point-in-time, data cut at 2022",65,0,0.0,1e-09,True
+"2 point-in-time, data cut at 2023",76,0,0.0,1e-09,True
+"2 point-in-time, data cut at 2024",90,0,0.0,1e-09,True
+"2 point-in-time, data cut at 2025",105,0,0.0,1e-09,True
+3 full-works build equals the pool-only build,117,0,0.0,1e-09,True
+4 row keys equal the independent count,117,0,0.0,0.0,True
+5a model columns equal columns.json,25,0,0.0,0.0,True
+5b scores in 0 to 1,117,0,0.0,0.0,True
+"5c no duplicated (artist_id, year)",117,0,0.0,0.0,True
+6 holdout-rule labels equal the independent recomputation,46,0,0.0,0.0,True
