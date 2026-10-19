@@ -14,6 +14,7 @@ sys.path.append(str(ROOT / "src"))  # src/ importable
 from streamlit.testing.v1 import AppTest  # headless app runner
 
 from app_data import load_demo_config  # demo settings
+from demo_game import scoreboard  # scoreboard of a history
 
 cfg = load_demo_config()  # settings
 g, keys = cfg["game"], cfg["game"]["keys"]  # game texts and keys
@@ -23,7 +24,7 @@ genres = list(dict.fromkeys(a["genre"] for a in cfg["artists"]))  # genre option
 def show(at: AppTest, label: str) -> None:  # print the main texts of the page
     """Assert no exception and print the main texts of the page."""
     assert not at.exception, [e.value for e in at.exception]  # no exception on the page
-    keep = ("Model", "My answer", "Reality", "Information", "No WHAT", "partial", "Last year", "User", "Session")  # line prefixes of the game texts
+    keep = ("Model", "My answer", "Reality", "Information", "No WHAT", "No reality", "Years from", "Last year", "User", "Session")  # line prefixes of the game texts
     lines = [m.value for m in list(at.markdown) + list(at.caption) + list(at.info) if m.value and (m.value.startswith(keep) or "hidden" in m.value)]  # game lines and hidden-count captions
     print(f"-- {label}: {len(at.exception)} exceptions, {len(at.button)} buttons")  # summary
     for s in at.subheader:  # section titles
@@ -66,9 +67,42 @@ def run_mode(user_on: bool, artist_name: str, steps: int) -> None:  # play the f
     assert not at.exception  # no exception after restart
 
 
+def play_to_end(artist_name: str, user_on: bool) -> None:  # play one artist to the last year
+    """Play every year of one artist; print the page at 2024 and 2026 and assert the scoreboard n does not change there."""
+    a = next(x for x in cfg["artists"] if x["name"] == artist_name)  # artist entry
+    aid = a["discogs_id"]  # its id
+    at = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=60).run()  # fresh app
+    at.selectbox[0].select(a["genre"]).run()  # genre filter
+    at.selectbox[1].select_index([x["name"] for x in cfg["artists"] if x["genre"] == a["genre"]].index(artist_name)).run()  # artist
+    if user_on:  # enable the optional prediction
+        at.checkbox(key=keys["user_pred"].format(id=aid)).check().run()  # checkbox
+    print(f"\n===== full walk, {artist_name} ({aid}), user prediction {'ON' if user_on else 'OFF'}")  # section title
+    while True:  # until the last year
+        state = at.session_state[keys["state"]][aid]  # current state
+        year = state["year"]  # question year
+        if user_on:  # question and lock first
+            at.radio(key=keys["answer"].format(id=aid, year=year)).set_value("yes").run()  # answer yes
+            at.button(key=keys["lock"].format(id=aid)).click().run()  # lock
+        n_before = scoreboard(state["history"])  # board before the reveal
+        at.button(key=keys["reveal"].format(id=aid)).click().run()  # reveal
+        n_after = scoreboard(at.session_state[keys["state"]][aid]["history"])  # board after the reveal
+        if year in (2024, 2026):  # requested years
+            assert n_before["n"] == n_after["n"] and n_before["user_n"] == n_after["user_n"], f"board changed in {year}"  # no change
+            show(at, f"year {year}, n {n_before['n']} -> {n_after['n']}")  # page lines
+        assert not at.exception  # no exception
+        nxt = at.button(key=keys["next"].format(id=aid))  # next year button
+        if nxt.disabled:  # end of the data
+            break  # stop
+        nxt.click().run()  # next year
+    print(f"   last year played {year}, final n {n_after['n']}")  # end of the walk
+
+
 t_all = time.time()  # total clock
 run_mode(False, "Olivia Rodrigo", 3)  # 0 train rows, reaches 2021
 run_mode(True, "Olivia Rodrigo", 3)  # same with the user prediction
 run_mode(False, "Taylor Swift", 4)  # hidden re-recordings reach 2021 on reveal
 run_mode(True, "Taylor Swift", 3)  # with the user prediction
+for who in ("Olivia Rodrigo", "Taylor Swift"):  # the two requested artists
+    for on in (False, True):  # both modes
+        play_to_end(who, on)  # full walk
 print(f"\ntotal AppTest time {time.time() - t_all:.2f} s")  # print the result

@@ -75,7 +75,10 @@ live:  # live scoring assets and stored files read by src/app_live.py, relative 
   what_model: what_stage0.json  # WHAT stage 0 model, inside folder
   columns: columns.json  # ordered model input columns, inside folder
   when_features: when_features.csv  # WHEN feature rows of the demo artists, inside folder
-  what_features: what_features.csv  # WHAT feature rows of the demo artists, inside folder
+  what_features: what_features_all_years.csv  # WHAT feature rows of the demo artists, every eligible artist-year from the holdout start, inside folder
+  what_labels: what_labels.csv  # WHAT stored label and after-holdout flag of those rows, inside folder
+  what_control: control_what_all_years.csv  # control results of the extended WHAT step, inside folder
+  what_features_control: what_features.csv  # first WHAT feature file (holdout rows only), kept as the control reference, not read by the app
   style_folder: results/demo/live/style  # per-year Random Forests, panel rows and percentiles
   style_model_pattern: "random_forest_{year}.joblib"  # per-year model file name, {year} is replaced
   style_panel: panel_rows.csv  # style panel rows, inside style_folder
@@ -98,7 +101,7 @@ game:  # tab 6 flow, thresholds, widget keys and texts
     next: "game_next_{id}"  # next year button
     restart: "game_restart_{id}"  # restart button
   user_prediction_label: "Make my own prediction too"  # checkbox text
-  question: "In year {year}, will this artist release a new Work next year?"  # question on screen
+  question: "We are in year {year}, will this artist release a new Work next year?"  # question on screen
   answer_yes: "Yes"  # yes option and verdict word
   answer_no: "No"  # no option and verdict word
   lock_label: "Lock my answer"  # lock button
@@ -108,12 +111,14 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   model_score: "Model score (next_1y) for year {year}: {score:.3f}"  # step A
   model_verdict: "Model prediction: {verdict}"  # step A
   user_answer: "My answer: {answer}"  # step A, only when the user predicted
-  reality: "Reality: {verdict} (a new Work in {year})"  # step B, stored label
-  partial_truth: "partial truth, not part of any metric"  # year without a usable stored label
-  next2_info: "Information, not scored. next_2y score {score:.3f}, stored label: {label}"  # step B
-  what_info: "Information, not scored. WHAT score {score:.3f}, stored label: {label}"  # step B, 2018 to 2022
-  what_missing: "No WHAT row for this artist and year."  # step B without WHAT
-  no_label: "none"  # shown when a stored label is empty
+  reality_yes: "Reality: Yes (a new Work in {year})"  # step B, stored label is yes
+  reality_no: "Reality: No (no new Work in {year})"  # step B, stored label is no
+  no_reality: "No reality yet: the data ends in {year}."  # year without a stored label, {year} is the last data year
+  uncounted_note: "Years from {year} on may not reflect reality because of cataloguing delay."  # fixed line under the scoreboard, {year} is read from the data
+  label_part: ", stored label: {label}"  # label part of the information lines, omitted when the label is missing
+  next2_info: "Information, not scored. next_2y score {score:.3f}{label_part}"  # step B
+  what_info: "Information, not scored. WHAT score {score:.3f}{label_part}"  # step B, 2018 to 2022
+  what_missing: "No WHAT score: the artist has fewer than {n} earlier Works."  # step B without WHAT
   hidden_line: "{n} re-recording(s) hidden"  # line under a year with hidden re-recordings
   future_card: "?"  # card of a year not revealed yet
   gap_card: "No Work in the data"  # card of a year without Work
@@ -122,7 +127,7 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   last_year_text: "Last year of the data reached: no next year to play."  # next button disabled
   empty_text: "No year with a WHEN score for this artist."  # artist without scores
   unseen_warning: "The model has not seen this artist in training (0 training rows)."  # artist_train_rows is 0
-  what_years_warning: "WHAT exists only for 2018 to 2022."  # WHAT coverage
+  what_years_warning: "WHAT is shown for every artist-year from 2018 to the last data year with at least {n} earlier Works."  # WHAT coverage
   scoreboard_title: "Scoreboard"  # section title
   board_model: "Model vs reality: {right} of {n}"  # artist board
   board_user: "User vs reality: {right} of {n}"  # artist board, user years only

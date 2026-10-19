@@ -24,7 +24,7 @@ def flag(value) -> bool:  # safe boolean of a possibly missing flag
 def is_counted(row: pd.Series) -> bool:  # whether the year enters the scoreboard
     """True when the stored next_1y label exists and is neither projection nor after the holdout."""
     if pd.isna(row["label_next_1y"]):  # no stored label
-        return False  # partial truth
+        return False  # nothing to compare with
     return not (flag(row["is_projection_next_1y"]) or flag(row["label_after_holdout_next_1y"]))  # flags of next_1y
 
 
@@ -70,6 +70,12 @@ def card_status(total: int, cards: list, year: int, visible_until: int) -> str: 
     if total == 0:  # no Work in the data
         return "gap"  # empty year
     return "card" if cards else "hidden"  # drawn Works, or only re-recordings that are hidden
+
+
+def first_uncounted_year(stored: pd.DataFrame) -> int | None:  # first year shown but not counted
+    """First snapshot year whose next_1y label is flagged as after the holdout, from the stored scores."""
+    rows = stored[(stored["target"] == "next_1y") & stored["label_after_holdout"]]  # flagged next_1y rows
+    return int(rows["snapshot_year"].min()) if len(rows) else None  # earliest year or none
 
 
 def names(text) -> str:  # readable list from JSON text

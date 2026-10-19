@@ -1,0 +1,12 @@
+control,rows,unmatched,max_abs_diff,limit,passed
+"1a old rows in new file, features equal",160,0,9.71445146547012e-17,1e-09,True
+1b live score vs stored stage0_score,160,0,2.8025054943370264e-08,5e-05,True
+"6 holdout labels equal stored, none flagged",160,0,0.0,0.0,True
+2 model columns equal columns.json,25,0,0.0,0.0,True
+"3 point-in-time, data cut at 2017",0,0,0.0,1e-09,True
+"3 point-in-time, data cut at 2022",179,0,0.0,1e-09,True
+"3 point-in-time, data cut at 2023",215,0,0.0,1e-09,True
+"3 point-in-time, data cut at 2024",246,0,0.0,1e-09,True
+"3 point-in-time, data cut at 2025",275,0,0.0,1e-09,True
+4 row keys equal independent count,299,0,0.0,0.0,True
+5 full-works build equals demo-only build,299,0,0.0,1e-09,True

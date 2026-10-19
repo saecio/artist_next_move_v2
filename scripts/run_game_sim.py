@@ -16,7 +16,7 @@ import pandas as pd  # tables
 from app_data import load_demo_config  # demo settings
 from app_live import artist_timeline, load_tables  # live data layer
 from config import CONFIG  # project settings
-from demo_game import hidden_counts, new_state, next_year, play, scored_years, scoreboard, session_total, year_cards  # game functions
+from demo_game import hidden_counts, new_state, next_year, play, scored_years, scoreboard, session_total, year_cards, first_uncounted_year  # game functions
 
 cfg = load_demo_config()["game"]  # game settings
 THRESHOLD = cfg["threshold"]  # model rule
@@ -82,4 +82,17 @@ for aid in (7592689, 1124645):  # the requested case and a case with hidden re-r
         print(f"{aid} hide={hide}: Works in file {yc['total']} (direct {len(in_year)}), visible {visible}, cards drawn {len(yc['cards'])}, +{yc['more']} more, cap {cfg['max_cards_per_year']}")  # print the result
         assert yc["total"] == len(in_year) and len(yc["cards"]) == min(visible, cfg["max_cards_per_year"]) and yc["more"] == max(visible - cfg["max_cards_per_year"], 0)  # cap and more count
 print("cap checks passed")  # print the result
+print("\n== uncounted years, 7592689 and 1124645 (label_after_holdout and last data year)")  # section title
+cut = first_uncounted_year(stored.assign(target="next_1y"))  # first uncounted year from the stored scores
+print("first uncounted year from the data:", cut)  # derived, not hard-coded
+for aid in (7592689, 1124645):  # the two requested artists
+    for user_on in (False, True):  # both modes
+        h = walk(aid, user_on)  # full walk
+        for i, x in enumerate(h):  # every played year
+            if x["year"] >= cut:  # years shown but not counted
+                before = scoreboard(h[:i])  # board before the year
+                after = scoreboard(h[:i + 1])  # board after the year
+                print(f"{aid} user={user_on} {x['year']}: model {x['model']}, user {x['user']}, label {x['label']}, counted {x['counted']}, n {before['n']} -> {after['n']}, user_n {before['user_n']} -> {after['user_n']}")  # one line per year
+                assert not x["counted"] and before == after, "an uncounted year changed the scoreboard"  # board unchanged
+print("uncounted-year checks passed")  # all asserts held
 print(f"\nsimulation time {time.time() - t0:.2f} s")  # print the result

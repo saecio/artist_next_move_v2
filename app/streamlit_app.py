@@ -14,7 +14,7 @@ from app_data import (  # noqa: E402  data access functions
 from app_live import artist_timeline, load_tables  # noqa: E402  live data layer
 from config import CONFIG  # noqa: E402  project settings
 from demo_game import (  # noqa: E402  pure game functions
-    card_status, hidden_counts, names, new_state, next_year, play, scored_years, scoreboard, session_total, verdict, year_cards,  # imported names
+    card_status, hidden_counts, names, new_state, next_year, play, scored_years, scoreboard, session_total, verdict, year_cards, first_uncounted_year,  # imported names
 )  # close the import
 
 cfg = load_demo_config()  # all texts, paths and artists
@@ -41,7 +41,7 @@ with tabs[5]:  # Time Machine demo
     games = st.session_state.setdefault(keys["state"], {})  # one state per artist
     state = games.setdefault(aid, new_state(years))  # this artist's state
     st.warning(notes["what_notice"])  # scores are for ranking only
-    st.warning(g["what_years_warning"])  # WHAT coverage
+    st.warning(g["what_years_warning"].format(n=CONFIG["what"]["min_previous_works"]))  # WHAT coverage
     if tl["artist_train_rows"].iloc[0] == 0:  # artist absent from training
         st.warning(g["unseen_warning"])  # model has not seen the artist
     pred_key = keys["user_pred"].format(id=aid)  # checkbox key of this artist
@@ -95,16 +95,18 @@ with tabs[5]:  # Time Machine demo
             st.rerun()  # redraw with step B
         if step == "reveal":  # step B
             played = hist[-1]  # this year's entry
-            if played["counted"]:  # usable stored label
-                st.write(g["reality"].format(verdict=yn[played["label"]], year=year + 1))  # reality
-            else:  # projection or partial truth
-                st.info(g["partial_truth"])  # not scored
+            if played["label"] is not None:  # stored label exists, counted or not
+                st.write(g["reality_" + played["label"]].format(year=year + 1))  # reality text of the stored label
+            else:  # last data year, no stored label
+                st.info(g["no_reality"].format(year=last))  # no reality row, no scoreboard change
             lab2 = row["label_next_2y"]  # stored next_2y label
-            st.write(g["next2_info"].format(score=row["next_2y"], label=g["no_label"] if pd.isna(lab2) else yn["yes" if lab2 == 1 else "no"]))  # next_2y info
+            part2 = "" if pd.isna(lab2) else g["label_part"].format(label=yn["yes" if lab2 == 1 else "no"])  # label part, omitted when missing
+            st.write(g["next2_info"].format(score=row["next_2y"], label_part=part2))  # next_2y info
             if pd.notna(row["stage0_score"]):  # WHAT row exists
-                st.write(g["what_info"].format(score=row["stage0_score"], label=g["no_label"] if pd.isna(row["what_label"]) else yn["yes" if row["what_label"] == 1 else "no"]))  # WHAT info
+                partw = "" if pd.isna(row["what_label"]) else g["label_part"].format(label=yn["yes" if row["what_label"] == 1 else "no"])  # label part, omitted when missing
+                st.write(g["what_info"].format(score=row["stage0_score"], label_part=partw))  # WHAT info
             else:  # no WHAT row
-                st.write(g["what_missing"])  # WHAT coverage text
+                st.write(g["what_missing"].format(n=CONFIG["what"]["min_previous_works"]))  # WHAT coverage text
             nxt = next_year(years, year)  # next playable year
             if nxt is None:  # end of the data
                 st.info(g["last_year_text"])  # nothing to play
@@ -125,6 +127,9 @@ with tabs[5]:  # Time Machine demo
             st.write(g["board_user" if title is None else "board_total_user"].format(right=board["user_right"], n=board["user_n"]))  # user vs reality
             if title is None:  # artist board only
                 st.write(g["board_agree"].format(right=board["agree"], n=board["user_n"]))  # user vs model
+    cut = first_uncounted_year(load_tables()["when_stored"])  # first year shown but not counted, from the data
+    if cut is not None:  # some year is flagged
+        st.caption(g["uncounted_note"].format(year=cut))  # fixed neutral line
 
 with tabs[6]:  # Global style forecast
     st.header(cfg["tabs"][6])  # tab title
