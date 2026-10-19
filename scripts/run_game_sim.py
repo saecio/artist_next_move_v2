@@ -165,4 +165,33 @@ for aid in (1778977, 52835, 13200183, 6774153):  # the four requested pool B art
 print("pool B walk checks passed")  # all asserts held
 tot = session_total([walk(a, False) for a in (7592689, 1124645, 4778, 1778977, 52835, 13200183, 6774153)])  # session total over both pools
 print("session total over pool A and pool B walks:", tot)  # both pools counted  # all asserts held
+print("\n== mode 2 (several artists in one year)")  # section title
+from demo_multi import multi_rows, multi_summary, route_ids, row_marks  # mode 2 logic
+rcfg = load_demo_config()  # full settings
+rrows = multi_rows(rcfg, route_ids(rcfg), rcfg["route"]["year"], cfg["threshold"], top["score_cutoff"], rcfg["route"]["max_artists"])  # prepared selection, 2018
+sc = rrows.loc[rrows["has_row"], "when_score"].tolist()  # scores in display order
+assert sc == sorted(sc, reverse=True), "rows must be sorted by WHEN score descending"  # order
+assert len(rrows) == len(rcfg["route"]["artists"]) <= rcfg["route"]["max_artists"]  # all prepared artists, within the cap
+assert len(multi_rows(rcfg, route_ids(rcfg) * 2, 2018, cfg["threshold"], top["score_cutoff"], 5)) == 5  # the cap applies to the number of artists
+s = multi_summary(rrows)  # summary
+w = rrows[rrows["when_label"].notna() & rrows["when_counted"]]  # counted WHEN rows
+assert (s["when_right"], s["when_n"]) == (int((w["when_verdict"] == w["when_label"]).sum()), len(w))  # WHEN count
+a = rrows[rrows["what_available"] & rrows["what_label"].notna() & rrows["what_safe"]]  # counted WHAT rows
+assert (s["what_right"], s["what_n"]) == (int((a["what_verdict"] == a["what_label"]).sum()), len(a))  # WHAT count
+r24 = multi_rows(rcfg, route_ids(rcfg), 2024, cfg["threshold"], top["score_cutoff"], 8)  # 2024: labels after the holdout
+assert multi_summary(r24)["when_n"] == 0 and multi_summary(r24)["what_n"] == 0  # not counted
+assert {row_marks(r)["when"][0] for _, r in r24[r24["has_row"]].iterrows()} <= {"amber", "grey"}  # amber or grey only
+print(f"2018 rows {len(rrows)} sorted by WHEN score, summary {s}, 2024 summary {multi_summary(r24)}, caps respected")  # result
+from demo_multi import advance_stage, multi_signature  # two-step state machine
+sig = multi_signature(2018, [1, 2])  # signature of a selection
+s0 = advance_stage(None, sig, None)  # first run
+s1 = advance_stage(s0, sig, "reveal")  # Show reality before Predict does nothing
+s2 = advance_stage(s0, sig, "predict")  # Predict
+s3 = advance_stage(s2, sig, "reveal")  # Show reality after Predict
+assert (s0["stage"], s1["stage"], s2["stage"], s3["stage"]) == ("placeholder", "placeholder", "predict", "reveal")  # the three stages in order
+assert advance_stage(s3, multi_signature(2019, [1, 2]), None)["stage"] == "placeholder" and advance_stage(s3, multi_signature(2018, [1]), None)["stage"] == "placeholder"  # a change of year or artists resets
+assert advance_stage(s3, sig, "predict")["stage"] == "reveal"  # no step back
+assert list(multi_rows(rcfg, route_ids(rcfg), 2018, cfg["threshold"], top["score_cutoff"], 8, "placeholder")["artist_id"]) == route_ids(rcfg)  # placeholder keeps the selection order
+print("stage machine checks passed: placeholder -> predict -> reveal, reset on change, selection order before predict")  # result
+print("mode 2 checks passed")  # all asserts held
 print(f"\nsimulation time {time.time() - t0:.2f} s")  # print the result

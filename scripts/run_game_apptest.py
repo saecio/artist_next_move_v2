@@ -39,6 +39,7 @@ def find(name: str) -> tuple:  # artist entry and pool key
 def pick(at: AppTest, name: str) -> int:  # select genre and artist from the mixed list
     """Select the genre and the artist from the mixed, name-sorted list; no pool widget exists."""
     assert len(at.radio) == 0 or all(r.label != "Artists" for r in at.radio)  # no pool selector on the page
+    at.radio(key=keys["mode"]).set_value("one").run()  # mode 1, mode 2 opens first
     a, _ = find(name)  # entry
     at.selectbox(key=keys["genre"]).select(a["genre"]).run()  # genre filter
     names = sorted((x["name"] for lst in cfg["pool_b"]["pool_lists"].values() for x in cfg[lst] if x["genre"] == a["genre"]), key=str.lower)  # mixed list of the genre, sorted by name

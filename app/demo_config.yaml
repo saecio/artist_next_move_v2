@@ -137,9 +137,13 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   hide_rerecordings: true  # hide cards of Works flagged is_rerecording, scores and labels are unchanged
   max_cards_per_year: 6  # most Work cards drawn for one year
   similar_gap: 1  # largest gap, in whole artists out of 10, between the outside rate and the base rate still worded "almost the same"
+  default_mode: many  # mode shown first in tab 6: many (several artists) or one (one artist)
+  mode_label: "View"  # mode selector label
+  mode_options: {one: "One artist", many: "Several artists"}  # mode selector texts
   threshold: 0.5  # the model says yes when the live next_1y score is at least this value
   keys:  # session_state and widget keys, {id} and {year} are replaced
     state: game  # session_state key holding one state per artist
+    mode: game_mode  # mode selector
     genre: game_genre  # genre selector
     artist: game_artist  # artist selector
     user_pred: "game_user_pred_{id}"  # checkbox of the optional user prediction
@@ -249,6 +253,10 @@ poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, color
     card_border: "rgba(128,128,128,0.6)"  # neutral border, readable on light and dark pages
     card_border_predicted: "#2563eb"  # border of the card of the predicted year
     chip_bg: "#e0e7ff"  # scoreboard chip background
+    accent: "#6366f1"  # mode 2 verdict pills: Yes and Likely filled, No and Not likely outlined (not green or red, those mean right and wrong)
+    accent_fg: "#ffffff"  # text on a filled pill
+    placeholder_bg: "rgba(0,0,0,0.18)"  # mode 2 placeholder cell, dark in a dark theme and a soft tint in a light one
+    placeholder_border: "rgba(128,128,128,0.7)"  # dashed border of a placeholder cell
     chip_fg: "#1e3a8a"  # scoreboard chip text
   sizes:  # sizes in pixels, except the opacity
     card_min_width: 140  # smallest card width, cards grow to fill the line
@@ -258,6 +266,16 @@ poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, color
     card_font: 12  # card text size
     title_lines: 2  # most lines of one title
     mark_size: 16  # diameter of a mark
+    multi_mark_size: 22  # diameter of a result mark in the mode 2 table
+    multi_mark_font: 14  # text size of a result mark in the mode 2 table
+    pill_font: 12  # verdict pill text size
+    pill_pad_v: 2  # verdict pill vertical padding
+    pill_pad_h: 12  # verdict pill horizontal padding
+    pill_border: 2  # verdict pill border width
+    pill_radius: 999  # verdict pill corner radius, large for a full pill
+    placeholder_border_width: 1  # dashed border width of a placeholder cell
+    placeholder_opacity: 0.45  # opacity of the placeholder text
+    multi_artist_col: 16  # width of the artist column of the mode 2 table, percent; the other columns share the rest equally
     predicted_border: 2  # border width of the predicted card
     predicted_shadow: 6  # shadow blur of the predicted card
     table_font: 12  # table text size
@@ -265,4 +283,37 @@ poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, color
     note_font: 11  # size of the small notes under the table
     muted_opacity: 0.7  # opacity of secondary text, inherits the theme text color
     chip_font: 12  # chip text size
-    page_top_padding: 24  # top padding of the page container
+
+route:  # tab 6 mode 2: several artists in one year, read-only table
+  year: 2018  # year shown first
+  artists: [3160392, 90037, 137418, 6774153, 1778977, 5210284, 1967268, 5034422]  # prepared selection by discogs_id: Kaytranada, Pharrell Williams, Billy Joel, boygenius, Kendrick Lamar, BLACKPINK, Tyler, the Creator, BTS
+  max_artists: 8  # most artists in the table
+  selection_note: "Prepared selection for the demo: these artists were chosen after seeing the model results, to show both hits and misses. It is not a sample and not an evaluation."  # one line above the table
+  keys:  # widget keys
+    year: route_year  # year selector
+    genre: route_genre  # genre filter
+    artists: route_artists  # artist multiselect
+    stage: route_stage  # session_state key of the two-step state
+    predict: route_predict  # Predict button
+    reveal: route_reveal  # Show reality button
+  texts:  # texts of the table, the model words come from game: and poc:
+    year_label: "Year"  # year selector label
+    genre_label: "Genre"  # genre filter label
+    pick_label: "Artists in the table"  # multiselect label
+    cap_note: "At most {n} artists in the table."  # shown under the picker
+    col_artist: "Artist"  # table column
+    col_when: "WHEN: model"  # table column
+    col_when_reality: "WHEN: reality"  # table column
+    col_what: "WHAT: model"  # table column
+    col_what_reality: "WHAT: reality"  # table column
+    col_result: "Result (WHEN, WHAT)"  # table column
+    no_work: "No Work this year"  # row of an artist without a WHEN score in that year
+    what_missing: "No WHAT score: the artist has fewer than {n} earlier Works."  # WHAT cells of an artist-year that is not eligible
+    no_reality: "No reality yet"  # reality cell without a stored label
+    summary_when: "WHEN: model right in {k} of {n} rows with a counted reality."  # summary line
+    summary_what: "WHAT: model right in {k} of {n} rows with a counted reality."  # summary line
+    placeholder: "?"  # placeholder of a column that is not shown yet
+    change_label: "Change year or artists"  # collapsed expander with the year, genre and artist pickers
+    how_label: "How to read this"  # expander with the reliability lines and the legend, shown after Predict
+    predict_button: "Predict"  # step 1 button, shows the model verdicts
+    reveal_button: "Show reality"  # step 2 button, shows the realities, marks and summaries

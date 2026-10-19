@@ -1,0 +1,431 @@
+artist,artist_id,pool,year,when_score,when_verdict,when_reality,when_counted,when_right,what_available,what_score,what_verdict,what_reality,what_label_after_holdout,what_right
+A$AP Rocky,2409771,b,2018,0.6838,yes,yes,True,True,True,0.4772,no,no,False,True
+A$AP Rocky,2409771,b,2019,0.6998,yes,no,True,False,True,0.4391,no,no,False,True
+A$AP Rocky,2409771,b,2022,0.6653,yes,yes,True,True,True,0.376,no,no,False,True
+A$AP Rocky,2409771,b,2023,0.6686,yes,yes,True,True,True,0.3092,no,yes,True,False
+A$AP Rocky,2409771,b,2024,0.7138,yes,yes,False,,True,0.3416,no,yes,True,False
+A$AP Rocky,2409771,b,2025,0.7101,yes,yes,False,,True,0.381,no,yes,True,False
+A$AP Rocky,2409771,b,2026,0.6635,yes,,False,,True,0.3683,no,,False,
+Anuel AA,5794658,a,2018,0.2505,no,yes,True,False,False,,,,,
+Anuel AA,5794658,a,2019,0.5364,yes,yes,True,True,True,0.2866,no,no,False,True
+Anuel AA,5794658,a,2020,0.4315,no,yes,True,False,True,0.2252,no,yes,False,False
+Anuel AA,5794658,a,2021,0.4224,no,no,True,True,True,0.4069,no,no,False,True
+Anuel AA,5794658,a,2023,0.7488,yes,yes,True,True,True,0.2957,no,no,True,True
+Anuel AA,5794658,a,2024,0.6968,yes,yes,False,,True,0.2752,no,no,True,True
+Anuel AA,5794658,a,2025,0.7637,yes,,False,,True,0.2643,no,,False,
+Arctic Monkeys,391170,b,2018,0.7581,yes,no,True,False,True,0.1678,no,yes,False,False
+Arctic Monkeys,391170,b,2022,0.681,yes,yes,True,True,True,0.2075,no,yes,False,False
+Arctic Monkeys,391170,b,2023,0.805,yes,no,True,False,True,0.3994,no,,False,
+Arctic Monkeys,391170,b,2026,0.4954,no,,False,,True,0.2714,no,,False,
+Ariana Grande,3310737,b,2018,0.9415,yes,yes,True,True,True,0.4704,no,yes,False,False
+Ariana Grande,3310737,b,2019,0.8324,yes,yes,True,True,True,0.5294,yes,no,False,False
+Ariana Grande,3310737,b,2020,0.8748,yes,yes,True,True,True,0.3561,no,no,False,True
+Ariana Grande,3310737,b,2021,0.8937,yes,no,True,False,True,0.371,no,yes,True,False
+Ariana Grande,3310737,b,2024,0.9089,yes,yes,False,,True,0.3915,no,yes,True,False
+Ariana Grande,3310737,b,2025,0.9344,yes,yes,False,,True,0.3207,no,,False,
+Ariana Grande,3310737,b,2026,0.8448,yes,,False,,True,0.2717,no,,False,
+Bad Bunny,5894905,a,2018,0.819,yes,yes,True,True,True,0.431,no,no,False,True
+Bad Bunny,5894905,a,2019,0.8303,yes,yes,True,True,True,0.33,no,yes,False,False
+Bad Bunny,5894905,a,2020,0.9265,yes,yes,True,True,True,0.4998,yes,no,False,False
+Bad Bunny,5894905,a,2021,0.8328,yes,yes,True,True,True,0.3287,no,yes,False,False
+Bad Bunny,5894905,a,2022,0.6661,yes,yes,True,True,True,0.4975,yes,yes,False,True
+Bad Bunny,5894905,a,2023,0.7802,yes,yes,True,True,True,0.3872,no,yes,True,False
+Bad Bunny,5894905,a,2024,0.7831,yes,yes,False,,True,0.4471,no,yes,True,False
+Bad Bunny,5894905,a,2025,0.6894,yes,,False,,True,0.4922,no,,False,
+Beyonce,52835,b,2019,0.869,yes,no,True,False,True,0.3415,no,,False,
+Beyonce,52835,b,2021,0.6528,yes,yes,True,True,True,0.3125,no,yes,False,False
+Beyonce,52835,b,2022,0.7439,yes,yes,True,True,True,0.3346,no,yes,False,False
+Beyonce,52835,b,2023,0.678,yes,yes,True,True,True,0.4309,no,yes,True,False
+Beyonce,52835,b,2024,0.8432,yes,no,False,,True,0.3791,no,,False,
+Beyonce,52835,b,2026,0.5977,yes,,False,,True,0.3618,no,,False,
+Billie Eilish,5590213,a,2018,0.9326,yes,yes,True,True,True,0.4262,no,yes,False,False
+Billie Eilish,5590213,a,2019,0.8954,yes,yes,True,True,True,0.5324,yes,no,False,False
+Billie Eilish,5590213,a,2020,0.9303,yes,yes,True,True,True,0.3721,no,yes,False,False
+Billie Eilish,5590213,a,2021,0.9447,yes,yes,True,True,True,0.3049,no,no,False,True
+Billie Eilish,5590213,a,2022,0.8391,yes,yes,True,True,True,0.2997,no,yes,False,False
+Billie Eilish,5590213,a,2023,0.8864,yes,yes,True,True,True,0.2806,no,yes,True,False
+Billie Eilish,5590213,a,2024,0.8647,yes,no,False,,True,0.475,no,,False,
+Billy Joel,137418,b,2018,0.2673,no,yes,True,False,True,0.1619,no,,False,
+Billy Joel,137418,b,2019,0.5778,yes,no,True,False,True,0.1453,no,no,True,True
+Billy Joel,137418,b,2024,0.2339,no,yes,False,,True,0.1541,no,no,True,True
+Billy Joel,137418,b,2025,0.438,no,,False,,True,0.1364,no,,False,
+BLACKPINK,5210284,a,2018,0.9069,yes,yes,True,True,True,0.6791,yes,yes,False,True
+BLACKPINK,5210284,a,2019,0.8039,yes,yes,True,True,True,0.5936,yes,yes,False,True
+BLACKPINK,5210284,a,2020,0.7791,yes,yes,True,True,True,0.5215,yes,no,False,False
+BLACKPINK,5210284,a,2021,0.8281,yes,yes,True,True,True,0.5169,yes,no,False,False
+BLACKPINK,5210284,a,2022,0.7755,yes,yes,True,True,True,0.4747,no,yes,False,False
+BLACKPINK,5210284,a,2023,0.8089,yes,no,True,False,True,0.3614,no,yes,True,False
+BLACKPINK,5210284,a,2025,0.5613,yes,yes,False,,True,0.445,no,yes,True,False
+BLACKPINK,5210284,a,2026,0.7169,yes,,False,,True,0.4286,no,,False,
+Bon Iver,1042739,b,2019,0.7234,yes,yes,True,True,True,0.3318,no,no,False,True
+Bon Iver,1042739,b,2020,0.6786,yes,no,True,False,True,0.2806,no,no,True,True
+Bon Iver,1042739,b,2024,0.3245,no,yes,False,,True,0.1679,no,yes,True,False
+Bon Iver,1042739,b,2025,0.6319,yes,,False,,True,0.2214,no,,False,
+boygenius,6774153,b,2018,0.2468,no,no,True,True,False,,,,,
+boygenius,6774153,b,2020,0.3365,no,no,True,True,False,,,,,
+boygenius,6774153,b,2023,0.4624,no,no,True,True,False,,,,,
+Brandi Carlile,502784,b,2018,0.8137,yes,no,True,False,True,0.2641,no,,False,
+Brandi Carlile,502784,b,2020,0.5122,yes,yes,True,True,True,0.2654,no,,False,
+Brandi Carlile,502784,b,2021,0.645,yes,yes,True,True,True,0.255,no,,False,
+Brandi Carlile,502784,b,2022,0.6251,yes,no,True,False,True,0.2522,no,no,True,True
+Brandi Carlile,502784,b,2025,0.5888,yes,,False,,True,0.205,no,,False,
+Bruce Springsteen,219986,b,2018,0.755,yes,yes,True,True,True,0.251,no,yes,False,False
+Bruce Springsteen,219986,b,2019,0.901,yes,yes,True,True,True,0.2753,no,no,False,True
+Bruce Springsteen,219986,b,2020,0.7606,yes,yes,True,True,True,0.2067,no,no,False,True
+Bruce Springsteen,219986,b,2021,0.8094,yes,yes,True,True,True,0.2465,no,yes,False,False
+Bruce Springsteen,219986,b,2022,0.9078,yes,yes,True,True,True,0.2789,no,yes,False,False
+Bruce Springsteen,219986,b,2023,0.6444,yes,yes,True,True,True,0.277,no,no,True,True
+Bruce Springsteen,219986,b,2024,0.6216,yes,yes,False,,True,0.2777,no,yes,True,False
+Bruce Springsteen,219986,b,2025,0.9217,yes,yes,False,,True,0.2881,no,no,True,True
+Bruce Springsteen,219986,b,2026,0.6406,yes,,False,,True,0.3122,no,,False,
+BTS,5034422,a,2018,0.9755,yes,yes,True,True,True,0.5337,yes,no,False,False
+BTS,5034422,a,2019,0.987,yes,yes,True,True,True,0.5409,yes,no,False,False
+BTS,5034422,a,2020,0.9939,yes,yes,True,True,True,0.4803,no,no,False,True
+BTS,5034422,a,2021,0.9558,yes,yes,True,True,True,0.205,no,no,False,True
+BTS,5034422,a,2022,0.9057,yes,no,True,False,True,0.2299,no,no,True,True
+BTS,5034422,a,2025,0.5517,yes,yes,False,,True,0.2318,no,yes,True,False
+BTS,5034422,a,2026,0.946,yes,,False,,True,0.2604,no,,False,
+Calvin Harris,222578,a,2018,0.8533,yes,yes,True,True,True,0.4949,yes,no,False,False
+Calvin Harris,222578,a,2019,0.8074,yes,yes,True,True,True,0.3639,no,no,False,True
+Calvin Harris,222578,a,2020,0.7774,yes,yes,True,True,True,0.2632,no,no,False,True
+Calvin Harris,222578,a,2021,0.7884,yes,yes,True,True,True,0.3123,no,yes,False,False
+Calvin Harris,222578,a,2022,0.693,yes,yes,True,True,True,0.4079,no,no,False,True
+Calvin Harris,222578,a,2023,0.827,yes,yes,True,True,True,0.3999,no,no,True,True
+Calvin Harris,222578,a,2024,0.7789,yes,yes,False,,True,0.3267,no,no,True,True
+Calvin Harris,222578,a,2025,0.79,yes,yes,False,,True,0.3409,no,no,True,True
+Calvin Harris,222578,a,2026,0.7808,yes,,False,,True,0.3167,no,,False,
+Cardi B,5153025,a,2018,0.8173,yes,yes,True,True,True,0.3616,no,yes,False,False
+Cardi B,5153025,a,2019,0.85,yes,yes,True,True,True,0.3691,no,no,False,True
+Cardi B,5153025,a,2020,0.7724,yes,yes,True,True,True,0.3748,no,,False,
+Cardi B,5153025,a,2021,0.7486,yes,yes,True,True,True,0.4247,no,yes,False,False
+Cardi B,5153025,a,2022,0.7272,yes,yes,True,True,True,0.3067,no,,False,
+Cardi B,5153025,a,2023,0.7054,yes,yes,True,True,True,0.4184,no,,False,
+Cardi B,5153025,a,2024,0.7156,yes,yes,False,,True,0.4072,no,no,True,True
+Cardi B,5153025,a,2025,0.8227,yes,yes,False,,True,0.3208,no,,False,
+Cardi B,5153025,a,2026,0.7885,yes,,False,,True,0.3797,no,,False,
+Charli XCX,1345479,a,2018,0.8683,yes,yes,True,True,True,0.5396,yes,yes,False,True
+Charli XCX,1345479,a,2019,0.9769,yes,yes,True,True,True,0.5071,yes,yes,False,True
+Charli XCX,1345479,a,2020,0.8812,yes,yes,True,True,True,0.435,no,no,False,True
+Charli XCX,1345479,a,2021,0.8137,yes,yes,True,True,True,0.3913,no,yes,False,False
+Charli XCX,1345479,a,2022,0.823,yes,yes,True,True,True,0.38,no,no,False,True
+Charli XCX,1345479,a,2023,0.8392,yes,yes,True,True,True,0.36,no,yes,True,False
+Charli XCX,1345479,a,2024,0.9161,yes,yes,False,,True,0.5915,yes,yes,True,True
+Charli XCX,1345479,a,2025,0.8909,yes,yes,False,,True,0.4218,no,yes,True,False
+Charli XCX,1345479,a,2026,0.8837,yes,,False,,True,0.3822,no,,False,
+Coldplay,29735,a,2018,0.8163,yes,yes,True,True,True,0.2351,no,no,False,True
+Coldplay,29735,a,2019,0.8525,yes,yes,True,True,True,0.2327,no,no,False,True
+Coldplay,29735,a,2020,0.837,yes,yes,True,True,True,0.2029,no,yes,False,False
+Coldplay,29735,a,2021,0.8765,yes,yes,True,True,True,0.2847,no,,False,
+Coldplay,29735,a,2022,0.7893,yes,yes,True,True,True,0.2591,no,,False,
+Coldplay,29735,a,2023,0.7171,yes,yes,True,True,True,0.2774,no,yes,True,False
+Coldplay,29735,a,2024,0.6541,yes,no,False,,True,0.3792,no,,False,
+Daddy Yankee,256399,b,2018,0.6358,yes,yes,True,True,True,0.1991,no,yes,False,False
+Daddy Yankee,256399,b,2019,0.6316,yes,yes,True,True,True,0.1557,no,no,False,True
+Daddy Yankee,256399,b,2020,0.6258,yes,yes,True,True,True,0.1714,no,no,False,True
+Daddy Yankee,256399,b,2021,0.6286,yes,yes,True,True,True,0.2039,no,yes,False,False
+Daddy Yankee,256399,b,2022,0.4885,no,yes,True,False,True,0.1687,no,,False,
+Daddy Yankee,256399,b,2023,0.6088,yes,yes,True,True,True,0.198,no,,False,
+Daddy Yankee,256399,b,2024,0.606,yes,yes,False,,True,0.1932,no,yes,True,False
+Daddy Yankee,256399,b,2025,0.5468,yes,yes,False,,True,0.1981,no,no,True,True
+Daddy Yankee,256399,b,2026,0.5736,yes,,False,,True,0.171,no,,False,
+Doja Cat,3970719,a,2018,0.7082,yes,yes,True,True,False,,,,,
+Doja Cat,3970719,a,2019,0.6905,yes,yes,True,True,True,0.4648,no,yes,False,False
+Doja Cat,3970719,a,2020,0.771,yes,yes,True,True,True,0.4926,no,no,False,True
+Doja Cat,3970719,a,2021,0.7153,yes,yes,True,True,True,0.4008,no,yes,False,False
+Doja Cat,3970719,a,2022,0.7346,yes,yes,True,True,True,0.3779,no,yes,False,False
+Doja Cat,3970719,a,2023,0.7442,yes,no,True,False,True,0.353,no,no,True,True
+Doja Cat,3970719,a,2025,0.7055,yes,,False,,True,0.3335,no,,False,
+Drake,151199,a,2018,0.8685,yes,yes,True,True,True,0.3832,no,,False,
+Drake,151199,a,2019,0.8283,yes,yes,True,True,True,0.4082,no,no,False,True
+Drake,151199,a,2020,0.8765,yes,yes,True,True,True,0.3288,no,no,False,True
+Drake,151199,a,2021,0.8244,yes,yes,True,True,True,0.242,no,yes,False,False
+Drake,151199,a,2022,0.8697,yes,yes,True,True,True,0.3208,no,yes,False,False
+Drake,151199,a,2023,0.7547,yes,yes,True,True,True,0.3027,no,yes,True,False
+Drake,151199,a,2024,0.8579,yes,yes,False,,True,0.336,no,no,True,True
+Drake,151199,a,2025,0.8699,yes,yes,False,,True,0.3257,no,no,True,True
+Drake,151199,a,2026,0.8975,yes,,False,,True,0.2252,no,,False,
+Dua Lipa,4357593,a,2018,0.8583,yes,yes,True,True,True,0.3986,no,yes,False,False
+Dua Lipa,4357593,a,2019,0.826,yes,yes,True,True,True,0.5523,yes,yes,False,True
+Dua Lipa,4357593,a,2020,0.9721,yes,yes,True,True,True,0.5673,yes,yes,False,True
+Dua Lipa,4357593,a,2021,0.893,yes,no,True,False,True,0.4518,no,yes,False,False
+Dua Lipa,4357593,a,2023,0.8115,yes,yes,True,True,True,0.4305,no,no,True,True
+Dua Lipa,4357593,a,2024,0.9036,yes,no,False,,True,0.3782,no,,False,
+Ed Sheeran,2184482,a,2018,0.7825,yes,yes,True,True,True,0.4051,no,yes,False,False
+Ed Sheeran,2184482,a,2019,0.956,yes,yes,True,True,True,0.4928,no,,False,
+Ed Sheeran,2184482,a,2020,0.7959,yes,yes,True,True,True,0.3629,no,yes,False,False
+Ed Sheeran,2184482,a,2021,0.9259,yes,yes,True,True,True,0.4154,no,no,False,True
+Ed Sheeran,2184482,a,2022,0.814,yes,yes,True,True,True,0.4816,no,no,False,True
+Ed Sheeran,2184482,a,2023,0.9136,yes,no,True,False,True,0.3369,no,yes,True,False
+Ed Sheeran,2184482,a,2025,0.7161,yes,yes,False,,True,0.3054,no,yes,True,False
+Ed Sheeran,2184482,a,2026,0.6817,yes,,False,,True,0.5002,yes,,False,
+Eminem,38661,a,2018,0.8157,yes,yes,True,True,True,0.287,no,no,False,True
+Eminem,38661,a,2019,0.7892,yes,yes,True,True,True,0.2341,no,no,False,True
+Eminem,38661,a,2020,0.7738,yes,yes,True,True,True,0.1833,no,no,False,True
+Eminem,38661,a,2021,0.7731,yes,yes,True,True,True,0.1864,no,yes,False,False
+Eminem,38661,a,2022,0.7587,yes,yes,True,True,True,0.2862,no,no,False,True
+Eminem,38661,a,2023,0.7796,yes,yes,True,True,True,0.2936,no,yes,True,False
+Eminem,38661,a,2024,0.7943,yes,yes,False,,True,0.365,no,no,True,True
+Eminem,38661,a,2025,0.8155,yes,yes,False,,True,0.2179,no,no,True,True
+Eminem,38661,a,2026,0.7238,yes,,False,,True,0.3368,no,,False,
+Farruko,2929902,a,2018,0.6407,yes,yes,True,True,True,0.2239,no,yes,False,False
+Farruko,2929902,a,2019,0.5926,yes,no,True,False,True,0.238,no,yes,False,False
+Farruko,2929902,a,2021,0.6543,yes,yes,True,True,True,0.465,no,no,False,True
+Farruko,2929902,a,2022,0.6642,yes,no,True,False,True,0.3376,no,,False,
+H.E.R.,5495084,a,2018,0.5608,yes,yes,True,True,True,0.3402,no,no,False,True
+H.E.R.,5495084,a,2019,0.5708,yes,yes,True,True,True,0.3655,no,no,False,True
+H.E.R.,5495084,a,2020,0.6296,yes,yes,True,True,True,0.3211,no,no,False,True
+H.E.R.,5495084,a,2021,0.7659,yes,no,True,False,True,0.3811,no,no,False,True
+H.E.R.,5495084,a,2023,0.6528,yes,no,True,False,True,0.3466,no,,False,
+Harry Styles,2508414,a,2018,0.597,yes,yes,True,True,True,0.4332,no,yes,False,False
+Harry Styles,2508414,a,2019,0.7248,yes,yes,True,True,True,0.3941,no,no,False,True
+Harry Styles,2508414,a,2020,0.6458,yes,no,True,False,True,0.4125,no,yes,False,False
+Harry Styles,2508414,a,2022,0.6331,yes,no,True,False,True,0.4285,no,yes,True,False
+Harry Styles,2508414,a,2026,0.6704,yes,,False,,True,0.444,no,,False,
+Imagine Dragons,2727700,a,2018,0.7907,yes,yes,True,True,True,0.368,no,,False,
+Imagine Dragons,2727700,a,2019,0.7944,yes,yes,True,True,True,0.3749,no,no,False,True
+Imagine Dragons,2727700,a,2020,0.7813,yes,yes,True,True,True,0.3089,no,no,False,True
+Imagine Dragons,2727700,a,2021,0.7751,yes,yes,True,True,True,0.3,no,no,False,True
+Imagine Dragons,2727700,a,2022,0.8472,yes,yes,True,True,True,0.2614,no,no,False,True
+Imagine Dragons,2727700,a,2023,0.7357,yes,yes,True,True,True,0.2771,no,,False,
+Imagine Dragons,2727700,a,2024,0.725,yes,yes,False,,True,0.2742,no,yes,True,False
+Imagine Dragons,2727700,a,2025,0.7529,yes,,False,,True,0.2649,no,,False,
+J Balvin,3460330,b,2018,0.7587,yes,yes,True,True,True,0.398,no,no,False,True
+J Balvin,3460330,b,2019,0.6173,yes,yes,True,True,True,0.2469,no,yes,False,False
+J Balvin,3460330,b,2020,0.7677,yes,yes,True,True,True,0.3751,no,yes,False,False
+J Balvin,3460330,b,2021,0.8447,yes,yes,True,True,True,0.2766,no,no,False,True
+J Balvin,3460330,b,2022,0.711,yes,yes,True,True,True,0.2557,no,no,False,True
+J Balvin,3460330,b,2023,0.7312,yes,yes,True,True,True,0.2793,no,no,True,True
+J Balvin,3460330,b,2024,0.8293,yes,yes,False,,True,0.2546,no,yes,True,False
+J Balvin,3460330,b,2025,0.8559,yes,yes,False,,True,0.2598,no,no,True,True
+J Balvin,3460330,b,2026,0.7116,yes,,False,,True,0.2326,no,,False,
+Jennifer Lopez,51984,b,2018,0.8447,yes,yes,True,True,True,0.4169,no,no,False,True
+Jennifer Lopez,51984,b,2019,0.6815,yes,yes,True,True,True,0.3411,no,,False,
+Jennifer Lopez,51984,b,2020,0.8085,yes,yes,True,True,True,0.2045,no,no,False,True
+Jennifer Lopez,51984,b,2021,0.7702,yes,yes,True,True,True,0.1963,no,yes,False,False
+Jennifer Lopez,51984,b,2022,0.7172,yes,no,True,False,True,0.227,no,no,True,True
+Jennifer Lopez,51984,b,2024,0.8506,yes,yes,False,,True,0.2669,no,yes,True,False
+Jennifer Lopez,51984,b,2025,0.7329,yes,yes,False,,True,0.2503,no,no,True,True
+Jennifer Lopez,51984,b,2026,0.7315,yes,,False,,True,0.3296,no,,False,
+Justin Bieber,1602787,b,2020,0.992,yes,yes,True,True,True,0.517,yes,yes,False,True
+Justin Bieber,1602787,b,2021,0.9375,yes,yes,True,True,True,0.4382,no,yes,False,False
+Justin Bieber,1602787,b,2022,0.8126,yes,no,True,False,True,0.4208,no,no,True,True
+Justin Bieber,1602787,b,2025,0.8206,yes,,False,,True,0.3307,no,,False,
+Kacey Musgraves,2866928,b,2018,0.878,yes,no,True,False,True,0.3017,no,no,False,True
+Kacey Musgraves,2866928,b,2020,0.562,yes,yes,True,True,True,0.2278,no,yes,False,False
+Kacey Musgraves,2866928,b,2021,0.5735,yes,no,True,False,True,0.2845,no,no,True,True
+Kacey Musgraves,2866928,b,2024,0.6187,yes,yes,False,,True,0.1667,no,yes,True,False
+Kacey Musgraves,2866928,b,2025,0.6125,yes,yes,False,,True,0.1897,no,no,True,True
+Kacey Musgraves,2866928,b,2026,0.5416,yes,,False,,True,0.1582,no,,False,
+Karol G,4452209,a,2018,0.8911,yes,yes,True,True,True,0.2844,no,no,False,True
+Karol G,4452209,a,2019,0.8571,yes,yes,True,True,True,0.3595,no,no,False,True
+Karol G,4452209,a,2020,0.8884,yes,yes,True,True,True,0.2506,no,no,False,True
+Karol G,4452209,a,2021,0.8781,yes,yes,True,True,True,0.2772,no,,False,
+Karol G,4452209,a,2022,0.9073,yes,yes,True,True,True,0.2971,no,yes,False,False
+Karol G,4452209,a,2023,0.982,yes,yes,True,True,True,0.3928,no,yes,True,False
+Karol G,4452209,a,2024,0.914,yes,yes,False,,True,0.3365,no,yes,True,False
+Karol G,4452209,a,2025,0.9719,yes,,False,,True,0.3639,no,,False,
+Kaytranada,3160392,a,2018,0.4891,no,yes,True,False,True,0.5407,yes,yes,False,True
+Kaytranada,3160392,a,2019,0.7076,yes,no,True,False,True,0.442,no,yes,False,False
+Kaytranada,3160392,a,2021,0.4852,no,yes,True,False,True,0.4907,no,no,False,True
+Kaytranada,3160392,a,2022,0.6162,yes,yes,True,True,True,0.4459,no,yes,False,False
+Kaytranada,3160392,a,2023,0.6766,yes,yes,True,True,True,0.4249,no,no,True,True
+Kaytranada,3160392,a,2024,0.5848,yes,yes,False,,True,0.4253,no,yes,True,False
+Kaytranada,3160392,a,2025,0.6661,yes,,False,,True,0.3878,no,,False,
+Kendrick Lamar,1778977,b,2018,0.7566,yes,no,True,False,True,0.5141,yes,no,False,False
+Kendrick Lamar,1778977,b,2022,0.6004,yes,no,True,False,True,0.2697,no,yes,True,False
+Kendrick Lamar,1778977,b,2024,0.6508,yes,no,False,,True,0.2934,no,,False,
+Labrinth,1154116,b,2018,0.8564,yes,yes,True,True,True,0.5987,yes,yes,False,True
+Labrinth,1154116,b,2019,0.9777,yes,no,True,False,True,0.6668,yes,yes,False,True
+Labrinth,1154116,b,2022,0.9034,yes,yes,True,True,True,0.4572,no,yes,False,False
+Labrinth,1154116,b,2023,0.7585,yes,no,True,False,True,0.4976,yes,,False,
+Labrinth,1154116,b,2025,0.853,yes,yes,False,,True,0.4395,no,no,True,True
+Labrinth,1154116,b,2026,0.6922,yes,,False,,True,0.3892,no,,False,
+Lady Gaga,1103159,a,2018,0.9531,yes,yes,True,True,True,0.4281,no,yes,False,False
+Lady Gaga,1103159,a,2019,0.8988,yes,yes,True,True,True,0.3526,no,yes,False,False
+Lady Gaga,1103159,a,2020,0.9098,yes,yes,True,True,True,0.4621,no,yes,False,False
+Lady Gaga,1103159,a,2021,0.857,yes,yes,True,True,True,0.5523,yes,yes,False,True
+Lady Gaga,1103159,a,2022,0.8591,yes,yes,True,True,True,0.5883,yes,no,False,False
+Lady Gaga,1103159,a,2023,0.8334,yes,yes,True,True,True,0.5435,yes,yes,True,True
+Lady Gaga,1103159,a,2024,0.8216,yes,yes,False,,True,0.391,no,yes,True,False
+Lady Gaga,1103159,a,2025,0.8547,yes,yes,False,,True,0.4629,no,no,True,True
+Lady Gaga,1103159,a,2026,0.8029,yes,,False,,True,0.4689,no,,False,
+Lana Del Rey,2445772,a,2018,0.8743,yes,yes,True,True,True,0.3761,no,yes,False,False
+Lana Del Rey,2445772,a,2019,0.8949,yes,yes,True,True,True,0.4242,no,no,False,True
+Lana Del Rey,2445772,a,2020,0.9225,yes,yes,True,True,True,0.4068,no,no,False,True
+Lana Del Rey,2445772,a,2021,0.9406,yes,yes,True,True,True,0.3339,no,no,False,True
+Lana Del Rey,2445772,a,2022,0.9166,yes,yes,True,True,True,0.2868,no,no,False,True
+Lana Del Rey,2445772,a,2023,0.9317,yes,yes,True,True,True,0.4229,no,no,True,True
+Lana Del Rey,2445772,a,2024,0.8511,yes,yes,False,,True,0.2904,no,no,True,True
+Lana Del Rey,2445772,a,2025,0.874,yes,yes,False,,True,0.265,no,no,True,True
+Lana Del Rey,2445772,a,2026,0.8688,yes,,False,,True,0.2411,no,,False,
+Lil Nas X,7080995,a,2018,0.6531,yes,yes,True,True,False,,,,,
+Lil Nas X,7080995,a,2019,0.6655,yes,yes,True,True,True,0.5147,yes,no,False,False
+Lil Nas X,7080995,a,2020,0.7831,yes,yes,True,True,True,0.3619,no,no,False,True
+Lil Nas X,7080995,a,2021,0.795,yes,yes,True,True,True,0.41,no,no,False,True
+Lil Nas X,7080995,a,2022,0.7923,yes,no,True,False,True,0.4224,no,no,True,True
+Lil Nas X,7080995,a,2024,0.8224,yes,yes,False,,True,0.3297,no,no,True,True
+Lil Nas X,7080995,a,2025,0.8531,yes,,False,,True,0.3303,no,,False,
+Lizzo,1097928,a,2018,0.6655,yes,yes,True,True,True,0.5752,yes,yes,False,True
+Lizzo,1097928,a,2019,0.8132,yes,no,True,False,True,0.3835,no,,False,
+Lizzo,1097928,a,2021,0.5625,yes,yes,True,True,True,0.4897,no,yes,False,False
+Lizzo,1097928,a,2022,0.693,yes,yes,True,True,True,0.4511,no,,False,
+Lizzo,1097928,a,2023,0.7646,yes,no,True,False,True,0.372,no,no,True,True
+Lizzo,1097928,a,2025,0.7955,yes,yes,False,,True,0.3937,no,yes,True,False
+Lizzo,1097928,a,2026,0.6776,yes,,False,,True,0.4046,no,,False,
+Luke Combs,5940000,a,2019,0.8891,yes,yes,True,True,True,0.2969,no,no,False,True
+Luke Combs,5940000,a,2020,0.7672,yes,yes,True,True,True,0.1816,no,yes,False,False
+Luke Combs,5940000,a,2021,0.884,yes,yes,True,True,True,0.1454,no,no,False,True
+Luke Combs,5940000,a,2022,0.8527,yes,yes,True,True,True,0.1346,no,no,False,True
+Luke Combs,5940000,a,2023,0.7752,yes,yes,True,True,True,0.1086,no,no,True,True
+Luke Combs,5940000,a,2024,0.7468,yes,yes,False,,True,0.1761,no,no,True,True
+Luke Combs,5940000,a,2025,0.7911,yes,yes,False,,True,0.0943,no,no,True,True
+Luke Combs,5940000,a,2026,0.6983,yes,,False,,True,0.1141,no,,False,
+Maluma,3913668,b,2018,0.7003,yes,yes,True,True,True,0.386,no,,False,
+Maluma,3913668,b,2019,0.7608,yes,yes,True,True,True,0.358,no,yes,False,False
+Maluma,3913668,b,2020,0.7387,yes,yes,True,True,True,0.4505,no,no,False,True
+Maluma,3913668,b,2021,0.7967,yes,yes,True,True,True,0.2525,no,no,False,True
+Maluma,3913668,b,2022,0.8553,yes,yes,True,True,True,0.2249,no,yes,False,False
+Maluma,3913668,b,2023,0.7787,yes,yes,True,True,True,0.355,no,yes,True,False
+Maluma,3913668,b,2024,0.6609,yes,no,False,,True,0.3549,no,,False,
+Mary J. Blige,4778,a,2018,0.7955,yes,yes,True,True,True,0.2091,no,no,False,True
+Mary J. Blige,4778,a,2019,0.7106,yes,yes,True,True,True,0.297,no,no,False,True
+Mary J. Blige,4778,a,2020,0.705,yes,yes,True,True,True,0.2928,no,no,False,True
+Mary J. Blige,4778,a,2021,0.7262,yes,yes,True,True,True,0.2842,no,no,False,True
+Mary J. Blige,4778,a,2022,0.679,yes,yes,True,True,True,0.2325,no,no,False,True
+Mary J. Blige,4778,a,2023,0.5875,yes,yes,True,True,True,0.3711,no,no,True,True
+Mary J. Blige,4778,a,2024,0.6624,yes,no,False,,True,0.3047,no,no,True,True
+Mary J. Blige,4778,a,2026,0.6119,yes,,False,,True,0.2499,no,,False,
+Miley Cyrus,676432,b,2018,0.7253,yes,yes,True,True,True,0.3648,no,yes,False,False
+Miley Cyrus,676432,b,2019,0.8231,yes,yes,True,True,True,0.4056,no,yes,False,False
+Miley Cyrus,676432,b,2020,0.688,yes,yes,True,True,True,0.3877,no,,False,
+Miley Cyrus,676432,b,2021,0.7296,yes,no,True,False,True,0.4031,no,yes,False,False
+Miley Cyrus,676432,b,2023,0.8506,yes,no,True,False,True,0.3649,no,yes,True,False
+Miley Cyrus,676432,b,2025,0.9516,yes,yes,False,,True,0.3787,no,yes,True,False
+Miley Cyrus,676432,b,2026,0.751,yes,,False,,True,0.3656,no,,False,
+Morgan Wallen,6628105,a,2018,0.7148,yes,yes,True,True,True,0.1052,no,no,False,True
+Morgan Wallen,6628105,a,2019,0.7769,yes,yes,True,True,True,0.0715,no,no,False,True
+Morgan Wallen,6628105,a,2020,0.7867,yes,yes,True,True,True,0.0742,no,,False,
+Morgan Wallen,6628105,a,2021,0.6991,yes,yes,True,True,True,0.1335,no,no,False,True
+Morgan Wallen,6628105,a,2022,0.8816,yes,yes,True,True,True,0.0836,no,yes,False,False
+Morgan Wallen,6628105,a,2023,0.6819,yes,yes,True,True,True,0.1506,no,no,True,True
+Morgan Wallen,6628105,a,2024,0.8692,yes,yes,False,,True,0.0827,no,no,True,True
+Morgan Wallen,6628105,a,2025,0.6893,yes,,False,,True,0.1647,no,,False,
+Olivia Rodrigo,7592689,a,2019,0.2971,no,yes,True,False,False,,,,,
+Olivia Rodrigo,7592689,a,2020,0.454,no,yes,True,False,True,0.3662,no,yes,False,False
+Olivia Rodrigo,7592689,a,2021,0.8484,yes,yes,True,True,True,0.6616,yes,,False,
+Olivia Rodrigo,7592689,a,2022,0.7396,yes,yes,True,True,True,0.5057,yes,yes,False,True
+Olivia Rodrigo,7592689,a,2023,0.9373,yes,yes,True,True,True,0.4534,no,yes,True,False
+Olivia Rodrigo,7592689,a,2024,0.7823,yes,no,False,,True,0.4485,no,no,True,True
+Olivia Rodrigo,7592689,a,2026,0.8904,yes,,False,,True,0.3592,no,,False,
+Ozuna,5395551,a,2018,0.5815,yes,yes,True,True,True,0.4389,no,no,False,True
+Ozuna,5395551,a,2019,0.7115,yes,yes,True,True,True,0.369,no,no,False,True
+Ozuna,5395551,a,2020,0.701,yes,yes,True,True,True,0.258,no,no,False,True
+Ozuna,5395551,a,2021,0.6896,yes,yes,True,True,True,0.2482,no,no,False,True
+Ozuna,5395551,a,2022,0.6012,yes,yes,True,True,True,0.266,no,no,False,True
+Ozuna,5395551,a,2023,0.6827,yes,no,True,False,True,0.1509,no,no,True,True
+Ozuna,5395551,a,2025,0.4932,no,yes,False,,True,0.1912,no,no,True,True
+Ozuna,5395551,a,2026,0.6572,yes,,False,,True,0.146,no,,False,
+Peso Pluma,13200183,b,2020,0.3562,no,yes,True,False,False,,,,,
+Peso Pluma,13200183,b,2021,0.4013,no,yes,True,False,False,,,,,
+Peso Pluma,13200183,b,2022,0.5964,yes,yes,True,True,False,,,,,
+Peso Pluma,13200183,b,2023,0.8756,yes,yes,True,True,True,0.3901,no,no,True,True
+Peso Pluma,13200183,b,2024,0.8019,yes,yes,False,,True,0.3124,no,,False,
+Peso Pluma,13200183,b,2025,0.7555,yes,yes,False,,True,0.3941,no,yes,True,False
+Peso Pluma,13200183,b,2026,0.6927,yes,,False,,True,0.268,no,,False,
+Pharrell Williams,90037,a,2018,0.4988,no,yes,True,False,True,0.428,no,no,False,True
+Pharrell Williams,90037,a,2019,0.5315,yes,yes,True,True,True,0.4304,no,,False,
+Pharrell Williams,90037,a,2020,0.586,yes,no,True,False,True,0.5183,yes,yes,False,True
+Pharrell Williams,90037,a,2022,0.7087,yes,yes,True,True,True,0.4673,no,no,False,True
+Pharrell Williams,90037,a,2023,0.4915,no,yes,True,False,True,0.4138,no,yes,True,False
+Pharrell Williams,90037,a,2024,0.3917,no,no,False,,True,0.3786,no,,False,
+Post Malone,4016434,a,2018,0.775,yes,yes,True,True,True,0.4671,no,yes,False,False
+Post Malone,4016434,a,2019,0.8027,yes,yes,True,True,True,0.4792,no,no,False,True
+Post Malone,4016434,a,2020,0.799,yes,yes,True,True,True,0.4244,no,yes,False,False
+Post Malone,4016434,a,2021,0.8334,yes,yes,True,True,True,0.4792,no,no,False,True
+Post Malone,4016434,a,2022,0.7565,yes,yes,True,True,True,0.3165,no,yes,False,False
+Post Malone,4016434,a,2023,0.8876,yes,yes,True,True,True,0.363,no,yes,True,False
+Post Malone,4016434,a,2024,0.8892,yes,yes,False,,True,0.359,no,no,True,True
+Post Malone,4016434,a,2025,0.8152,yes,yes,False,,True,0.3379,no,no,True,True
+Post Malone,4016434,a,2026,0.8077,yes,,False,,True,0.2989,no,,False,
+Rauw Alejandro,7153566,a,2019,0.3562,no,yes,True,False,False,,,,,
+Rauw Alejandro,7153566,a,2020,0.6439,yes,yes,True,True,False,,,,,
+Rauw Alejandro,7153566,a,2021,0.6536,yes,yes,True,True,True,0.4266,no,yes,False,False
+Rauw Alejandro,7153566,a,2022,0.6639,yes,yes,True,True,True,0.334,no,no,False,True
+Rauw Alejandro,7153566,a,2023,0.8694,yes,yes,True,True,True,0.3686,no,yes,True,False
+Rauw Alejandro,7153566,a,2024,0.7226,yes,yes,False,,True,0.4613,no,yes,True,False
+Rauw Alejandro,7153566,a,2025,0.8807,yes,,False,,True,0.4875,no,,False,
+Romeo Santos,3094075,b,2019,0.3452,no,no,True,True,True,0.2142,no,yes,False,False
+Romeo Santos,3094075,b,2022,0.5296,yes,no,True,False,True,0.238,no,no,True,True
+Romeo Santos,3094075,b,2025,0.2736,no,,False,,True,0.1751,no,,False,
+Rosalía,5648334,a,2018,0.8583,yes,yes,True,True,False,,,,,
+Rosalía,5648334,a,2019,0.9017,yes,yes,True,True,True,0.5132,yes,no,False,False
+Rosalía,5648334,a,2020,0.8491,yes,yes,True,True,True,0.4827,no,yes,False,False
+Rosalía,5648334,a,2021,0.8192,yes,yes,True,True,True,0.364,no,yes,False,False
+Rosalía,5648334,a,2022,0.9115,yes,yes,True,True,True,0.4969,yes,no,False,False
+Rosalía,5648334,a,2023,0.8932,yes,yes,True,True,True,0.3236,no,,False,
+Rosalía,5648334,a,2024,0.8244,yes,no,False,,True,0.361,no,yes,True,False
+Rosalía,5648334,a,2026,0.6169,yes,,False,,True,0.3207,no,,False,
+Sabrina Carpenter,4378284,a,2018,0.8107,yes,yes,True,True,True,0.4319,no,,False,
+Sabrina Carpenter,4378284,a,2019,0.8313,yes,yes,True,True,True,0.6775,yes,yes,False,True
+Sabrina Carpenter,4378284,a,2020,0.7947,yes,yes,True,True,True,0.5123,yes,yes,False,True
+Sabrina Carpenter,4378284,a,2021,0.7763,yes,yes,True,True,True,0.4753,no,yes,False,False
+Sabrina Carpenter,4378284,a,2022,0.7058,yes,yes,True,True,True,0.4758,no,no,False,True
+Sabrina Carpenter,4378284,a,2023,0.8226,yes,yes,True,True,True,0.363,no,yes,True,False
+Sabrina Carpenter,4378284,a,2024,0.7396,yes,yes,False,,True,0.4069,no,,False,
+Sabrina Carpenter,4378284,a,2025,0.8495,yes,yes,False,,True,0.3987,no,no,True,True
+Sabrina Carpenter,4378284,a,2026,0.7304,yes,,False,,True,0.4673,no,,False,
+Shakira,5530,a,2018,0.7217,yes,yes,True,True,True,0.2062,no,yes,False,False
+Shakira,5530,a,2019,0.6676,yes,yes,True,True,True,0.3994,no,no,False,True
+Shakira,5530,a,2020,0.7016,yes,yes,True,True,True,0.2464,no,no,False,True
+Shakira,5530,a,2021,0.7156,yes,yes,True,True,True,0.2836,no,yes,False,False
+Shakira,5530,a,2022,0.6506,yes,yes,True,True,True,0.3046,no,no,False,True
+Shakira,5530,a,2023,0.6527,yes,yes,True,True,True,0.2031,no,yes,True,False
+Shakira,5530,a,2024,0.7459,yes,yes,False,,True,0.3228,no,no,True,True
+Shakira,5530,a,2025,0.6786,yes,yes,False,,True,0.2202,no,yes,True,False
+Shakira,5530,a,2026,0.6764,yes,,False,,True,0.215,no,,False,
+Stray Kids,6838809,a,2018,0.679,yes,yes,True,True,False,,,,,
+Stray Kids,6838809,a,2019,0.7387,yes,yes,True,True,True,0.5137,yes,yes,False,True
+Stray Kids,6838809,a,2020,0.8804,yes,yes,True,True,True,0.5856,yes,no,False,False
+Stray Kids,6838809,a,2021,0.914,yes,yes,True,True,True,0.3876,no,no,False,True
+Stray Kids,6838809,a,2022,0.9028,yes,yes,True,True,True,0.389,no,yes,False,False
+Stray Kids,6838809,a,2023,0.9084,yes,yes,True,True,True,0.4098,no,no,True,True
+Stray Kids,6838809,a,2024,0.9249,yes,yes,False,,True,0.418,no,yes,True,False
+Stray Kids,6838809,a,2025,0.8968,yes,yes,False,,True,0.3215,no,no,True,True
+Stray Kids,6838809,a,2026,0.8656,yes,,False,,True,0.2506,no,,False,
+SZA,3272791,a,2019,0.4653,no,yes,True,False,True,0.4431,no,yes,False,False
+SZA,3272791,a,2020,0.7019,yes,yes,True,True,True,0.3675,no,no,False,True
+SZA,3272791,a,2021,0.6013,yes,yes,True,True,True,0.3,no,no,False,True
+SZA,3272791,a,2022,0.5753,yes,yes,True,True,True,0.2435,no,yes,False,False
+SZA,3272791,a,2023,0.6559,yes,yes,True,True,True,0.2643,no,no,True,True
+SZA,3272791,a,2024,0.6093,yes,no,False,,True,0.2699,no,no,True,True
+SZA,3272791,a,2026,0.459,no,,False,,True,0.2654,no,,False,
+Taylor Swift,1124645,a,2018,0.8097,yes,yes,True,True,True,0.3643,no,yes,False,False
+Taylor Swift,1124645,a,2019,0.893,yes,yes,True,True,True,0.4709,no,yes,False,False
+Taylor Swift,1124645,a,2020,0.9767,yes,yes,True,True,True,0.445,no,yes,False,False
+Taylor Swift,1124645,a,2021,0.9959,yes,yes,True,True,True,0.3553,no,no,False,True
+Taylor Swift,1124645,a,2022,0.9219,yes,yes,True,True,True,0.3071,no,yes,False,False
+Taylor Swift,1124645,a,2023,0.9801,yes,yes,True,True,True,0.3033,no,yes,True,False
+Taylor Swift,1124645,a,2024,0.8545,yes,yes,False,,True,0.2819,no,no,True,True
+Taylor Swift,1124645,a,2025,0.822,yes,yes,False,,True,0.3485,no,no,True,True
+Taylor Swift,1124645,a,2026,0.9134,yes,,False,,True,0.3751,no,,False,
+The Weeknd,2171152,a,2018,0.7546,yes,yes,True,True,True,0.4609,no,no,False,True
+The Weeknd,2171152,a,2019,0.7102,yes,yes,True,True,True,0.4529,no,yes,False,False
+The Weeknd,2171152,a,2020,0.7184,yes,yes,True,True,True,0.4115,no,yes,False,False
+The Weeknd,2171152,a,2021,0.7832,yes,yes,True,True,True,0.4712,no,yes,False,False
+The Weeknd,2171152,a,2022,0.9324,yes,yes,True,True,True,0.414,no,yes,False,False
+The Weeknd,2171152,a,2023,0.9017,yes,yes,True,True,True,0.4303,no,no,True,True
+The Weeknd,2171152,a,2024,0.8494,yes,yes,False,,True,0.4572,no,yes,True,False
+The Weeknd,2171152,a,2025,0.8868,yes,yes,False,,True,0.4175,no,no,True,True
+The Weeknd,2171152,a,2026,0.7426,yes,,False,,True,0.3821,no,,False,
+"Tyler, the Creator",1967268,a,2018,0.7266,yes,yes,True,True,True,0.5069,yes,yes,False,True
+"Tyler, the Creator",1967268,a,2019,0.7149,yes,yes,True,True,True,0.4752,no,no,False,True
+"Tyler, the Creator",1967268,a,2020,0.6428,yes,yes,True,True,True,0.4313,no,yes,False,False
+"Tyler, the Creator",1967268,a,2021,0.6516,yes,no,True,False,True,0.443,no,,False,
+"Tyler, the Creator",1967268,a,2023,0.5687,yes,yes,True,True,True,0.5591,yes,yes,True,True
+"Tyler, the Creator",1967268,a,2024,0.5459,yes,yes,False,,True,0.5235,yes,yes,True,True
+"Tyler, the Creator",1967268,a,2025,0.5896,yes,,False,,True,0.4957,yes,,False,
+Usher,97139,b,2018,0.671,yes,yes,True,True,True,0.2622,no,,False,
+Usher,97139,b,2019,0.7156,yes,yes,True,True,True,0.3643,no,no,False,True
+Usher,97139,b,2020,0.6252,yes,no,True,False,True,0.2838,no,no,False,True
+Usher,97139,b,2023,0.5205,yes,yes,True,True,True,0.2335,no,no,True,True
+Usher,97139,b,2024,0.6074,yes,no,False,,True,0.1914,no,,False,

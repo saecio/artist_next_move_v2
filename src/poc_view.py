@@ -27,7 +27,6 @@ def css(poc: dict) -> str:  # style block from the config
         f".poc-note{{font-size:{s['note_font']}px;opacity:{s['muted_opacity']};margin-top:2px}}",  # small notes under the table
         f".poc-chips{{display:flex;gap:{s['card_gap']}px;flex-wrap:wrap}}",  # scoreboard chips
         f".poc-chip{{background:{c['chip_bg']};color:{c['chip_fg']};border-radius:{s['card_radius']}px;padding:{s['cell_padding']}px {s['card_padding']}px;font-size:{s['chip_font']}px;font-weight:600}}",  # one chip
-        f"[data-testid='stMainBlockContainer']{{padding-top:{s['page_top_padding']}px}}",  # less empty space above the page
     ]  # close the rule list
     for kind in ("green", "red", "amber", "grey"):  # one rule per color
         rules.append(f".poc-mark.{kind},.poc-cell.{kind}{{background:{c[kind]['bg']};color:{c[kind]['fg']};font-weight:600}}")  # mark and result cell colors
@@ -173,3 +172,63 @@ def panel_html(rows: list, note_list: list, poc: dict) -> str:  # the always vis
 def chips_html(lines: list, poc: dict) -> str:  # scoreboard chips
     """Scoreboard chips from already formatted lines."""
     return css(poc) + "<div class='poc-chips'>" + "".join(f"<span class='poc-chip'>{html.escape(x)}</span>" for x in lines) + "</div>"  # one chip per line
+
+
+def multi_css(poc: dict) -> str:  # style rules of the mode 2 table, all scoped to the .poc-multi wrapper
+    """Style block of the mode 2 table; every rule starts with .poc-multi so nothing can reach another tab."""
+    c, s = poc["colors"], poc["sizes"]  # colors and sizes
+    rules = [  # one CSS rule per line
+        ".poc-multi .poc-table{table-layout:fixed}",  # equal column widths, so all placeholder cells are equally wide
+        f".poc-multi .poc-table th:first-child{{width:{s['multi_artist_col']}%}}",  # artist column
+        f".poc-multi .poc-ph{{background:{c['placeholder_bg']};border:{s['placeholder_border_width']}px dashed {c['placeholder_border']};text-align:center}}",  # dark placeholder cell, dashed border, no grey fill
+        f".poc-multi .poc-ph span{{color:currentColor;opacity:{s['placeholder_opacity']}}}",  # dim text that follows the theme text color
+        f".poc-multi .poc-pill{{display:inline-block;padding:{s['pill_pad_v']}px {s['pill_pad_h']}px;border-radius:{s['pill_radius']}px;border:{s['pill_border']}px solid {c['accent']};font-size:{s['pill_font']}px;font-weight:600;white-space:nowrap}}",  # pill shape
+        f".poc-multi .poc-pill.yes{{background:{c['accent']};color:{c['accent_fg']}}}",  # Yes and Likely: filled
+        f".poc-multi .poc-pill.no{{background:transparent;color:{c['accent']}}}",  # No and Not likely: outlined
+        f".poc-multi .poc-mark{{width:{s['multi_mark_size']}px;height:{s['multi_mark_size']}px;font-size:{s['multi_mark_font']}px}}",  # larger result marks
+    ]  # end of the rules
+    return "<style>" + "".join(rules) + "</style>"  # the style element
+
+
+def pill(text: str, yes: bool) -> str:  # a verdict pill
+    """A rounded verdict pill: filled for Yes and Likely, outlined for No and Not likely."""
+    return f"<span class='poc-pill {'yes' if yes else 'no'}'>{html.escape(text)}</span>"  # pill element
+
+
+def how_lines(stage: str, rel_lines: list, legend: str) -> list:  # lines of the How to read this expander
+    """The two reliability lines and the legend, from the predict stage on; nothing in the placeholder stage."""
+    return [] if stage == "placeholder" else list(rel_lines) + [legend]  # empty before Predict
+
+
+def multi_table_html(rows: pd.DataFrame, summary: dict, g: dict, route: dict, poc: dict, marks_fn, n_min: int, stage: str = "reveal") -> str:  # mode 2 table
+    """The mode 2 table as one HTML string. Stage placeholder: the artist column and placeholders. Stage predict: the model verdicts as pills. Stage reveal: the realities, the marks and the two summary lines."""
+    t, rt = poc["texts"], route["texts"]  # poc and route texts
+    yn = {"yes": g["answer_yes"], "no": g["answer_no"]}  # Yes / No words
+    head = "".join(f"<th>{html.escape(rt[k])}</th>" for k in ("col_artist", "col_when", "col_when_reality", "col_what", "col_what_reality", "col_result"))  # header cells
+    ph = f"<td class='poc-ph'><span>{html.escape(rt['placeholder'])}</span></td>"  # one placeholder cell, one per column
+    body = []  # table rows
+    for _, r in rows.iterrows():  # one row per artist
+        name = f"<th>{html.escape(r['artist'])}</th>"  # artist cell, always shown
+        if stage == "placeholder":  # nothing but the artist
+            body.append(f"<tr>{name}{ph * 5}</tr>")  # five equal placeholder cells
+            continue  # next artist
+        if not r["has_row"]:  # no Work or no score in that year
+            body.append(f"<tr>{name}<td colspan='5'>{html.escape(rt['no_work'])}</td></tr>")  # one text for the row
+            continue  # next artist
+        when = f"<td>{pill(yn[r['when_verdict']], r['when_verdict'] == 'yes')}</td>"  # WHEN verdict pill
+        if r["what_available"]:  # WHAT score exists
+            what_model = f"<td>{pill(t['likely'] if r['what_verdict'] == 'yes' else t['not_likely'], r['what_verdict'] == 'yes')}</td>"  # WHAT verdict pill
+        else:  # no WHAT score: one text over the two WHAT columns, in both stages
+            what_model = f"<td colspan='2'>{html.escape(rt['what_missing'].format(n=n_min))}</td>"  # reason from the yaml
+        if stage == "predict":  # realities and marks stay placeholders
+            what_rest = "" if not r["what_available"] else ph  # WHAT reality placeholder
+            body.append(f"<tr>{name}{when}{ph}{what_model}{what_rest}{ph}</tr>")  # model columns shown
+            continue  # next artist
+        m = marks_fn(r)  # WHEN and WHAT marks
+        mk = "".join(f"<span class='poc-mark {k}'>{html.escape(t[key])}</span>" for k, key in (m["when"], m["what"]))  # two marks
+        wr = rt["no_reality"] if pd.isna(r["when_label"]) else yn[r["when_label"]]  # WHEN reality text, plain
+        what_rest = "" if not r["what_available"] else f"<td>{html.escape(rt['no_reality'] if pd.isna(r['what_label']) else yn[r['what_label']])}</td>"  # WHAT reality, plain
+        body.append(f"<tr>{name}{when}<td>{html.escape(wr)}</td>{what_model}{what_rest}<td>{mk}</td></tr>")  # full row
+    lines = [rt["summary_when"].format(k=summary["when_right"], n=summary["when_n"]), rt["summary_what"].format(k=summary["what_right"], n=summary["what_n"])] if stage == "reveal" else []  # only the two summary lines, after Show reality
+    notes_html = "".join(f"<div class='poc-note'>{html.escape(x)}</div>" for x in lines)  # small notes
+    return css(poc) + multi_css(poc) + f"<div class='poc-panel poc-multi'><table class='poc-table'><tr>{head}</tr>{''.join(body)}</table>{notes_html}</div>"  # table and notes in the scoped wrapper
