@@ -46,16 +46,19 @@ def load_tables() -> dict:  # load the cached tables
     what["artist_id"] = what["artist_id"].astype("int64")  # whole-number ids
     style = ROOT / live["style_folder"]  # style folder
     top = pd.read_csv(ROOT / live["what_top10"]).set_index("model").loc[live["what_top10_model"]]  # stage 0 row of the holdout top 10% file
+    pb = load_demo_config()["pool_b"]["paths"]  # pool B file paths
+    def both(a_path, b_key):  # pool A file followed by the pool B file
+        return pd.concat([pd.read_csv(a_path), pd.read_csv(ROOT / pb[b_key])], ignore_index=True)  # one table, pool A rows first and unchanged
     return {  # open the table dict
         "columns": json.loads((folder / live["columns"]).read_text()),  # ordered model columns
-        "when_features": pd.read_csv(folder / live["when_features"]),  # WHEN feature rows
-        "what_features": pd.read_csv(folder / live["what_features"]),  # WHAT feature rows
-        "when_stored": pd.read_csv(ROOT / live["when_scores"]),  # stored WHEN scores
+        "when_features": both(folder / live["when_features"], "when_features"),  # WHEN feature rows, both pools
+        "what_features": both(folder / live["what_features"], "what_features"),  # WHAT feature rows, both pools
+        "when_stored": both(ROOT / live["when_scores"], "when_scores"),  # stored WHEN scores, both pools
         "what_top10": top.loc[["score_cutoff", "precision_top", "holdout_positive_rate"]].astype(float).to_dict(),  # WHAT cutoff and holdout figures of the top 10% group
         "what_below": outside_rate(what, float(top["score_cutoff"])),  # holdout rows below the cutoff: counts, rate and z
-        "what_labels": pd.read_csv(folder / live["what_labels"]),  # stored WHAT labels and after-holdout flags
+        "what_labels": both(folder / live["what_labels"], "what_labels"),  # stored WHAT labels and after-holdout flags, both pools
         "what_stored": what[what["artist_id"].isin(ids)],  # stored WHAT scores, demo artists
-        "works": pd.read_csv(ROOT / live["works"]),  # Works of the demo artists
+        "works": both(ROOT / live["works"], "works"),  # Works of the demo artists, both pools
         "panel": pd.read_csv(style / live["style_panel"]),  # style panel rows
         "percentiles": pd.read_csv(style / live["style_percentiles"]),  # residual percentiles
         "predictions": pd.read_csv(ROOT / live["style_predictions"]),  # stored style forecast, validation display only
@@ -79,6 +82,8 @@ def score_what(artist_id: int) -> pd.DataFrame:  # live WHAT scores of one artis
     rows = tables["what_features"]  # feature rows of all demo artists
     rows = rows[rows["artist_id"] == artist_id]  # this artist only
     out = rows[["artist_id", "year"]].copy()  # row identity
+    if rows.empty:  # artist without any WHAT score
+        return out.assign(stage0_score=pd.Series(dtype=float), label=pd.Series(dtype=float), label_after_holdout=pd.Series(dtype=bool), baseline_c_score=pd.Series(dtype=float))  # empty table with the same columns
     out["stage0_score"] = models["what"].predict_proba(rows[tables["columns"]["what_stage0"]])[:, 1]  # live score
     labels = tables["what_labels"][["artist_id", "year", "label", "label_after_holdout"]]  # stored label and after-holdout flag
     baseline = tables["what_stored"][["artist_id", "year", "baseline_c_score"]]  # lookup baseline, holdout rows only

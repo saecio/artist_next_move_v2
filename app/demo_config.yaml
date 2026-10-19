@@ -81,8 +81,7 @@ pool_b:  # second artist pool, fixed on 19-10-2026 before any pool B score or la
     Electronic: "Electronic"  # Electronic
   genre_unmapped: keep  # a Discogs genre that is not in the map keeps its Discogs name
   genre_ties: alphabetical  # ties between genres with the same count go to the first name in alphabetical order
-  pool_labels: {a: "Most active artists", b: "Other well-known artists"}  # neutral pool selector texts, a is the artists list and b the artists_b list
-  pool_selector_label: "Artists"  # pool selector label
+  pool_lists: {a: artists, b: artists_b}  # config list of each pool
   paths:  # pool B files, relative to the project root, written by later steps with exclusive creation, none exists yet
     works: results/demo/works_demo_b.csv  # Works of the pool B artists for the timeline cards
     when_features: results/demo/live/when_features_b.csv  # WHEN feature rows of the pool B artists
@@ -137,9 +136,12 @@ live:  # live scoring assets and stored files read by src/app_live.py, relative 
 game:  # tab 6 flow, thresholds, widget keys and texts
   hide_rerecordings: true  # hide cards of Works flagged is_rerecording, scores and labels are unchanged
   max_cards_per_year: 6  # most Work cards drawn for one year
+  similar_gap: 1  # largest gap, in whole artists out of 10, between the outside rate and the base rate still worded "almost the same"
   threshold: 0.5  # the model says yes when the live next_1y score is at least this value
   keys:  # session_state and widget keys, {id} and {year} are replaced
     state: game  # session_state key holding one state per artist
+    genre: game_genre  # genre selector
+    artist: game_artist  # artist selector
     user_pred: "game_user_pred_{id}"  # checkbox of the optional user prediction
     answer: "game_answer_{id}_{year}"  # yes / no choice
     lock: "game_lock_{id}"  # lock button
@@ -225,7 +227,9 @@ poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, color
     mark_dot: "●"  # grey mark before the reveal or without reality
     mark_ok: "✓"  # mark of a prediction that matches the reality
     mark_bad: "✗"  # mark of a prediction that does not match the reality
-    mark_delay: "⏳"  # small cataloguing-delay mark
+    mark_ok_flagged: "✓*"  # prediction equals the reality, label after the last holdout year (amber)
+    mark_bad_flagged: "✗*"  # prediction differs from the reality, label after the last holdout year (amber)
+    legend_amber: "Amber with an asterisk: reality may be incomplete (cataloguing delay)."  # fixed legend line under the table
     mark_when_title: "WHEN"  # hover text of the WHEN mark
     mark_what_title: "WHAT"  # hover text of the WHAT mark
     action_lock: "Lock my answer"  # action button, step question

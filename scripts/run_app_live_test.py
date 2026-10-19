@@ -48,7 +48,7 @@ tables = load_tables()  # stored tables, cached
 # WHEN against the stored scores
 when = pd.concat([score_when(i) for i in ids], ignore_index=True)  # live scores, 40 artists
 long = when.melt(id_vars=["artist_id", "snapshot_year", "work_id"], value_vars=TARGETS, var_name="target", value_name="live")  # one row per target
-stored = tables["when_stored"]  # stored scores of both targets
+stored = tables["when_stored"][tables["when_stored"]["artist_id"].isin(ids)]  # stored scores of both targets, pool A only
 both = long.merge(stored, on=["artist_id", "snapshot_year", "work_id", "target"], how="outer", indicator=True)  # live vs stored
 report("score_when", both, "live", "score")  # run and show the comparison
 
@@ -68,6 +68,36 @@ for method in ["random_forest", "repeat_last"]:  # both methods
         b = tables["predictions"][tables["predictions"]["method"] == method]  # stored rows of the method
         both = a.merge(b, on=["style", "target_year"], how="outer", indicator=True, suffixes=("_live", "_stored"))  # live vs stored
         report(f"style_live {method} {col}", both, f"{col}_live", f"{col}_stored")  # run and show the comparison
+
+# pool B against its stored files
+from app_data import load_demo_config  # demo settings
+cfgp = load_demo_config()  # settings
+ids_b = [int(a["discogs_id"]) for a in cfgp["artists_b"]]  # the 21 pool B ids
+pbp = cfgp["pool_b"]["paths"]  # pool B file paths
+print("\n== pool B")  # section title
+when_b = pd.concat([score_when(i) for i in ids_b], ignore_index=True)  # live WHEN scores, 21 artists
+long_b = when_b.melt(id_vars=["artist_id", "snapshot_year", "work_id"], value_vars=TARGETS, var_name="target", value_name="live")  # one row per target
+file_b = pd.read_csv(ROOT / pbp["when_scores"])  # stored pool B WHEN scores
+both = long_b.merge(file_b, on=["artist_id", "snapshot_year", "work_id", "target"], how="outer", indicator=True)  # live vs file
+report("score_when pool B vs when_demo_scores_b.csv", both, "live", "score")  # run and show the comparison
+sb = tables["when_stored"][tables["when_stored"]["artist_id"].isin(ids_b)].reset_index(drop=True)  # pool B part of the stored table
+same_file = bool(sb.fillna(-1).equals(file_b.fillna(-1)))  # labels, flags and artist_train_rows come from the file unchanged
+print(f"pool B stored rows {len(file_b)}, stored table equals the file (labels, flags, artist_train_rows): {same_file}")  # row count of the file
+assert same_file  # the app reads the file as it is
+what_b = pd.concat([score_what(i) for i in ids_b], ignore_index=True)  # live WHAT scores, 21 artists
+feat_b = pd.read_csv(ROOT / pbp["what_features"])  # pool B WHAT feature rows
+lab_b = pd.read_csv(ROOT / pbp["what_labels"])  # pool B WHAT labels
+keys_b = set(map(tuple, feat_b[["artist_id", "year"]].to_numpy()))  # rows with a WHAT score by file
+got = set(map(tuple, what_b[["artist_id", "year"]].to_numpy()))  # rows with a WHAT score by function
+m = what_b.merge(lab_b, on=["artist_id", "year"], suffixes=("", "_file"))  # labels from the file
+same = bool(((m["label"].fillna(-1) == m["label_file"].fillna(-1)) & (m["label_after_holdout"] == m["label_after_holdout_file"])).all())  # label and flag equal
+print(f"score_what pool B: rows {len(what_b)} (file {len(feat_b)}), key sets equal {keys_b == got}, labels and flags equal {same}, baseline_c_score all empty {bool(what_b['baseline_c_score'].isna().all())}, scores in (0, 1) {bool(what_b['stage0_score'].between(0, 1).all())}")  # WHAT check
+assert len(file_b) == both["_merge"].eq("both").sum() and keys_b == got and same and what_b["baseline_c_score"].isna().all()  # all pool B checks
+# pool A timeline unchanged by the concatenation: a few fixed facts of the earlier runs
+t1 = artist_timeline(1124645).set_index("year")  # Taylor Swift timeline
+t2 = artist_timeline(7592689).set_index("year")  # Olivia Rodrigo timeline
+print(f"pool A unchanged: 1124645 2020 WHEN {t1.loc[2020, 'next_1y']:.3f} WHAT {t1.loc[2020, 'stage0_score']:.3f}; 7592689 2023 WHEN {t2.loc[2023, 'next_1y']:.3f} WHAT {t2.loc[2023, 'stage0_score']:.3f}")  # earlier values 0.977, 0.445, 0.937, 0.453
+assert (round(t1.loc[2020, "next_1y"], 3), round(t1.loc[2020, "stage0_score"], 3), round(t2.loc[2023, "next_1y"], 3), round(t2.loc[2023, "stage0_score"], 3)) == (0.977, 0.445, 0.937, 0.453)  # same values as the earlier runs
 
 # timings, first and cached call
 timed("score_when", score_when, ids[0])  # time this function

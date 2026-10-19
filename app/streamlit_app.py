@@ -9,7 +9,7 @@ import streamlit as st  # UI
 sys.path.append(str(Path(__file__).resolve().parent.parent / "src"))  # make src importable
 
 from app_data import (  # noqa: E402  data access functions
-    add_projection_flag, artists_by_genre, load_demo_config, load_predictions,  # imported names
+    add_projection_flag, all_artists, artists_by_genre, load_demo_config, load_predictions,  # imported names
 )  # close the import
 from app_live import artist_timeline, load_tables  # noqa: E402  live data layer
 from config import CONFIG  # noqa: E402  project settings
@@ -29,10 +29,10 @@ for i in (0, 1, 2, 3, 4, 7):  # tabs without content yet
 
 with tabs[5]:  # Time Machine demo
     st.header(cfg["tabs"][5])  # tab title
-    genres = list(dict.fromkeys(a["genre"] for a in cfg["artists"]))  # genres in config order
-    genre = st.selectbox(ui["genre_label"], [ui["all_genres"]] + genres)  # genre filter
-    options = artists_by_genre(cfg["artists"], None if genre == ui["all_genres"] else genre)  # filtered artists
-    artist = st.selectbox(ui["artist_label"], options, format_func=lambda a: a["name"])  # pick by name
+    genres = sorted(dict.fromkeys(a["genre"] for a in all_artists(cfg)))  # genres of both pools, sorted
+    genre = st.selectbox(ui["genre_label"], [ui["all_genres"]] + genres, key=cfg["game"]["keys"]["genre"])  # genre filter
+    options = artists_by_genre(cfg, None if genre == ui["all_genres"] else genre)  # filtered artists of both pools
+    artist = st.selectbox(ui["artist_label"], options, format_func=lambda a: a["name"], key=cfg["game"]["keys"]["artist"])  # pick by name
     st.caption(ui["id_caption"].format(id=artist["discogs_id"]))  # keep the Discogs id visible
     g, keys = cfg["game"], cfg["game"]["keys"]  # game texts and widget keys
     aid = artist["discogs_id"]  # selected artist id
@@ -110,7 +110,7 @@ with tabs[5]:  # Time Machine demo
                         st.caption(g["what_reliability"].format(x=rel[0], y=rel[1]))  # reliability of the top 10% group
                     else:  # No verdict
                         below = load_tables()["what_below"]  # holdout rows below the cutoff
-                        st.caption(g[outside_text_key(below["z"], rel[1])].format(z=below["z"], y=rel[1]))  # reliability outside the group
+                        st.caption(g[outside_text_key(below["z"], rel[1], g["similar_gap"])].format(z=below["z"], y=rel[1]))  # reliability outside the group
                     st.caption(g["what_score"].format(score=row["stage0_score"]))  # small score number
                     if played and pd.notna(row["what_label"]):  # step B with a stored label
                         st.write(g["what_reality_yes" if row["what_label"] == 1 else "what_reality_no"])  # stored WHAT label

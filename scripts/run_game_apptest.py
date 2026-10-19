@@ -15,16 +15,37 @@ sys.path.append(str(ROOT / "src"))  # src/ importable
 from streamlit.testing.v1 import AppTest  # headless app runner
 
 from app_data import load_demo_config  # demo settings
+from config import CONFIG  # project settings
 from demo_game import scoreboard  # scoreboard of a history
 
 cfg = load_demo_config()  # settings
 g, keys = cfg["game"], cfg["game"]["keys"]  # game texts and keys
-genres = list(dict.fromkeys(a["genre"] for a in cfg["artists"]))  # genre options in order
+CONFIG_MIN = CONFIG["what"]["min_previous_works"]  # earlier Works required for a WHAT score
 with open(ROOT / "results/holdout_what/top10_lift.csv", encoding="utf-8") as f:  # top 10% file
     top = next(r for r in csv.DictReader(f) if r["model"] == "stage 0")  # stage 0 row
 with open(ROOT / "results/holdout_what/row_scores.csv", encoding="utf-8") as f:  # holdout scores
     low = [float(r["label"]) for r in csv.DictReader(f) if float(r["stage0_score"]) < float(top["score_cutoff"])]  # labels of the rows below the cutoff
 EXP = {"x": round(float(top["precision_top"]) * 10), "y": round(float(top["holdout_positive_rate"]) * 10), "z": round(sum(low) / len(low) * 10)}  # independent x, y and z
+
+
+def find(name: str) -> tuple:  # artist entry and pool key
+    """Artist entry and pool key of a display name, searching both pools (the pool is not on screen)."""
+    for pool, lst in cfg["pool_b"]["pool_lists"].items():  # each pool and its config list
+        for x in cfg[lst]:  # artists of the pool
+            if x["name"] == name:  # found
+                return x, pool  # entry and pool
+
+
+def pick(at: AppTest, name: str) -> int:  # select genre and artist from the mixed list
+    """Select the genre and the artist from the mixed, name-sorted list; no pool widget exists."""
+    assert len(at.radio) == 0 or all(r.label != "Artists" for r in at.radio)  # no pool selector on the page
+    a, _ = find(name)  # entry
+    at.selectbox(key=keys["genre"]).select(a["genre"]).run()  # genre filter
+    names = sorted((x["name"] for lst in cfg["pool_b"]["pool_lists"].values() for x in cfg[lst] if x["genre"] == a["genre"]), key=str.lower)  # mixed list of the genre, sorted by name
+    shown = [o.name if hasattr(o, "name") else str(o) for o in at.selectbox(key=keys["artist"]).options]  # options shown, as text
+    assert len(shown) == len(names) and shown == sorted(shown, key=str.lower), "the artist list must be mixed and sorted by name"  # one mixed sorted list
+    at.selectbox(key=keys["artist"]).select_index(names.index(name)).run()  # artist
+    return a["discogs_id"]  # id
 
 
 def show(at: AppTest, label: str) -> None:  # print the main texts of the page
@@ -41,14 +62,11 @@ def show(at: AppTest, label: str) -> None:  # print the main texts of the page
 
 def run_mode(user_on: bool, artist_name: str, steps: int) -> None:  # play the first years of one artist
     """Fresh app, pick an artist, play the first `steps` years."""
-    a = next(x for x in cfg["artists"] if x["name"] == artist_name)  # artist entry
-    aid = a["discogs_id"]  # its id
+    aid = find(artist_name)[0]["discogs_id"]  # its id
     t0 = time.time()  # first run clock
     at = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=60).run()  # first run
     print(f"\n===== {artist_name} ({aid}), user prediction {'ON' if user_on else 'OFF'}; first run {time.time() - t0:.2f} s")  # print the result
-    at.selectbox[0].select(a["genre"]).run()  # genre filter
-    names = [x["name"] for x in cfg["artists"] if x["genre"] == a["genre"]]  # filtered artists
-    at.selectbox[1].select_index(names.index(artist_name)).run()  # artist
+    pick(at, artist_name)  # pool, genre and artist
     if user_on:  # enable the optional prediction
         at.checkbox(key=keys["user_pred"].format(id=aid)).check().run()  # checkbox
     for n in range(steps):  # play the first years
@@ -75,11 +93,9 @@ def run_mode(user_on: bool, artist_name: str, steps: int) -> None:  # play the f
 
 def play_to_end(artist_name: str, user_on: bool) -> None:  # play one artist to the last year
     """Play every year of one artist; print the page at 2024 and 2026 and assert the scoreboard n does not change there."""
-    a = next(x for x in cfg["artists"] if x["name"] == artist_name)  # artist entry
-    aid = a["discogs_id"]  # its id
+    aid = find(artist_name)[0]["discogs_id"]  # its id
     at = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=60).run()  # fresh app
-    at.selectbox[0].select(a["genre"]).run()  # genre filter
-    at.selectbox[1].select_index([x["name"] for x in cfg["artists"] if x["genre"] == a["genre"]].index(artist_name)).run()  # artist
+    pick(at, artist_name)  # pool, genre and artist
     if user_on:  # enable the optional prediction
         at.checkbox(key=keys["user_pred"].format(id=aid)).check().run()  # checkbox
     print(f"\n===== full walk, {artist_name} ({aid}), user prediction {'ON' if user_on else 'OFF'}")  # section title
@@ -105,11 +121,9 @@ def play_to_end(artist_name: str, user_on: bool) -> None:  # play one artist to 
 
 def show_year(artist_name: str, target_year: int) -> None:  # play one artist up to a year and print both columns
     """Play one artist up to target_year, print the page lines of the WHEN and WHAT columns and check that WHAT never moves the scoreboard."""
-    a = next(x for x in cfg["artists"] if x["name"] == artist_name)  # artist entry
-    aid = a["discogs_id"]  # its id
+    aid = find(artist_name)[0]["discogs_id"]  # its id
     at = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=60).run()  # fresh app
-    at.selectbox[0].select(a["genre"]).run()  # genre filter
-    at.selectbox[1].select_index([x["name"] for x in cfg["artists"] if x["genre"] == a["genre"]].index(artist_name)).run()  # artist
+    pick(at, artist_name)  # pool, genre and artist
     while at.session_state[keys["state"]][aid]["year"] != target_year:  # walk to the target year
         at.button(key=keys["reveal"].format(id=aid)).click().run()  # reveal
         at.button(key=keys["next"].format(id=aid)).click().run()  # next year
@@ -141,4 +155,32 @@ for who in ("Olivia Rodrigo", "Taylor Swift"):  # the two requested artists
 print("\n##### WHEN and WHAT columns")  # section title
 for who, yr in (("Taylor Swift", 2020), ("Taylor Swift", 2023), ("Olivia Rodrigo", 2023), ("Olivia Rodrigo", 2019), ("Lady Gaga", 2021), ("Olivia Rodrigo", 2021), ("Tyler, the Creator", 2023)):  # below the cutoff with label, flagged label, no WHAT score, at or above the cutoff with label, at or above without label, at or above and flagged
     show_year(who, yr)  # play and print
+print("\n##### pool B cases")  # section title
+from app_live import artist_timeline  # live data layer, to choose years that exist
+from demo_game import scored_years  # playable years
+for who in ("Kendrick Lamar", "Beyonce", "Peso Pluma", "boygenius"):  # pool B artists
+    aid = find(who)[0]["discogs_id"]  # id
+    tl = artist_timeline(aid)  # timeline
+    playable = scored_years(tl, 2018)  # playable years
+    what_years = [int(y) for y in tl.loc[tl["stage0_score"].notna(), "year"]]  # years with a WHAT score
+    print(f"\n{who} ({aid}): playable {playable}, WHAT years {what_years}")  # data facts
+    if who == "boygenius":  # no WHAT score in any year
+        assert not what_years, "boygenius must have no WHAT score"  # rule of the pool
+    if who == "Peso Pluma":  # WHAT only from 2023
+        assert what_years and min(what_years) >= 2023, "Peso Pluma WHAT must start in 2023"  # rule of the pool
+    targets = {playable[0]} | ({what_years[0]} if what_years and what_years[0] in playable else set())  # first playable year and first year with a WHAT score
+    for yr in sorted(targets):  # years to show
+        show_year(who, yr)  # play and print both columns
+    if who == "boygenius":  # every playable year shows the missing-score text
+        for yr in playable:  # all 3 playable years
+            at = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=60).run()  # fresh app
+            pick(at, who)  # artist
+            while at.session_state[keys["state"]][aid]["year"] != yr:  # walk to the year
+                at.button(key=keys["reveal"].format(id=aid)).click().run()  # reveal
+                at.button(key=keys["next"].format(id=aid)).click().run()  # next year
+            want = g["what_missing"].format(n=CONFIG_MIN)  # expected text
+            assert want in [m.value for m in at.markdown], "the WHAT column must show what_missing"  # step A text
+            at.button(key=keys["reveal"].format(id=aid)).click().run()  # reveal
+            assert want in [m.value for m in at.markdown], "the WHAT column must show what_missing after the reveal"  # step B text
+            print(f"   boygenius {yr}: WHAT column shows: {want}")  # printed proof
 print(f"\ntotal AppTest time {time.time() - t_all:.2f} s")  # print the result

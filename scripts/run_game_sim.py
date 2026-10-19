@@ -128,10 +128,41 @@ below = load_tables()["what_below"]  # the same numbers from the app layer
 print(f"app layer: rows {below['rows']}, positives {below['positives']}, rate {below['rate']:.4f}, z {below['z']}")  # app-layer values
 assert (below["rows"], below["positives"], below["z"]) == (len(low), int(sum(low)), z_independent)  # z equals the independent recomputation
 y = reliability(top)[1]  # rounded positive rate of any artist
-key = outside_text_key(below["z"], y)  # wording variant
+key = outside_text_key(below["z"], y, cfg["similar_gap"])  # wording variant
 print(f"z {below['z']}, y {y}, variant applied: {key}")  # which variant applies to the real values
-assert outside_text_key(3, 3) == "what_reliability_no_similar" and outside_text_key(3, 4) == "what_reliability_no_similar" and outside_text_key(3, 5) == "what_reliability_no_other"  # both variants work
+assert outside_text_key(3, 3, cfg["similar_gap"]) == "what_reliability_no_similar" and outside_text_key(3, 4, cfg["similar_gap"]) == "what_reliability_no_similar" and outside_text_key(3, 5, cfg["similar_gap"]) == "what_reliability_no_other"  # both variants work
 print(cfg[key].format(z=below["z"], y=y))  # the No-verdict line
 print(cfg["what_reliability"].format(x=reliability(top)[0], y=y))  # the Yes-verdict line
 print("WHAT scoreboard checks passed")  # all asserts held
+print("\n== pool A regression against the earlier runs")  # section title
+pins = {7592689: (5, 3), 1124645: (6, 6), 4778: (6, 6)}  # counted years and model right of the earlier runs
+for aid, (n_old, right_old) in pins.items():  # three pool A artists
+    b = scoreboard(walk(aid, False))  # scoreboard now
+    print(f"{aid}: n {b['n']} (earlier {n_old}), model right {b['model_right']} (earlier {right_old})")  # one line per artist
+    assert (b["n"], b["model_right"]) == (n_old, right_old)  # unchanged
+w1, w2 = artist_timeline(1124645).set_index("year"), artist_timeline(7592689).set_index("year")  # timelines
+assert (round(w1.loc[2020, "stage0_score"], 3), round(w2.loc[2023, "stage0_score"], 3)) == (0.445, 0.453)  # WHAT lines of the earlier runs
+print("pool A unchanged: WHAT score 1124645 in 2020 and 7592689 in 2023 equal the earlier runs")  # proof
+print("\n== pool B walks")  # section title
+names_b = {int(a["discogs_id"]): a["name"] for a in load_demo_config()["artists_b"]}  # pool B names
+for aid in (1778977, 52835, 13200183, 6774153):  # the four requested pool B artists
+    tl = artist_timeline(aid)  # timeline
+    playable = scored_years(tl, CONFIG["years"]["holdout_start"])  # playable years
+    what_years = [int(y) for y in tl.loc[tl["stage0_score"].notna(), "year"]]  # years with a WHAT score
+    for user_on in (False, True):  # both modes
+        h = walk(aid, user_on)  # full walk
+        b = scoreboard(h)  # scoreboard
+        ref = expected(aid, h)  # stored counted rows
+        model_ok = int(sum((((tl.set_index("year").loc[x["year"], "next_1y"] >= THRESHOLD) == (x["label"] == "yes")) for x in h if x["counted"])))  # model right from the live score
+        print(f"{names_b[aid]} ({aid}) user={user_on}: playable {playable}, counted {b['n']} vs stored {len(ref)}, model right {b['model_right']} vs live {model_ok}, user_n {b['user_n']}")  # one line
+        assert b["n"] == len(ref) and b["model_right"] == model_ok  # same as the stored labels
+        assert [x["year"] for x in h] == playable  # every playable year was played
+    print(f"   WHAT years {what_years}")  # WHAT coverage
+    if aid == 6774153:  # boygenius
+        assert not what_years and len(playable) == 3  # 3 playable years, no WHAT score
+    if aid == 13200183:  # Peso Pluma
+        assert what_years and min(what_years) >= 2023  # WHAT only from 2023
+print("pool B walk checks passed")  # all asserts held
+tot = session_total([walk(a, False) for a in (7592689, 1124645, 4778, 1778977, 52835, 13200183, 6774153)])  # session total over both pools
+print("session total over pool A and pool B walks:", tot)  # both pools counted  # all asserts held
 print(f"\nsimulation time {time.time() - t0:.2f} s")  # print the result
