@@ -68,3 +68,19 @@ artists:  # demo artists: display name, Discogs id, genre
   - {name: "BTS", discogs_id: 5034422, genre: "K-pop"}  # K-pop
   - {name: "BLACKPINK", discogs_id: 5210284, genre: "K-pop"}  # K-pop
   - {name: "Stray Kids", discogs_id: 6838809, genre: "K-pop"}  # K-pop
+
+live:  # live scoring assets and stored files read by src/app_live.py, relative to the project root
+  folder: results/demo/live  # WHEN and WHAT models, columns and feature files
+  when_models: {next_1y: when_next_1y.json, next_2y: when_next_2y.json}  # model file per WHEN target, inside folder
+  what_model: what_stage0.json  # WHAT stage 0 model, inside folder
+  columns: columns.json  # ordered model input columns, inside folder
+  when_features: when_features.csv  # WHEN feature rows of the demo artists, inside folder
+  what_features: what_features.csv  # WHAT feature rows of the demo artists, inside folder
+  style_folder: results/demo/live/style  # per-year Random Forests, panel rows and percentiles
+  style_model_pattern: "random_forest_{year}.joblib"  # per-year model file name, {year} is replaced
+  style_panel: panel_rows.csv  # style panel rows, inside style_folder
+  style_percentiles: percentiles.csv  # residual percentiles, inside style_folder
+  when_scores: results/demo/when_demo_scores.csv  # stored WHEN scores, labels and train rows
+  what_scores: results/holdout_what/row_scores.csv  # stored WHAT scores, labels and baseline (c)
+  works: results/demo/works_demo.csv  # Works of the demo artists for the timeline
+  style_predictions: results/style_forecast/predictions.csv  # stored style forecast, validation display only
