@@ -14,7 +14,7 @@ from app_data import (  # noqa: E402  data access functions
 from app_live import artist_timeline, load_tables  # noqa: E402  live data layer
 from config import CONFIG  # noqa: E402  project settings
 from demo_game import (  # noqa: E402  pure game functions
-    card_status, hidden_counts, names, new_state, next_year, play, scored_years, scoreboard, session_total, verdict, year_cards, first_uncounted_year,  # imported names
+    card_status, hidden_counts, names, new_state, next_year, play, scored_years, scoreboard, session_total, verdict, year_cards, first_uncounted_year, flag, reliability, outside_text_key,  # imported names
 )  # close the import
 
 cfg = load_demo_config()  # all texts, paths and artists
@@ -40,7 +40,6 @@ with tabs[5]:  # Time Machine demo
     years = scored_years(tl, CONFIG["years"]["holdout_start"])  # playable years
     games = st.session_state.setdefault(keys["state"], {})  # one state per artist
     state = games.setdefault(aid, new_state(years))  # this artist's state
-    st.warning(notes["what_notice"])  # scores are for ranking only
     st.warning(g["what_years_warning"].format(n=CONFIG["what"]["min_previous_works"]))  # WHAT coverage
     if tl["artist_train_rows"].iloc[0] == 0:  # artist absent from training
         st.warning(g["unseen_warning"])  # model has not seen the artist
@@ -85,28 +84,47 @@ with tabs[5]:  # Time Machine demo
                 state["answer"], state["step"] = pick, "model"  # keep the answer
                 st.rerun()  # redraw with step A
         if step in ("model", "reveal"):  # step A is always visible after the ask
-            st.write(g["model_score"].format(year=year, score=row["next_1y"]))  # live score
-            st.write(g["model_verdict"].format(verdict=yn[verdict(row["next_1y"], g["threshold"])]))  # model verdict
-            if state["answer"]:  # user predicted this year
-                st.write(g["user_answer"].format(answer=yn[state["answer"]]))  # user answer
+            wc, sc = st.columns(2)  # WHEN column and WHAT column
+            top = load_tables()["what_top10"]  # WHAT cutoff and holdout figures
+            rel = reliability(top)  # x and y of the reliability line
+            played = hist[-1] if step == "reveal" else None  # this year's entry after the reveal
+            with wc:  # WHEN column
+                st.markdown(g["when_title"])  # column title
+                st.write(g["model_score"].format(year=year, score=row["next_1y"]))  # live score
+                st.write(g["model_verdict"].format(verdict=yn[verdict(row["next_1y"], g["threshold"])]))  # model verdict
+                if state["answer"]:  # user predicted this year
+                    st.write(g["user_answer"].format(answer=yn[state["answer"]]))  # user answer
+                if played:  # step B
+                    if played["label"] is not None:  # stored label exists, counted or not
+                        st.write(g["reality_" + played["label"]].format(year=year + 1))  # reality text of the stored label
+                    else:  # last data year, no stored label
+                        st.info(g["no_reality"].format(year=last))  # no reality row, no scoreboard change
+                    lab2 = row["label_next_2y"]  # stored next_2y label
+                    part2 = "" if pd.isna(lab2) else g["label_part"].format(label=yn["yes" if lab2 == 1 else "no"])  # label part, omitted when missing
+                    st.write(g["next2_info"].format(score=row["next_2y"], label_part=part2))  # next_2y info
+            with sc:  # WHAT column, never counted
+                st.markdown(g["what_title"])  # column title
+                if pd.notna(row["stage0_score"]):  # WHAT score exists for this artist-year
+                    st.write(g["what_yes" if verdict(row["stage0_score"], top["score_cutoff"]) == "yes" else "what_no"])  # verdict, Yes at or above the cutoff
+                    if verdict(row["stage0_score"], top["score_cutoff"]) == "yes":  # Yes verdict
+                        st.caption(g["what_reliability"].format(x=rel[0], y=rel[1]))  # reliability of the top 10% group
+                    else:  # No verdict
+                        below = load_tables()["what_below"]  # holdout rows below the cutoff
+                        st.caption(g[outside_text_key(below["z"], rel[1])].format(z=below["z"], y=rel[1]))  # reliability outside the group
+                    st.caption(g["what_score"].format(score=row["stage0_score"]))  # small score number
+                    if played and pd.notna(row["what_label"]):  # step B with a stored label
+                        st.write(g["what_reality_yes" if row["what_label"] == 1 else "what_reality_no"])  # stored WHAT label
+                        if flag(row["what_label_after_holdout"]):  # label after the last holdout year
+                            st.caption(g["what_delay_note"])  # cataloguing-delay note
+                    elif played:  # step B without a stored label
+                        st.write(g["what_no_reality"])  # explicit empty state
+                else:  # no WHAT score for this artist-year
+                    st.write(g["what_missing"].format(n=CONFIG["what"]["min_previous_works"]))  # reason, in both steps
         if step == "model" and st.button(g["reveal_label"], key=keys["reveal"].format(id=aid)):  # reveal
             hist.append(play(row, state["answer"], g["threshold"]))  # record the year
             state["step"] = "reveal"  # step B
             st.rerun()  # redraw with step B
         if step == "reveal":  # step B
-            played = hist[-1]  # this year's entry
-            if played["label"] is not None:  # stored label exists, counted or not
-                st.write(g["reality_" + played["label"]].format(year=year + 1))  # reality text of the stored label
-            else:  # last data year, no stored label
-                st.info(g["no_reality"].format(year=last))  # no reality row, no scoreboard change
-            lab2 = row["label_next_2y"]  # stored next_2y label
-            part2 = "" if pd.isna(lab2) else g["label_part"].format(label=yn["yes" if lab2 == 1 else "no"])  # label part, omitted when missing
-            st.write(g["next2_info"].format(score=row["next_2y"], label_part=part2))  # next_2y info
-            if pd.notna(row["stage0_score"]):  # WHAT row exists
-                partw = "" if pd.isna(row["what_label"]) else g["label_part"].format(label=yn["yes" if row["what_label"] == 1 else "no"])  # label part, omitted when missing
-                st.write(g["what_info"].format(score=row["stage0_score"], label_part=partw))  # WHAT info
-            else:  # no WHAT row
-                st.write(g["what_missing"].format(n=CONFIG["what"]["min_previous_works"]))  # WHAT coverage text
             nxt = next_year(years, year)  # next playable year
             if nxt is None:  # end of the data
                 st.info(g["last_year_text"])  # nothing to play

@@ -72,6 +72,26 @@ def card_status(total: int, cards: list, year: int, visible_until: int) -> str: 
     return "card" if cards else "hidden"  # drawn Works, or only re-recordings that are hidden
 
 
+def reliability(top: dict) -> tuple:  # x and y of the reliability line
+    """Whole numbers out of 10 for the top group and for any artist, from the holdout precision and positive rate."""
+    return round(top["precision_top"] * 10), round(top["holdout_positive_rate"] * 10)  # nearest integers
+
+
+SIMILAR_GAP = 1  # largest gap, in whole artists out of 10, still worded "almost the same"
+
+
+def outside_rate(scores: pd.DataFrame, cutoff: float) -> dict:  # counts and rate below the cutoff
+    """Rows below the cutoff, their positives, their positive rate and the rate rounded out of 10."""
+    below = scores[scores["stage0_score"] < cutoff]  # holdout rows below the cutoff
+    rate = float(below["label"].mean())  # share of positives among them
+    return {"rows": len(below), "positives": int(below["label"].sum()), "rate": rate, "z": round(rate * 10)}  # counts, rate and z
+
+
+def outside_text_key(z: int, y: int) -> str:  # wording variant of the No-verdict line
+    """Config key of the No-verdict reliability line: 'almost the same' only when z and y differ by at most SIMILAR_GAP."""
+    return "what_reliability_no_similar" if abs(z - y) <= SIMILAR_GAP else "what_reliability_no_other"  # wording variant
+
+
 def first_uncounted_year(stored: pd.DataFrame) -> int | None:  # first year shown but not counted
     """First snapshot year whose next_1y label is flagged as after the holdout, from the stored scores."""
     rows = stored[(stored["target"] == "next_1y") & stored["label_after_holdout"]]  # flagged next_1y rows

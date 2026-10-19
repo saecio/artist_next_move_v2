@@ -15,7 +15,6 @@ tabs:  # tab titles, in display order
   - Global style forecast  # tab title
   - Limits and next steps  # tab title
 notices:  # texts shown verbatim
-  what_notice: "WHAT scores are not calibrated: use them only to rank, never as real percentages."  # tab 6
   style_notice: "The style forecast is global, not per artist. It predicts what gets catalogued in Discogs."  # tab 7
   projection_notice: "Years after 2022 are projection without ground truth."  # tabs 6 and 7
   pending_notice: "Pending."  # tabs without content yet
@@ -78,6 +77,8 @@ live:  # live scoring assets and stored files read by src/app_live.py, relative 
   what_features: what_features_all_years.csv  # WHAT feature rows of the demo artists, every eligible artist-year from the holdout start, inside folder
   what_labels: what_labels.csv  # WHAT stored label and after-holdout flag of those rows, inside folder
   what_control: control_what_all_years.csv  # control results of the extended WHAT step, inside folder
+  what_top10: results/holdout_what/top10_lift.csv  # holdout top 10% figures of WHAT, read at load time
+  what_top10_model: "stage 0"  # model name of the row used in that file
   what_features_control: what_features.csv  # first WHAT feature file (holdout rows only), kept as the control reference, not read by the app
   style_folder: results/demo/live/style  # per-year Random Forests, panel rows and percentiles
   style_model_pattern: "random_forest_{year}.joblib"  # per-year model file name, {year} is replaced
@@ -117,7 +118,18 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   uncounted_note: "Years from {year} on may not reflect reality because of cataloguing delay."  # fixed line under the scoreboard, {year} is read from the data
   label_part: ", stored label: {label}"  # label part of the information lines, omitted when the label is missing
   next2_info: "Information, not scored. next_2y score {score:.3f}{label_part}"  # step B
-  what_info: "Information, not scored. WHAT score {score:.3f}{label_part}"  # step B, 2018 to 2022
+  when_title: "**WHEN: a new Work next year**"  # title of the WHEN column
+  what_title: "**WHAT: a new style**"  # title of the WHAT column
+  what_score: "WHAT score: {score:.3f}"  # small score number under the verdict, no percent sign
+  what_yes: "Yes: this artist is among those most likely to bring a new style next year"  # WHAT verdict, score at or above the cutoff
+  what_no: "No: this artist is not among those most likely to bring a new style next year"  # WHAT verdict, score below the cutoff
+  what_reliability: "In past tests, about {x} in 10 artists in this group did bring a new style, against about {y} in 10 for any artist."  # reliability line of a Yes verdict, x and y come from the holdout file
+  what_reliability_no_similar: "In past tests, about {z} in 10 artists outside this group also brought a new style, almost the same as for any artist ({y} in 10)."  # No verdict, z and y equal or one unit apart
+  what_reliability_no_other: "In past tests, about {z} in 10 artists outside this group brought a new style, compared with {y} in 10 for any artist."  # No verdict, z and y more than one unit apart
+  what_reality_yes: "WHAT reality: Yes (the artist's next active year brings a new style)"  # step B, stored label is yes
+  what_reality_no: "WHAT reality: No (the artist's next active year brings no new style)"  # step B, stored label is no
+  what_no_reality: "No WHAT reality for this year: no later Work with style tags in the data."  # step B, score but no stored label
+  what_delay_note: "This year may not reflect reality because of cataloguing delay."  # same note as WHEN, for labels after the last holdout year
   what_missing: "No WHAT score: the artist has fewer than {n} earlier Works."  # step B without WHAT
   hidden_line: "{n} re-recording(s) hidden"  # line under a year with hidden re-recordings
   future_card: "?"  # card of a year not revealed yet

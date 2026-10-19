@@ -9,6 +9,7 @@ from xgboost import XGBClassifier  # WHEN and WHAT models
 
 from app_data import load_demo_config  # demo settings
 from config import CONFIG, ROOT  # project settings and root
+from demo_game import outside_rate  # holdout rate below the WHAT cutoff
 from live_style_assets import FIRST, LAST, PROJECTION, rescore  # style rescoring and its target years
 from when_demo import TARGETS, demo_artist_ids  # WHEN targets and the demo artist ids
 
@@ -44,11 +45,14 @@ def load_tables() -> dict:  # load the cached tables
     what = pd.read_csv(ROOT / live["what_scores"])  # stored WHAT scores of all artists
     what["artist_id"] = what["artist_id"].astype("int64")  # whole-number ids
     style = ROOT / live["style_folder"]  # style folder
+    top = pd.read_csv(ROOT / live["what_top10"]).set_index("model").loc[live["what_top10_model"]]  # stage 0 row of the holdout top 10% file
     return {  # open the table dict
         "columns": json.loads((folder / live["columns"]).read_text()),  # ordered model columns
         "when_features": pd.read_csv(folder / live["when_features"]),  # WHEN feature rows
         "what_features": pd.read_csv(folder / live["what_features"]),  # WHAT feature rows
         "when_stored": pd.read_csv(ROOT / live["when_scores"]),  # stored WHEN scores
+        "what_top10": top.loc[["score_cutoff", "precision_top", "holdout_positive_rate"]].astype(float).to_dict(),  # WHAT cutoff and holdout figures of the top 10% group
+        "what_below": outside_rate(what, float(top["score_cutoff"])),  # holdout rows below the cutoff: counts, rate and z
         "what_labels": pd.read_csv(folder / live["what_labels"]),  # stored WHAT labels and after-holdout flags
         "what_stored": what[what["artist_id"].isin(ids)],  # stored WHAT scores, demo artists
         "works": pd.read_csv(ROOT / live["works"]),  # Works of the demo artists
