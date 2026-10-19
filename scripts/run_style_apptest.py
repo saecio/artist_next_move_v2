@@ -1,0 +1,194 @@
+"""AppTest run of tab 7 (Global style forecast). Prints only, writes no files.
+
+Usage:
+    venv/bin/python3 scripts/run_style_apptest.py
+"""
+
+import html  # unescape of table text
+import re  # extraction of rows from the HTML
+import sys  # module path
+import time  # timings
+from pathlib import Path  # project root
+
+ROOT = Path(__file__).resolve().parent.parent  # project root, independent of the working directory
+sys.path.append(str(ROOT / "src"))  # src/ importable
+
+import numpy as np  # plain top-k, independent of the project function
+import pandas as pd  # tables
+from streamlit.testing.v1 import AppTest  # headless app runner
+
+from app_data import load_demo_config  # demo settings
+from app_live import style_live  # live scoring, only for the timing
+
+cfg = load_demo_config()  # settings
+st_cfg = cfg["style_tab"]  # tab 7 settings
+k, tx = st_cfg["keys"], st_cfg["texts"]  # widget keys and texts
+N = st_cfg["top_n"]  # rows in the table
+T0 = time.time()  # total clock
+pred = pd.read_csv(ROOT / cfg["live"]["style_predictions"])  # stored forecast table
+pred = pred[pred["method"] == "random_forest"]  # Random Forest only
+act = pd.read_csv(ROOT / cfg["live"]["style_folder"] / cfg["live"]["style_actuals"])  # stored actuals
+LOG = (ROOT / "results/style_forecast/test_20261015_173215.out").read_text(encoding="utf-8").split("\n")  # stored test log
+
+
+def stored_hits() -> dict:  # hits per test year from the log
+    """Random Forest hits at 10 per test year from the stored log."""
+    i = next(n for n, l in enumerate(LOG) if l.startswith("== hits@10 per target year"))  # start of the table
+    col = LOG[i + 1].split().index("random_forest")  # column of the Random Forest
+    return {int(l.split()[0]): int(float(l.split()[1 + col])) for l in LOG[i + 2:i + 7]}  # year -> hits
+
+
+def new_app() -> AppTest:  # first run
+    """Fresh app, first run, no exception."""
+    at = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=60).run()  # first run
+    assert not at.exception, [e.value for e in at.exception]  # no exception
+    return at  # app
+
+
+def go(at: AppTest, stage: str) -> AppTest:  # press the buttons up to a stage
+    """Press Predict and then Show reality as far as the stage needs, from the stage the page is in."""
+    order = ["placeholder", "predict", "reveal"]  # stages in order
+    now = at.session_state[k["stage"]]["stage"] if k["stage"] in at.session_state else "placeholder"  # current stage
+    if order.index(now) < 1 <= order.index(stage):  # step 1 is needed
+        at.button(key=k["predict"]).click().run()  # Predict
+    now = at.session_state[k["stage"]]["stage"]  # stage after step 1
+    if order.index(now) < 2 <= order.index(stage):  # step 2 is needed
+        at.button(key=k["reveal"]).click().run()  # Show reality
+    assert not at.exception, [e.value for e in at.exception]  # no exception
+    return at  # app
+
+
+def set_year(at: AppTest, year: int) -> AppTest:  # choose a target year
+    """Select a year in the tab 7 selector."""
+    at.selectbox(key=k["year"]).select(year).run()  # year
+    assert not at.exception, [e.value for e in at.exception]  # no exception
+    return at  # app
+
+
+def table(at: AppTest) -> str:  # tab 7 table without style blocks
+    """HTML of the tab 7 table, style blocks removed."""
+    h = next(x.value for x in at.get("html") if "poc-table" in x.value and tx["col_rank"] in x.value)  # the tab 7 element
+    return re.sub(r"<style>.*?</style>", "", h, flags=re.S)  # table only
+
+
+def rows(at: AppTest) -> list:  # rows as cell texts
+    """Cell texts of every body row."""
+    out = []  # rows
+    for r in re.findall(r"<tr>(.*?)</tr>", table(at)):  # every row
+        c = [html.unescape(re.sub(r"<[^>]+>", "", x)) for x in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", r)]  # cell texts
+        if c and c[0].isdigit():  # body row, header left out
+            out.append(c)  # keep
+    return out  # rows
+
+
+def marks(at: AppTest) -> list:  # mark colors
+    """Mark color classes in the table."""
+    return re.findall(r"<span class='poc-mark (\w+)'>", table(at))  # colors
+
+
+def ref_rows(year: int) -> pd.DataFrame:  # stored top N of the year
+    """Stored Random Forest top N rows of the year, in rank order."""
+    return pred[(pred["target_year"] == year) & (pred["rank"] <= N)].sort_values("rank")  # stored forecast
+
+
+def check_default() -> None:  # test 1
+    """Every target year in the selector, the notice with its figures, the status line, no exception."""
+    at = new_app()  # app
+    sel = at.selectbox(key=k["year"])  # year selector
+    assert list(sel.options) == [str(y) for y in range(2018, 2027)], f"every year must be listed: {list(sel.options)}"  # nothing hidden
+    notice = st_cfg["notice"].format(**st_cfg["figures"])  # expected notice
+    assert notice in [w.value for w in at.warning], "the notice must be on screen"  # notice
+    for fig in st_cfg["figures"].values():  # every figure comes from the yaml
+        assert fig in notice  # figure present
+    print(f"1 default: years {list(sel.options)}, notice with figures {list(st_cfg['figures'].values())}, no exception")  # result
+
+
+def check_stages() -> None:  # test 2
+    """Placeholders before Predict, forecast without reality after it, everything after Show reality."""
+    at = set_year(new_app(), 2019)  # a counted year
+    h0 = table(at)  # table
+    assert at.button(key=k["predict"]) and not any(b.key == k["reveal"] for b in at.button), "only Predict first"  # buttons
+    first = ref_rows(2019).iloc[0]["style"]  # best forecast style
+    assert first not in html.unescape(h0) and h0.count("class='poc-ph'") == 5 * N, "no style name before Predict, five placeholders per row"  # placeholders
+    at = go(at, "predict")  # Predict
+    r1 = rows(at)  # rows
+    assert len(r1) == N and r1[0][1] == first, "the forecast shows after Predict"  # forecast
+    assert "poc-mark" not in table(at) and not any(b.key == k["predict"] for b in at.button) and at.button(key=k["reveal"]), "no mark yet, Show reality offered"  # buttons and marks
+    at = go(at, "reveal")  # Show reality
+    assert marks(at) and not any(b.key in (k["predict"], k["reveal"]) for b in at.button), "marks after Show reality, no step button"  # full
+    print(f"2 stages: {5 * N} placeholders -> forecast of {len(r1)} styles without marks -> actuals and marks")  # result
+
+
+def check_order_and_reality() -> None:  # tests 3 and 4
+    """Order, ranks and expected Works equal the stored forecast; actuals and marks equal a recount; hits and in-range summaries equal the references."""
+    want_hits = stored_hits()  # hits from the log
+    for year in range(2018, 2023):  # final test years
+        at = go(set_year(new_app(), year), "reveal")  # full table
+        got, ref = rows(at), ref_rows(year)  # rendered and stored
+        assert [g[1] for g in got] == ref["style"].tolist() and [int(g[0]) for g in got] == ref["rank"].tolist(), f"{year}: order and ranks differ from predictions.csv"  # order
+        assert [int(g[2].replace(",", "")) for g in got] == [int(round(v)) for v in ref["expected_works"]], f"{year}: expected Works differ"  # expected
+        a = act[act["target_year"] == year].set_index("style")  # actuals of the year
+        assert [int(g[4].replace(",", "")) for g in got] == [int(a.loc[s, "actual_works"]) for s in ref["style"]], f"{year}: actual Works differ"  # actual
+        inside = [bool(r["range_low"] <= a.loc[r["style"], "actual_works"] <= r["range_high"]) for _, r in ref.iterrows()]  # independent in-range
+        cols = marks(at)  # mark colors
+        assert cols == ["green" if i else "red" for i in inside], f"{year}: marks differ from the recount"  # marks
+        e = pred[pred["target_year"] == year]  # all eligible styles of the year
+        m = e.merge(a[["label"]].reset_index(), on="style")  # label of every style
+        s = np.where(np.isnan(m["expected_growth"].to_numpy()), -np.inf, m["expected_growth"].to_numpy())  # scores
+        hits = len(set(np.argsort(-s, kind="stable")[:N]) & set(np.argsort(-m["label"].to_numpy(dtype=float), kind="stable")[:N]))  # independent hits
+        assert hits == want_hits[year], f"{year}: hits {hits} differ from the log {want_hits[year]}"  # hits equal the log
+        text = html.unescape(table(at))  # table text
+        assert tx["summary_hits"].format(k=hits, n=N) in text and tx["summary_range"].format(k=sum(inside), n=N) in text, f"{year}: summary lines differ"  # both summary lines
+        print(f"3-4 {year}: order, ranks, expected, actuals and marks equal the references; hits {hits} of {N} (log {want_hits[year]}), in range {sum(inside)} of {N}")  # result
+
+
+def check_flagged_and_none() -> None:  # tests 5 and 6
+    """2023 and 2024 are amber with no summary; 2025 and 2026 show the text and no table."""
+    for year in (2023, 2024):  # flagged years
+        at = go(set_year(new_app(), year), "reveal")  # full table
+        assert st_cfg["reasons"][year] in [i.value for i in at.info], f"{year}: the reason must be shown"  # reason
+        cols = set(marks(at))  # mark colors
+        assert cols and cols <= {"amber", "grey"}, f"{year}: marks must be amber or grey: {cols}"  # amber rule
+        text = html.unescape(table(at))  # table text
+        assert tx["summary_hits"].split("{")[0] not in text and tx["summary_range"].split("{")[0] not in text, f"{year}: no summary for a flagged year"  # no summary
+        assert "✓*" in text or "✗*" in text, f"{year}: marks carry the asterisk"  # asterisk
+        r = rows(at)  # rows
+        assert len(r) == N and [int(x[0]) for x in r] == list(range(1, N + 1)), f"{year}: {N} ranked rows"  # rows
+        if year == 2024:  # stored forecast exists for 2024
+            assert [x[1] for x in r] == ref_rows(2024)["style"].tolist(), "2024 order equals predictions.csv"  # order
+        print(f"5 {year}: reason shown, {len(r)} rows, marks {sorted(cols)}, asterisk present, no summary")  # result
+    for year in (2025, 2026):  # years without forecast
+        at = set_year(new_app(), year)  # year
+        assert st_cfg["none_text"] in [w.value for w in at.warning], f"{year}: the no-forecast text must be shown"  # text
+        assert not any(b.key in (k["predict"], k["reveal"]) for b in at.button) and not any("poc-table" in x.value and tx["col_rank"] in x.value for x in at.get("html")), f"{year}: no button and no table"  # nothing to predict
+        print(f"6 {year}: no-forecast text shown, no button, no table")  # result
+
+
+def check_reset_and_tab6() -> None:  # test 7
+    """The state resets on a year change; tab 7 does not touch the tab 6 state, and tab 6 keeps its mode."""
+    at = go(set_year(new_app(), 2018), "reveal")  # full table
+    assert at.session_state[k["stage"]]["stage"] == "reveal"  # revealed
+    route_before = at.session_state[cfg["route"]["keys"]["stage"]]["stage"]  # tab 6 mode 2 stage
+    set_year(at, 2019)  # year change
+    assert at.session_state[k["stage"]]["stage"] == "placeholder" and not marks(at), "a year change must reset to placeholders"  # reset
+    assert at.session_state[cfg["route"]["keys"]["stage"]]["stage"] == route_before, "tab 7 must not touch the tab 6 stage"  # tab 6 untouched
+    assert at.radio(key=cfg["game"]["keys"]["mode"]).value == cfg["game"]["default_mode"]  # tab 6 mode unchanged
+    print(f"7 reset: year change returns tab 7 to placeholders; tab 6 stage ({route_before}) and mode untouched")  # result
+
+
+def timing() -> None:  # live scoring per year
+    """Time of the live scoring of every forecast year, first call after the models are loaded."""
+    style_live(2018)  # warm the caches
+    parts = []  # timings
+    for y in range(2018, 2025):  # every year with a forecast
+        t = time.time()  # clock
+        style_live(y)  # live rescoring
+        parts.append(f"{y} {time.time() - t:.3f} s")  # timing
+    print("live scoring per year:", ", ".join(parts))  # result
+
+
+for fn in (check_default, check_stages, check_order_and_reality, check_flagged_and_none, check_reset_and_tab6, timing):  # all checks
+    t = time.time()  # clock
+    fn()  # run the check
+    print(f"   {fn.__name__} {time.time() - t:.2f} s")  # timing
+print(f"\ntotal time {time.time() - T0:.2f} s")  # total

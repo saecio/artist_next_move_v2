@@ -128,6 +128,10 @@ live:  # live scoring assets and stored files read by src/app_live.py, relative 
   style_model_pattern: "random_forest_{year}.joblib"  # per-year model file name, {year} is replaced
   style_panel: panel_rows.csv  # style panel rows, inside style_folder
   style_percentiles: percentiles.csv  # residual percentiles, inside style_folder
+  style_panel_extra: panel_rows_extra.csv  # panel rows of origin 2022 (target year 2023), inside style_folder
+  style_percentiles_extra: percentiles_extra.csv  # residual percentiles of target year 2023, inside style_folder
+  style_actuals: actuals.csv  # actual Works and labels per style and target year, 2018 to 2024, inside style_folder
+  style_extra_years: [2023]  # target years with an extra per-year model in style_folder
   when_scores: results/demo/when_demo_scores.csv  # stored WHEN scores, labels and train rows
   what_scores: results/holdout_what/row_scores.csv  # stored WHAT scores, labels and baseline (c)
   works: results/demo/works_demo.csv  # Works of the demo artists for the timeline
@@ -317,3 +321,40 @@ route:  # tab 6 mode 2: several artists in one year, read-only table
     how_label: "How to read this"  # expander with the reliability lines and the legend, shown after Predict
     predict_button: "Predict"  # step 1 button, shows the model verdicts
     reveal_button: "Show reality"  # step 2 button, shows the realities, marks and summaries
+
+style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
+  top_n: 10  # styles in the table, also the k of the hits
+  years:  # every target year of the selector, none is hidden
+    counted: [2018, 2019, 2020, 2021, 2022]  # final test years, counted in the summary
+    flagged: [2023, 2024]  # shown with the reality in amber, no summary
+    none: [2025, 2026]  # no forecast
+  reasons:  # reason shown for a flagged year
+    2023: "Year 2023 is excluded from the test: anomalous and close to the loading lag. Forecast and reality are shown, not counted."
+    2024: "Year 2024: the reality is display only and incomplete because of cataloguing delay. It enters no training, tuning or metric."
+  none_text: "No forecast for this year: the counts of 2024 and later are incomplete because of cataloguing delay, and a model fed with them would read it as a fall in growth."  # years without forecast
+  notice: "The Random Forest is not separable from repeating last year: on the test years {validation}, top 10 hits {rf} against {rl} for repeat_last (95% intervals overlap). The recommendation stays repeat_last. The ranges of the predicted top 10 under-cover: {obs} observed against {nom} nominal on the development years."  # notice on top
+  figures: {validation: "2018 to 2022", rf: "6.00 [5.20, 7.00]", rl: "5.40 [4.00, 6.80]", obs: "0.62 to 0.64", nom: "0.80"}  # figures of the notice, from the entries "Style trend forecast, adoption and pass rule results" and the Limitations bullet on the 5-year test
+  noise_note: "Only five test years: hits are noisy."  # in How to read this
+  range_note: "The range is the 10th to 90th percentile of the past log errors; an actual count inside it is marked as a check."  # in How to read this
+  keys:  # widget and state keys
+    year: style_year  # year selector
+    stage: style_stage  # two-step state
+    predict: style_predict  # Predict button
+    reveal: style_reveal  # Show reality button
+  texts:  # texts of the tab
+    year_label: "Target year"  # year selector label
+    flag_counted: "Final test year, counted in the summary."  # status line of a counted year
+    col_rank: "Rank"  # table column
+    col_style: "Style"  # table column
+    col_expected: "Expected Works"  # table column
+    col_range: "Range (10th to 90th percentile)"  # table column
+    col_actual: "Actual Works"  # table column
+    col_result: "Actual inside the range"  # table column
+    summary_hits: "Styles of the real top {n} present in the forecast top {n}: {k} of {n}."  # summary line
+    summary_range: "Actual Works inside the range: {k} of {n} forecast styles."  # summary line
+    predict_button: "Predict"  # step 1 button
+    reveal_button: "Show reality"  # step 2 button
+    how_label: "How to read this"  # expander
+    placeholder: "?"  # placeholder cell
+    no_actual: "n/a"  # a style without an actual count
+

@@ -9,12 +9,13 @@ import streamlit as st  # UI
 sys.path.append(str(Path(__file__).resolve().parent.parent / "src"))  # make src importable
 
 from app_data import (  # noqa: E402  data access functions
-    add_projection_flag, all_artists, artists_by_genre, load_demo_config, load_predictions,  # imported names
+    all_artists, artists_by_genre, load_demo_config,  # imported names
 )  # close the import
 from app_live import artist_timeline, load_tables  # noqa: E402  live data layer
 from config import CONFIG  # noqa: E402  project settings
+from style_tab import forecast_table, mark_for, style_summary, style_years, with_reality, year_status  # noqa: E402  tab 7 logic
 from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, picker_options, reliability_lines, route_ids, row_marks  # noqa: E402  mode 2 logic
-from poc_view import how_lines, multi_table_html  # noqa: E402  mode 2 table
+from poc_view import how_lines, multi_table_html, style_table_html  # noqa: E402  mode 2 table
 from demo_game import (  # noqa: E402  pure game functions
     card_status, hidden_counts, names, new_state, next_year, play, scored_years, scoreboard, session_total, verdict, year_cards, first_uncounted_year, flag, reliability, outside_text_key,  # imported names
 )  # close the import
@@ -57,7 +58,6 @@ def render_multi(cfg: dict) -> None:  # tab 6 mode 2: widgets only, the rows and
 
 cfg = load_demo_config()  # all texts, paths and artists
 notes, ui = cfg["notices"], cfg["ui"]  # shortcuts to text blocks
-first_year, last_year = cfg["validation_years"]  # selectable range
 tabs = st.tabs(cfg["tabs"])  # one tab per title, in config order
 
 for i in (0, 1, 2, 3, 4, 7):  # tabs without content yet
@@ -198,7 +198,25 @@ with tabs[5]:  # Time Machine demo
 
 with tabs[6]:  # Global style forecast
     st.header(cfg["tabs"][6])  # tab title
+    stt = cfg["style_tab"]  # tab 7 settings
+    sk, sx = stt["keys"], stt["texts"]  # widget keys and texts
     st.warning(notes["style_notice"])  # forecast is global
-    st.warning(notes["projection_notice"])  # years after the last validation year
-    preds = load_predictions(cfg["paths"]["predictions"], cfg["predictions_columns"])  # cached forecast
-    st.dataframe(add_projection_flag(preds, last_year, ui["projection_column"]), hide_index=True)  # raw table with flag
+    st.warning(stt["notice"].format(**stt["figures"]))  # not separable from repeat_last, test figures, under-coverage
+    year7 = st.selectbox(sx["year_label"], style_years(cfg), key=sk["year"])  # every target year, none hidden
+    status = year_status(year7, cfg)  # kind and status line
+    (st.info if status["kind"] != "none" else st.warning)(status["text"])  # reason of a flagged year or the no-forecast text
+    if status["kind"] != "none":  # a forecast exists for this year
+        state7 = advance_stage(st.session_state.get(sk["stage"]), multi_signature(year7, []), None)  # reset when the year changed
+        st.session_state[sk["stage"]] = state7  # keep the state, tab 6 keys are not touched
+        if state7["stage"] == "placeholder" and st.button(sx["predict_button"], key=sk["predict"], type="primary", width="stretch"):  # step 1
+            st.session_state[sk["stage"]] = advance_stage(state7, multi_signature(year7, []), "predict")  # show the forecast
+            st.rerun()  # redraw
+        if state7["stage"] == "predict" and st.button(sx["reveal_button"], key=sk["reveal"], type="primary", width="stretch"):  # step 2
+            st.session_state[sk["stage"]] = advance_stage(state7, multi_signature(year7, []), "reveal")  # show the reality
+            st.rerun()  # redraw
+        table7 = with_reality(forecast_table(year7, stt["top_n"]), year7)  # forecast top N with reality, shown by stage
+        st.html(style_table_html(table7, style_summary(year7, stt["top_n"], cfg), status["kind"] == "flagged", stt, cfg["poc"], mark_for, state7["stage"], stt["top_n"]))  # the table for this stage
+        if state7["stage"] != "placeholder":  # reading notes from Predict on
+            with st.expander(sx["how_label"], expanded=False):  # collapsed by default
+                for line in (cfg["poc"]["texts"]["legend_amber"], stt["range_note"], stt["noise_note"]):  # legend, range and noise notes
+                    st.caption(line)  # small text

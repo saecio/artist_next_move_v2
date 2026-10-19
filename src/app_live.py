@@ -34,6 +34,8 @@ def load_models() -> dict:  # load the fitted models
     models["what"].load_model(folder / live["what_model"])  # native JSON file
     style = ROOT / live["style_folder"]  # style folder
     models["style"] = {y: joblib.load(style / live["style_model_pattern"].format(year=y)) for y in range(FIRST, LAST + 1)}  # per-year forests
+    for y in live["style_extra_years"]:  # extra per-year forests, same folder
+        models["style"][y] = joblib.load(style / live["style_model_pattern"].format(year=y))  # extra model
     models["style"][PROJECTION] = joblib.load(ROOT / CONFIG["paths"]["style_bundle"])  # stored 2024 bundle, read only
     return models  # shared by every session
 
@@ -59,8 +61,9 @@ def load_tables() -> dict:  # load the cached tables
         "what_labels": both(folder / live["what_labels"], "what_labels"),  # stored WHAT labels and after-holdout flags, both pools
         "what_stored": what[what["artist_id"].isin(ids)],  # stored WHAT scores, demo artists
         "works": both(ROOT / live["works"], "works"),  # Works of the demo artists, both pools
-        "panel": pd.read_csv(style / live["style_panel"]),  # style panel rows
-        "percentiles": pd.read_csv(style / live["style_percentiles"]),  # residual percentiles
+        "panel": pd.concat([pd.read_csv(style / live["style_panel"]), pd.read_csv(style / live["style_panel_extra"])], ignore_index=True),  # style panel rows, old and extra files
+        "percentiles": pd.concat([pd.read_csv(style / live["style_percentiles"]), pd.read_csv(style / live["style_percentiles_extra"])], ignore_index=True),  # residual percentiles, old and extra files
+        "actuals": pd.read_csv(style / live["style_actuals"]),  # actual Works and labels per style and target year
         "predictions": pd.read_csv(ROOT / live["style_predictions"]),  # stored style forecast, validation display only
     }  # close the table dict
 

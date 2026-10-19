@@ -232,3 +232,31 @@ def multi_table_html(rows: pd.DataFrame, summary: dict, g: dict, route: dict, po
     lines = [rt["summary_when"].format(k=summary["when_right"], n=summary["when_n"]), rt["summary_what"].format(k=summary["what_right"], n=summary["what_n"])] if stage == "reveal" else []  # only the two summary lines, after Show reality
     notes_html = "".join(f"<div class='poc-note'>{html.escape(x)}</div>" for x in lines)  # small notes
     return css(poc) + multi_css(poc) + f"<div class='poc-panel poc-multi'><table class='poc-table'><tr>{head}</tr>{''.join(body)}</table>{notes_html}</div>"  # table and notes in the scoped wrapper
+
+
+def style_table_html(rows: pd.DataFrame, summary: dict | None, flagged: bool, st: dict, poc: dict, marks_fn, stage: str, top_n: int) -> str:  # tab 7 table
+    """The tab 7 table as one HTML string. Stage placeholder: ranks and placeholder cells. Stage predict: style, expected Works as a pill and the range. Stage reveal: actual Works, the in-range mark and, for a counted year, the two summary lines under the table."""
+    t, tx = poc["texts"], st["texts"]  # poc and tab texts
+    head = "".join(f"<th>{html.escape(tx[k])}</th>" for k in ("col_rank", "col_style", "col_expected", "col_range", "col_actual", "col_result"))  # header cells
+    ph = f"<td class='poc-ph'><span>{html.escape(tx['placeholder'])}</span></td>"  # one placeholder cell
+    body = []  # table rows
+    for i in range(1, top_n + 1):  # one row per rank
+        if stage == "placeholder":  # nothing about the styles yet
+            body.append(f"<tr><th>{i}</th>{ph * 5}</tr>")  # rank and five placeholders
+            continue  # next rank
+        r = rows[rows["rank"] == i]  # forecast row of the rank
+        if r.empty:  # fewer eligible styles than top_n
+            continue  # no row
+        r = r.iloc[0]  # the row
+        model = f"<td>{html.escape(str(r['style']))}</td><td><span class='poc-pill yes'>{r['expected_works']:,.0f}</span></td><td>{r['range_low']:,.0f} to {r['range_high']:,.0f}</td>"  # style, expected pill and range
+        if stage == "predict":  # reality stays placeholders
+            body.append(f"<tr><th>{i}</th>{model}{ph}{ph}</tr>")  # model columns shown
+            continue  # next rank
+        color, mark = marks_fn(r["in_range"], flagged)  # mark of the row
+        actual = html.escape(tx["no_actual"]) if pd.isna(r["actual_works"]) else f"{r['actual_works']:,.0f}"  # actual Works, plain
+        body.append(f"<tr><th>{i}</th>{model}<td>{actual}</td><td><span class='poc-mark {color}'>{html.escape(t[mark])}</span></td></tr>")  # full row
+    lines = []  # notes under the table
+    if stage == "reveal" and summary is not None:  # counted years only
+        lines = [tx["summary_hits"].format(k=summary["hits"], n=summary["n"]), tx["summary_range"].format(k=summary["in_range"], n=summary["m"])]  # both summary lines
+    notes_html = "".join(f"<div class='poc-note'>{html.escape(x)}</div>" for x in lines)  # small notes
+    return css(poc) + multi_css(poc) + f"<div class='poc-panel poc-multi'><table class='poc-table'><tr>{head}</tr>{''.join(body)}</table>{notes_html}</div>"  # table and notes in the scoped wrapper
