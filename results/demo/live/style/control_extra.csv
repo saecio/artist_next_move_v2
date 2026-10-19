@@ -1,0 +1,12 @@
+control,rows,unmatched,max_abs_diff,limit,passed
+1 new model equals an independent walk_forward fit for the target year,249,0,0.0,5e-05,True
+2 point-in-time: origin rows from Works dated up to the origin equal the full build,249,0,0.0,1e-09,True
+"3 percentiles equal the stored projection row (same folds, target years 1993 to 2022)",2,0,5.551115123125783e-17,1e-09,True
+4 model columns equal columns.json,19,0,0.0,0.0,True
+5 hits at 10 per test year from actuals.csv equal the stored test log,5,0,0.0,0.0,True
+6 actual Works equal an independent count from the style table,1693,0,0.0,0.0,True
+"7 no duplicated (style, target_year) in actuals",1693,0,0.0,0.0,True
+"8 forecast rows equal the eligible styles of the origin, ranks 1 to n",249,0,0.0,0.0,True
+9 total size of the per-year models under 150 MB,6,0,0.0,0.0,True
+10 reload check: saved model and files rescore to the same rows,498,0,1.8189894035458565e-12,5e-05,True
+11 existing files unchanged (15 files hashed),15,0,0.0,0.0,True
