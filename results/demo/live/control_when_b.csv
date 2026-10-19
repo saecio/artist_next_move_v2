@@ -1,0 +1,18 @@
+control,rows,unmatched,max_abs_diff,limit,passed
+1a pool A features equal when_features.csv,947,0,4.440892098500626e-16,1e-09,True
+1b pool A scores equal when_demo_scores.csv,1894,0,2.978820801136095e-08,5e-05,True
+"1c pool A labels, flags and artist_train_rows exactly equal",1894,0,0.0,0.0,True
+1d pool A column order equals when_demo_scores.csv,9,0,0.0,0.0,True
+"2 point-in-time, data cut at 2017",0,0,0.0,1e-09,True
+"2 point-in-time, data cut at 2022",219,0,0.0,1e-09,True
+"2 point-in-time, data cut at 2023",254,0,0.0,1e-09,True
+"2 point-in-time, data cut at 2024",292,0,0.0,1e-09,True
+"2 point-in-time, data cut at 2025",345,0,0.0,1e-09,True
+3a full-works rebuild equals the pool-only build (features and labels),370,0,0.0,1e-09,True
+3b cached snapshots.parquet equals the pool-only build (features and labels),370,0,0.0,1e-09,True
+"4 row keys equal the Works file (one row per Work from 2018, two targets)",740,0,0.0,0.0,True
+5a model columns equal columns.json,40,0,0.0,0.0,True
+5b scores in 0 to 1,740,0,0.0,0.0,True
+"5c no duplicated key (work_id, target)",740,0,0.0,0.0,True
+6 partial-year rows are projections without label,50,0,0.0,0.0,True
+1e existing files in results/demo unchanged (24 files),24,0,0.0,0.0,True
