@@ -84,3 +84,49 @@ live:  # live scoring assets and stored files read by src/app_live.py, relative 
   what_scores: results/holdout_what/row_scores.csv  # stored WHAT scores, labels and baseline (c)
   works: results/demo/works_demo.csv  # Works of the demo artists for the timeline
   style_predictions: results/style_forecast/predictions.csv  # stored style forecast, validation display only
+
+game:  # tab 6 flow, thresholds, widget keys and texts
+  hide_rerecordings: true  # hide cards of Works flagged is_rerecording, scores and labels are unchanged
+  max_cards_per_year: 6  # most Work cards drawn for one year
+  threshold: 0.5  # the model says yes when the live next_1y score is at least this value
+  keys:  # session_state and widget keys, {id} and {year} are replaced
+    state: game  # session_state key holding one state per artist
+    user_pred: "game_user_pred_{id}"  # checkbox of the optional user prediction
+    answer: "game_answer_{id}_{year}"  # yes / no choice
+    lock: "game_lock_{id}"  # lock button
+    reveal: "game_reveal_{id}"  # reveal button
+    next: "game_next_{id}"  # next year button
+    restart: "game_restart_{id}"  # restart button
+  user_prediction_label: "Make my own prediction too"  # checkbox text
+  question: "In year {year}, will this artist release a new Work next year?"  # question on screen
+  answer_yes: "Yes"  # yes option and verdict word
+  answer_no: "No"  # no option and verdict word
+  lock_label: "Lock my answer"  # lock button
+  reveal_label: "Reveal reality"  # reveal button
+  next_label: "Next year"  # next year button
+  restart_label: "Restart this artist"  # restart button
+  model_score: "Model score (next_1y) for year {year}: {score:.3f}"  # step A
+  model_verdict: "Model prediction: {verdict}"  # step A
+  user_answer: "My answer: {answer}"  # step A, only when the user predicted
+  reality: "Reality: {verdict} (a new Work in {year})"  # step B, stored label
+  partial_truth: "partial truth, not part of any metric"  # year without a usable stored label
+  next2_info: "Information, not scored. next_2y score {score:.3f}, stored label: {label}"  # step B
+  what_info: "Information, not scored. WHAT score {score:.3f}, stored label: {label}"  # step B, 2018 to 2022
+  what_missing: "No WHAT row for this artist and year."  # step B without WHAT
+  no_label: "none"  # shown when a stored label is empty
+  hidden_line: "{n} re-recording(s) hidden"  # line under a year with hidden re-recordings
+  future_card: "?"  # card of a year not revealed yet
+  gap_card: "No Work in the data"  # card of a year without Work
+  more_line: "+{n} more"  # line under the drawn cards when the year has more Works than the cap
+  hidden_card: "Only re-recordings"  # card of a year whose representative Work is hidden
+  last_year_text: "Last year of the data reached: no next year to play."  # next button disabled
+  empty_text: "No year with a WHEN score for this artist."  # artist without scores
+  unseen_warning: "The model has not seen this artist in training (0 training rows)."  # artist_train_rows is 0
+  what_years_warning: "WHAT exists only for 2018 to 2022."  # WHAT coverage
+  scoreboard_title: "Scoreboard"  # section title
+  board_model: "Model vs reality: {right} of {n}"  # artist board
+  board_user: "User vs reality: {right} of {n}"  # artist board, user years only
+  board_agree: "User vs model: agree in {right} of {n}"  # artist board, user years only
+  board_total: "Session total, model vs reality: {right} of {n}"  # all artists
+  board_total_user: "Session total, user vs reality: {right} of {n}"  # all artists, user years only
+  board_none: "No counted year yet."  # no counted year
