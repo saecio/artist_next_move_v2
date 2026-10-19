@@ -68,6 +68,51 @@ artists:  # demo artists: display name, Discogs id, genre
   - {name: "BLACKPINK", discogs_id: 5210284, genre: "K-pop"}  # K-pop
   - {name: "Stray Kids", discogs_id: 6838809, genre: "K-pop"}  # K-pop
 
+pool_b:  # second artist pool, fixed on 19-10-2026 before any pool B score or label was produced
+  coverage_years: [2018, 2023]  # first and last year of the counted window of the coverage rule
+  min_distinct_years: 2  # least distinct years with dated Works inside that window
+  genre_map:  # fixed mapping from the most frequent Discogs genre of an artist to the demo genre label
+    Pop: "Pop"  # Pop
+    Hip Hop: "Hip hop"  # Hip hop
+    Funk / Soul: "R&B / soul"  # R&B / soul
+    Latin: "Latino"  # Latino
+    Rock: "Rock / alternative"  # Rock / alternative
+    "Folk, World, & Country": "Country"  # Country
+    Electronic: "Electronic"  # Electronic
+  genre_unmapped: keep  # a Discogs genre that is not in the map keeps its Discogs name
+  genre_ties: alphabetical  # ties between genres with the same count go to the first name in alphabetical order
+  pool_labels: {a: "Most active artists", b: "Other well-known artists"}  # neutral pool selector texts, a is the artists list and b the artists_b list
+  pool_selector_label: "Artists"  # pool selector label
+  paths:  # pool B files, relative to the project root, written by later steps with exclusive creation, none exists yet
+    works: results/demo/works_demo_b.csv  # Works of the pool B artists for the timeline cards
+    when_features: results/demo/live/when_features_b.csv  # WHEN feature rows of the pool B artists
+    when_scores: results/demo/when_demo_scores_b.csv  # WHEN scores, labels and train rows of the pool B artists
+    what_features: results/demo/live/what_features_b.csv  # WHAT feature rows of the pool B artists
+    what_labels: results/demo/live/what_labels_b.csv  # WHAT labels and after-holdout flags of the pool B artists
+    what_control: results/demo/live/control_what_b.csv  # control results of the pool B WHAT step
+
+artists_b:  # pool B artists: display name, Discogs id, genre by the pool_b rule (no per-artist override)
+  - {name: "boygenius", discogs_id: 6774153, genre: "Rock / alternative"}  # Rock / alternative
+  - {name: "Brandi Carlile", discogs_id: 502784, genre: "Rock / alternative"}  # Rock / alternative
+  - {name: "Peso Pluma", discogs_id: 13200183, genre: "Latino"}  # Latino
+  - {name: "Romeo Santos", discogs_id: 3094075, genre: "Latino"}  # Latino
+  - {name: "Kendrick Lamar", discogs_id: 1778977, genre: "Hip hop"}  # Hip hop
+  - {name: "Bon Iver", discogs_id: 1042739, genre: "Rock / alternative"}  # Rock / alternative
+  - {name: "Arctic Monkeys", discogs_id: 391170, genre: "Rock / alternative"}  # Rock / alternative
+  - {name: "Justin Bieber", discogs_id: 1602787, genre: "Pop"}  # Pop
+  - {name: "Beyonce", discogs_id: 52835, genre: "R&B / soul"}  # R&B / soul
+  - {name: "Usher", discogs_id: 97139, genre: "R&B / soul"}  # R&B / soul
+  - {name: "A$AP Rocky", discogs_id: 2409771, genre: "Hip hop"}  # Hip hop
+  - {name: "Kacey Musgraves", discogs_id: 2866928, genre: "Country"}  # Country
+  - {name: "Ariana Grande", discogs_id: 3310737, genre: "Pop"}  # Pop
+  - {name: "Miley Cyrus", discogs_id: 676432, genre: "Pop"}  # Pop
+  - {name: "J Balvin", discogs_id: 3460330, genre: "Latino"}  # Latino
+  - {name: "Maluma", discogs_id: 3913668, genre: "Latino"}  # Latino
+  - {name: "Daddy Yankee", discogs_id: 256399, genre: "Latino"}  # Latino
+  - {name: "Jennifer Lopez", discogs_id: 51984, genre: "Pop"}  # Pop
+  - {name: "Billy Joel", discogs_id: 137418, genre: "Rock / alternative"}  # Rock / alternative
+  - {name: "Bruce Springsteen", discogs_id: 219986, genre: "Rock / alternative"}  # Rock / alternative
+  - {name: "Labrinth", discogs_id: 1154116, genre: "Pop"}  # Pop
 live:  # live scoring assets and stored files read by src/app_live.py, relative to the project root
   folder: results/demo/live  # WHEN and WHAT models, columns and feature files
   when_models: {next_1y: when_next_1y.json, next_2y: when_next_2y.json}  # model file per WHEN target, inside folder
@@ -147,3 +192,73 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   board_total: "Session total, model vs reality: {right} of {n}"  # all artists
   board_total_user: "Session total, user vs reality: {right} of {n}"  # all artists, user years only
   board_none: "No counted year yet."  # no counted year
+
+poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, colors and sizes
+  page_title: "Time Machine, one-screen proof of concept"  # browser tab title
+  titles_per_card: 3  # most Work titles drawn on a card, the rest is a "+N more" line
+  years_before: 5  # years shown before the current year, 0 for both years_before and years_after means all years
+  years_after: 1  # years shown after the current year
+  keys:  # session_state and widget keys, {id} and {year} are replaced, all with the poc_ prefix
+    state: poc_state  # session_state key holding one state per artist
+    genre: poc_genre  # genre selector
+    artist: poc_artist  # artist selector
+    user_pred: "poc_user_pred_{id}"  # checkbox of the optional user prediction
+    answer: "poc_answer_{id}_{year}"  # yes / no choice
+    action: "poc_action_{id}"  # button of the current step
+    restart: "poc_restart_{id}"  # restart button
+  texts:  # texts of the page, the flow texts come from the game: section
+    panel_title: "Prediction vs reality"  # title of the always visible panel
+    col_score: "Score"  # table column
+    col_prediction: "Model prediction"  # table column
+    col_reality: "Reality"  # table column
+    col_result: "Result"  # table column
+    row_when: "WHEN: a new Work next year"  # table row
+    row_what: "WHAT: a new style"  # table row
+    row_you: "Your answer"  # table row, only with the user prediction on
+    unknown: "?"  # cell not known before the reveal
+    no_what_score: "No WHAT score"  # WHAT row of an artist-year that is not eligible
+    result_no_reality: "No reality yet"  # result cell of the last data year
+    result_no_what_reality: "No WHAT reality"  # result cell of a WHAT score without stored label
+    earlier_hidden: "Earlier years hidden"  # marker when the window cuts earlier years
+    likely: "Likely"  # WHAT verdict Yes
+    not_likely: "Not likely"  # WHAT verdict No
+    mark_dot: "●"  # grey mark before the reveal or without reality
+    mark_ok: "✓"  # mark of a prediction that matches the reality
+    mark_bad: "✗"  # mark of a prediction that does not match the reality
+    mark_delay: "⏳"  # small cataloguing-delay mark
+    mark_when_title: "WHEN"  # hover text of the WHEN mark
+    mark_what_title: "WHAT"  # hover text of the WHAT mark
+    action_lock: "Lock my answer"  # action button, step question
+    action_reveal: "Reveal reality"  # action button, step prediction
+    action_next: "Next year"  # action button, step reality
+    restart: "Restart"  # restart button
+    future_card: "?"  # card of a year not revealed yet
+    gap_card: ""  # card of a year without Work, left empty
+    only_rerecordings: "Only re-recordings"  # card whose Works are all hidden re-recordings
+    genre_label: "Genre"  # genre selector label
+    artist_label: "Artist"  # artist selector label
+  colors:  # result and mark colors, each with its own text color so they do not depend on the theme
+    green: {bg: "#d1fae5", fg: "#065f46"}  # prediction matches the reality
+    red: {bg: "#fee2e2", fg: "#991b1b"}  # prediction does not match the reality
+    amber: {bg: "#fef3c7", fg: "#92400e"}  # label after the last holdout year
+    grey: {bg: "#e5e7eb", fg: "#374151"}  # before the reveal, or no reality
+    card_border: "rgba(128,128,128,0.6)"  # neutral border, readable on light and dark pages
+    card_border_predicted: "#2563eb"  # border of the card of the predicted year
+    chip_bg: "#e0e7ff"  # scoreboard chip background
+    chip_fg: "#1e3a8a"  # scoreboard chip text
+  sizes:  # sizes in pixels, except the opacity
+    card_min_width: 140  # smallest card width, cards grow to fill the line
+    card_gap: 4  # gap between cards
+    card_padding: 6  # padding inside a card
+    card_radius: 6  # corner radius
+    card_font: 12  # card text size
+    title_lines: 2  # most lines of one title
+    mark_size: 16  # diameter of a mark
+    predicted_border: 2  # border width of the predicted card
+    predicted_shadow: 6  # shadow blur of the predicted card
+    table_font: 12  # table text size
+    cell_padding: 3  # cell padding
+    note_font: 11  # size of the small notes under the table
+    muted_opacity: 0.7  # opacity of secondary text, inherits the theme text color
+    chip_font: 12  # chip text size
+    page_top_padding: 24  # top padding of the page container
