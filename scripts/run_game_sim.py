@@ -19,6 +19,7 @@ from config import CONFIG  # project settings
 from demo_game import hidden_counts, new_state, next_year, play, scored_years, scoreboard, session_total, year_cards, first_uncounted_year, reliability, verdict, outside_text_key  # game functions
 
 cfg = load_demo_config()["game"]  # game settings
+CAP = load_demo_config()["poc"]["titles_per_card"]  # most titles drawn on one card
 THRESHOLD = cfg["threshold"]  # model rule
 ARTISTS = [7592689, 1124645, 4778]  # 0 train rows, hidden re-recordings, a regular artist
 stored = load_tables()["when_stored"]  # stored scores and labels, independent source for the check
@@ -77,10 +78,10 @@ for aid in (7592689, 1124645):  # the requested case and a case with hidden re-r
     aw = works[works["artist_id"] == aid]  # this artist's Works
     in_year = aw[aw["year"] == 2021]  # file rows of the year
     for hide in (True, False):  # key on and off
-        yc = year_cards(aw, 2021, hide, cfg["max_cards_per_year"])  # cards of the year
+        yc = year_cards(aw, 2021, hide, CAP)  # cards of the year
         visible = int((~in_year["is_rerecording"]).sum()) if hide else len(in_year)  # visible Works by direct count
-        print(f"{aid} hide={hide}: Works in file {yc['total']} (direct {len(in_year)}), visible {visible}, cards drawn {len(yc['cards'])}, +{yc['more']} more, cap {cfg['max_cards_per_year']}")  # print the result
-        assert yc["total"] == len(in_year) and len(yc["cards"]) == min(visible, cfg["max_cards_per_year"]) and yc["more"] == max(visible - cfg["max_cards_per_year"], 0)  # cap and more count
+        print(f"{aid} hide={hide}: Works in file {yc['total']} (direct {len(in_year)}), visible {visible}, cards drawn {len(yc['cards'])}, +{yc['more']} more, cap {CAP}")  # print the result
+        assert yc["total"] == len(in_year) and len(yc["cards"]) == min(visible, CAP) and yc["more"] == max(visible - CAP, 0)  # cap and more count
 print("cap checks passed")  # print the result
 print("\n== uncounted years, 7592689 and 1124645 (label_after_holdout and last data year)")  # section title
 cut = first_uncounted_year(stored.assign(target="next_1y"))  # first uncounted year from the stored scores
@@ -199,7 +200,7 @@ assert list(multi_rows(rcfg, route_ids(rcfg), rcfg["route"]["year"], cfg["thresh
 print("stage machine checks passed: placeholder -> predict -> reveal, reset on change, selection order before predict")  # result
 print("mode 2 checks passed")  # all asserts held
 print("\n== release titles (rule B), mode 1 years and cascade, scoreboard")  # section title
-from demo_multi import play_year, playable_years, reality_line, reality_titles  # mode 1 reuse of the mode 2 logic
+from demo_multi import play_year, playable_years, reality_titles  # mode 1 reuse of the mode 2 logic
 picks = pd.read_csv(ROOT / "results/demo/release_pick.csv")  # the pick file
 pool_b = load_demo_config()["pool_b"]["paths"]  # pool B file paths
 allw = pd.concat([pd.read_csv(ROOT / CONFIG["paths"]["works_demo"]), pd.read_csv(ROOT / pool_b["works"])])  # Works of both pools
@@ -234,10 +235,19 @@ for r in route.itertuples():  # every route row, Work rows and year-end rows
     n_t += int(e1 is not None) + int(e2 is not None)  # count
 assert n_t > 0  # something was checked
 print(f"reality titles of {len(route)} route rows equal the rule: {n_t} titles checked")  # result
-ye_sample = route[route["is_year_end"]].iloc[0]  # a year-end row
-line = reality_line(cfg, rows_by[(ye_sample.artist_id, ye_sample.year)])  # its reality line
-assert line.startswith("Reality: ") and str(ye_sample.year + 1) in line, line  # year of the verdict
-print("sample reality line of a year-end row:", line)  # example
+n_w, n_y, n_ns = 0, 0, 0  # rows with a stored WHAT label, of them yes, year-end rows checked
+for (aid_, yr_), mr in rows_by.items():  # every mode 2 row of both pools
+    if mr["is_year_end"]:  # a year-end row has no WHAT score, its new-styles row is the one of the last active year
+        n_ns += 1  # count
+        assert not mr["what_available"], "a year-end row must have no WHAT score"  # grey dash
+        continue  # nothing else to compare
+    if mr["what_available"] and isinstance(mr["what_label"], str):  # a stored WHAT label
+        n_w += 1  # count
+        assert (mr["what_label"] == "yes") == (len(mr["what_new"]) > 0), f"{aid_} {yr_}: the new styles must exist exactly when the label is yes"  # label rule at artist-year level
+        assert mr["what_year"] is not None and int(mr["what_year"]) > yr_, f"{aid_} {yr_}: the label refers to a later release"  # next active year
+        n_y += int(mr["what_label"] == "yes")  # count
+assert n_w > 0 and n_y > 0, "no WHAT label was checked"  # something was compared
+print(f"WHAT new styles: {n_w} stored labels agree with the new styles ({n_y} yes), {n_ns} year-end rows have no WHAT score")  # result
 board_checks = 0  # artists whose boards were checked
 for aid in all_ids:  # every artist
     tl = artist_timeline(aid)  # timeline

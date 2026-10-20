@@ -203,9 +203,9 @@ def check_tab6_table() -> None:  # test 8
     at = go(set_year(new_app(), 2019), "reveal")  # tab 7 used first
     at.button(key=cfg["route"]["keys"]["predict"]).click().run()  # tab 6 Predict
     at.button(key=cfg["route"]["keys"]["reveal"]).click().run()  # tab 6 Show reality
-    page = next(h.value for h in at.get("html") if route["col_artist"] in h.value and route["col_when"] in h.value)  # the tab 6 table element
-    head = re.findall(r"<th>(.*?)</th>", page.split("</tr>")[0])  # header cells
-    assert "Release" not in head and len(head) == 6, f"the tab 6 header must have six columns and no Release: {head}"  # no Release column
+    page = next(h.value for h in at.get("html") if route["col_artist"] in h.value and route["col_timing"] in h.value)  # the tab 6 table element
+    head = re.findall(r"<th[^>]*>(.*?)</th>", " ".join(re.findall(r"<tr>(.*?)</tr>", page)[:2]))  # cells of the two header rows
+    assert "Release" not in head and len(head) == 8, f"the tab 6 header must have 4 + 4 header cells and no Release: {head}"  # no Release column
     assert html.escape(route["year_end_tag"].format(year=cfg["route"]["year"])) in page and page.count("poc-sub'>" + html.escape(route["year_end_tag"].format(year=cfg["route"]["year"]))) >= 1, "the year-end tag sits under the artist"  # tag
     assert "Yes: " in page, "the reality cells carry the release title"  # titles
     print(f"8 tab 6 table after using tab 7: header {len(head)} columns without Release, year-end tag under the artist, titles in the reality cells")  # result

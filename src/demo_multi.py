@@ -1,6 +1,6 @@
 """Mode 2 of tab 6: several artists in one year as a read-only table. Pure logic, no Streamlit code."""
 
-import re  # markdown escaping of titles
+import json  # style lists stored as JSON text
 
 import pandas as pd  # tables
 
@@ -39,9 +39,21 @@ def reality_titles(picks: pd.DataFrame, artist_id: int, year: int, label1: str |
     return t1, t2  # both titles
 
 
-def md_escape(text: str) -> str:  # title safe inside a markdown line
-    """Backslash-escapes the characters markdown or LaTeX would read, so a title such as 'Rock $ & Roll' prints as written."""
-    return re.sub(r"([\\`*_{}\[\]()#+!$~<>|])", r"\\\1", text)  # one backslash before each special character
+def pick_styles(picks: pd.DataFrame, works: pd.DataFrame, artist_id: int, year: int) -> list:  # styles of the picked release of an artist-year
+    """Style names of the Work chosen by rule B for the artist-year, [] when there is no pick or the Work has no styles."""
+    m = picks[(picks["artist_id"] == artist_id) & (picks["year"] == year)]  # pick of the artist-year
+    if m.empty:  # no pick
+        return []  # no styles
+    w = works[works["work_id"] == m.iloc[0]["work_id"]]  # the picked Work
+    return json.loads(w.iloc[0]["styles"]) if len(w) else []  # its styles, stored as JSON text
+
+
+def new_styles_of(nw: pd.DataFrame, artist_id: int, year: int) -> tuple:  # next active year and new styles of an artist-year
+    """(next active year or None, list of new styles) from results/demo/what_new_styles.csv; (None, []) when the file has no row."""
+    m = nw[(nw["artist_id"] == artist_id) & (nw["year"] == year)]  # row of the artist-year
+    if m.empty or pd.isna(m.iloc[0]["next_active_year"]):  # no row, or no next active year
+        return None, []  # nothing to show
+    return int(m.iloc[0]["next_active_year"]), list(m.iloc[0]["new_styles"])  # year and styles
 
 
 def playable_years(artist_id: int, timeline: pd.DataFrame, first_year: int) -> list:  # years of mode 1
@@ -54,16 +66,6 @@ def playable_years(artist_id: int, timeline: pd.DataFrame, first_year: int) -> l
 def play_year(r: pd.Series, answer: str | None) -> dict:  # record one played year of mode 1
     """One history entry from a multi_rows row: user answer, model verdict, next-year reality and whether it counts (the counted_1y flag, same fields as demo_game.play)."""
     return {"year": int(r["year"]), "user": answer, "model": r["when_verdict"], "label": text_or_none(r["when_label"]), "counted": bool(r["when_counted"])}  # history entry
-
-
-def reality_line(g: dict, r: pd.Series) -> str:  # reality line of mode 1
-    """'Reality: Yes: <title> (<year>)', 'Reality: Yes (<year>)' without a title, or 'Reality: No release in <year>'; the year is the one the next-year verdict refers to."""
-    year = int(r["year"]) + 1  # year of the next-year question
-    if r["when_label"] == "no":  # no release
-        return g["reality_no"].format(year=year)  # no-release text
-    if text_or_none(r["when_title"]) is None:  # Yes without a title in the file
-        return g["reality_yes"].format(year=year)  # plain Yes
-    return g["reality_yes_title"].format(title=md_escape(r["when_title"]), year=year)  # Yes with the title
 
 
 def multi_rows(cfg: dict, artist_ids: list, year: int, threshold: float, cutoff: float, cap: int, stage: str = "reveal") -> pd.DataFrame:  # one row per artist with a row
@@ -81,9 +83,11 @@ def multi_rows(cfg: dict, artist_ids: list, year: int, threshold: float, cutoff:
         out.update(when_score=h1["score"], when_verdict=v1, when_label=h1["label"], when_counted=h1["counted"], when2_score=h2["score"], when2_verdict=v2, when2_label=h2["label"], when2_counted=h2["counted"], show2=v1 == "no" or v2 == "no")  # both horizons and the cascade rule
         if w["kind"] == "work":  # a Work year: WHAT
             what, wlab, safe = what_parts(w["row"], {"score_cutoff": cutoff})  # WHAT verdict, label and flag
-            out.update(what_available=what is not None, what_verdict=what, what_label=wlab, what_safe=bool(safe))  # WHAT fields
+            out.update(what_available=what is not None, what_verdict=what, what_label=wlab, what_safe=bool(safe), what_score=w["row"]["stage0_score"])  # WHAT fields, the score is only shown in a tooltip
         else:  # a year-end row has no WHAT score
-            out.update(what_available=False, what_verdict=None, what_label=None, what_safe=True)  # no WHAT
+            out.update(what_available=False, what_verdict=None, what_label=None, what_safe=True, what_score=None)  # no WHAT
+        ny, new = new_styles_of(load_tables()["what_new_styles"], aid, year)  # next active year and new styles of the artist-year
+        out.update(what_year=ny, what_new=new, what_release_title=None if ny is None else pick_title(load_tables()["release_pick"], aid, ny), what_styles=[] if ny is None else pick_styles(load_tables()["release_pick"], load_tables()["works"], aid, ny))  # release the WHAT label refers to: year, new styles, rule B title and styles
         rows.append(out)  # one row per artist
     t = pd.DataFrame(rows)  # the table
     if t.empty or stage == "placeholder":  # nothing to show, or the order must not show the scores

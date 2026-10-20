@@ -66,6 +66,7 @@ def load_tables() -> dict:  # load the cached tables
         "actuals": pd.read_csv(style / live["style_actuals"]),  # actual Works and labels per style and target year
         "predictions": pd.read_csv(ROOT / live["style_predictions"]),  # stored style forecast, validation display only
         "release_pick": pd.read_csv(ROOT / live["release_pick"]),  # release title per artist-year, rule B
+        "what_new_styles": pd.read_csv(ROOT / live["what_new_styles"]).assign(new_styles=lambda t: t["new_styles"].map(json.loads)),  # new styles of the next active year, as lists
         "when_year_end": pd.read_csv(ROOT / live["when_year_end"]),  # stored WHEN scores of the year-end rows, long format with is_year_end
     }  # close the table dict
 

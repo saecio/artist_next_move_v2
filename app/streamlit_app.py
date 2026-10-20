@@ -14,11 +14,13 @@ from app_data import (  # noqa: E402  data access functions
 from app_live import artist_timeline, load_tables  # noqa: E402  live data layer
 from config import CONFIG  # noqa: E402  project settings
 from style_tab import forecast_table, mark_for, style_summary, style_years, with_reality, year_status  # noqa: E402  tab 7 logic
-from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reality_line, reliability_lines, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
-from poc_view import how_lines, multi_table_html, side_panel_html, style_table_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 side panel and tag
+from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reliability_lines, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
+from poc_view import card_marks, chips_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
 from demo_game import (  # noqa: E402  pure game functions
-    card_status, hidden_counts, names, new_state, next_year, scored_years, scoreboard, session_total, verdict, year_cards, first_uncounted_year, flag, reliability, outside_text_key,  # imported names
+    hidden_counts, new_state, next_year, scored_years, scoreboard, session_total, first_uncounted_year,  # imported names
 )  # close the import
+
+st.set_page_config(layout="wide")  # wide page, so the compact bar and the seven-card timeline fit on one line
 
 def render_multi(cfg: dict) -> None:  # tab 6 mode 2: widgets only, the rows and the HTML come from src/
     """Mode 2: prepared selection, year and artist pickers, and the read-only table."""
@@ -51,10 +53,10 @@ def render_multi(cfg: dict) -> None:  # tab 6 mode 2: widgets only, the rows and
         for line in hidden_lines(cfg, ids, year):  # the hidden-artists lines
             st.caption(line)  # one caption each
         return  # nothing to draw
-    st.html(multi_table_html(rows, multi_summary(rows), g, rt, cfg["poc"], row_marks, CONFIG["what"]["min_previous_works"], year, state["stage"]))  # the table for this stage
+    st.html(multi_table_html(rows, multi_summary(rows), g, rt, cfg["poc"], row_marks, year, state["stage"]))  # the table for this stage
     for line in hidden_lines(cfg, ids, year):  # the hidden-artists lines under the table
         st.caption(line)  # one caption each
-    lines = how_lines(state["stage"], reliability_lines(top, load_tables()["what_below"], g), cfg["poc"]["texts"]["legend_reference"], tx["legend_cascade"])  # reliability lines, legend and cascade sentence, from Predict on
+    lines = how_lines(state["stage"], reliability_lines(top, load_tables()["what_below"], g), cfg["poc"]["texts"]["legend_reference"], tx["legend_cascade"], tx["independent_note"])  # reliability lines, legend and cascade sentence, from Predict on
     if lines:  # not in the placeholder stage
         with st.expander(tx["how_label"], expanded=False):  # collapsed by default
             for line in lines:  # one line each
@@ -81,25 +83,28 @@ with tabs[5]:  # Time Machine demo
     if mode == "many":  # mode 2: several artists, read-only table
         render_multi(cfg)  # the page only calls the renderer
     else:  # mode 1: one artist
+        g, keys, poc = cfg["game"], cfg["game"]["keys"], cfg["poc"]  # game texts, widget keys and poc settings
+        rt = cfg["route"]["texts"]  # route texts: year-end tag, WHAT texts, expander label
+        yn = {"yes": g["answer_yes"], "no": g["answer_no"]}  # Yes / No words
+        games = st.session_state.setdefault(keys["state"], {})  # one state per artist
+        warn = st.empty()  # slot above the bar for the unseen-artist line, filled once the artist is known
+        bar = st.columns([1.1, 1.3, 1.6, 2.8, 0.9], vertical_alignment="bottom")  # compact bar: selectors, checkbox, action, restart
+        chips_slot = st.empty()  # slot for the scoreboard chips under the bar, filled at the end of the run
         genres = sorted(dict.fromkeys(a["genre"] for a in all_artists(cfg)))  # genres of both pools, sorted
-        genre = st.selectbox(ui["genre_label"], [ui["all_genres"]] + genres, key=cfg["game"]["keys"]["genre"])  # genre filter
+        genre = bar[0].selectbox(ui["genre_label"], [ui["all_genres"]] + genres, key=keys["genre"])  # genre filter
         options = artists_by_genre(cfg, None if genre == ui["all_genres"] else genre)  # filtered artists of both pools
-        artist = st.selectbox(ui["artist_label"], options, format_func=lambda a: a["name"], key=cfg["game"]["keys"]["artist"])  # pick by name
-        st.caption(ui["id_caption"].format(id=artist["discogs_id"]))  # keep the Discogs id visible
-        g, keys = cfg["game"], cfg["game"]["keys"]  # game texts and widget keys
+        artist = bar[1].selectbox(ui["artist_label"], options, format_func=lambda a: a["name"], key=keys["artist"])  # pick by name
         aid = artist["discogs_id"]  # selected artist id
         tl = artist_timeline(aid)  # one row per year, live scores and stored labels
         years = playable_years(aid, tl, CONFIG["years"]["holdout_start"])  # playable years: Work years and year-end years
-        ye_years = set(years) - set(scored_years(tl, CONFIG["years"]["holdout_start"]))  # years without a dated Work
-        games = st.session_state.setdefault(keys["state"], {})  # one state per artist
-        state = games.setdefault(aid, new_state(years))  # this artist's state
-        st.warning(g["what_years_warning"].format(n=CONFIG["what"]["min_previous_works"]))  # WHAT coverage
         if tl["artist_train_rows"].iloc[0] == 0:  # artist absent from training
-            st.warning(g["unseen_warning"])  # model has not seen the artist
+            warn.warning(g["unseen_warning"])  # one visible line above the bar
+        ye_years = set(years) - set(scored_years(tl, CONFIG["years"]["holdout_start"]))  # years without a dated Work
+        state = games.setdefault(aid, new_state(years))  # this artist's state
         pred_key = keys["user_pred"].format(id=aid)  # checkbox key of this artist
         if pred_key not in st.session_state:  # first render of this artist
             st.session_state[pred_key] = state["pred"]  # restore the kept choice
-        state["pred"] = st.checkbox(g["user_prediction_label"], key=pred_key)  # optional user prediction
+        state["pred"] = bar[2].checkbox(g["user_prediction_label"], key=pred_key)  # optional user prediction
         if state["year"] is None:  # no playable year
             st.info(g["empty_text"])  # empty state
         else:  # game running
@@ -109,100 +114,58 @@ with tabs[5]:  # Time Machine demo
             top = load_tables()["what_top10"]  # WHAT cutoff and holdout figures
             mr = multi_rows(cfg, [aid], year, g["threshold"], top["score_cutoff"], 1).iloc[0]  # the mode 2 row of the question year: both horizons, realities and release titles
             last = int(tl["year"].max())  # last year of the data
-            until = min(year + 1, last) if step == "reveal" else year  # last year drawn
-            works = load_tables()["works"]  # Works of the demo artists
-            aw = works[works["artist_id"] == aid]  # this artist's Works
-            hidden = hidden_counts(works, aid)  # hidden re-recordings per year
-            for start in range(0, len(tl), 6):  # rows of six cards
-                for col, (_, r) in zip(st.columns(6), tl.iloc[start:start + 6].iterrows()):  # one column per year
-                    y = int(r["year"])  # card year
-                    yc = year_cards(aw, y, g["hide_rerecordings"], g["max_cards_per_year"])  # Works drawn this year
-                    status = card_status(yc["total"], yc["cards"], y, until)  # what to draw
-                    with col.container(border=True):  # card frame
-                        st.markdown(f"**{y}**")  # year
-                        if status == "card":  # normal card
-                            for c in yc["cards"]:  # one block per Work
-                                st.write(c["title"])  # title
-                                st.caption(names(c["genres"]))  # genres
-                                st.caption(names(c["styles"]))  # styles
-                            if yc["more"]:  # more Works than the cap
-                                st.caption(g["more_line"].format(n=yc["more"]))  # "+N more" line
-                        else:  # future, gap or hidden
-                            st.write({"future": g["future_card"], "gap": g["gap_card"], "hidden": g["hidden_card"]}[status])  # state text
-                            if status == "gap" and y in ye_years:  # year-end year: the prediction exists, the tag says it is estimated
-                                st.caption(year_end_tag(cfg["route"]["texts"], y))  # grey tag
-                        if g["hide_rerecordings"] and y <= until and hidden.get(y):  # hidden re-recordings in this year
-                            st.caption(g["hidden_line"].format(n=hidden[y]))  # count line
-            st.subheader(g["question"].format(year=year))  # question
-            yn = {"yes": g["answer_yes"], "no": g["answer_no"]}  # option texts
-            if step == "ask":  # user predicts first
-                pick = st.radio(g["question"].format(year=year), list(yn), format_func=yn.get, index=None, key=keys["answer"].format(id=aid, year=year))  # yes / no
-                if st.button(g["lock_label"], key=keys["lock"].format(id=aid), disabled=pick is None):  # lock
-                    state["answer"], state["step"] = pick, "model"  # keep the answer
-                    st.rerun()  # redraw with step A
-            if step in ("model", "reveal"):  # step A is always visible after the ask
-                wc, sc = st.columns(2)  # WHEN column and WHAT column
-                rel = reliability(top)  # x and y of the reliability line
-                played = hist[-1] if step == "reveal" else None  # this year's entry after the reveal
-                with wc:  # WHEN column
-                    st.markdown(g["when_title"])  # column title
-                    st.write(g["model_score"].format(year=year, score=mr["when_score"]))  # live score
-                    st.html(side_panel_html(mr, bool(played), g, cfg["route"], cfg["poc"]))  # the mode 2 cascade: pills, and after the reveal the realities
-                    if state["answer"]:  # user predicted this year
-                        st.write(g["user_answer"].format(answer=yn[state["answer"]]))  # user answer, next-year question only
-                    if played:  # step B
-                        if played["label"] is not None:  # stored label exists, counted or not
-                            st.write(reality_line(g, mr))  # reality line with the release title
-                        else:  # last data year, no stored label
-                            st.info(g["no_reality"].format(year=last))  # no reality row, no scoreboard change
-                with sc:  # WHAT column, never counted
-                    st.markdown(g["what_title"])  # column title
-                    if mr["is_year_end"]:  # year without a Work: no WHAT score because there is no release
-                        st.write(cfg["route"]["texts"]["what_year_end"])  # same text as mode 2
-                    elif pd.notna(row["stage0_score"]):  # WHAT score exists for this artist-year
-                        st.write(g["what_yes" if verdict(row["stage0_score"], top["score_cutoff"]) == "yes" else "what_no"])  # verdict, Yes at or above the cutoff
-                        if verdict(row["stage0_score"], top["score_cutoff"]) == "yes":  # Yes verdict
-                            st.caption(g["what_reliability"].format(x=rel[0], y=rel[1]))  # reliability of the top 10% group
-                        else:  # No verdict
-                            below = load_tables()["what_below"]  # holdout rows below the cutoff
-                            st.caption(g[outside_text_key(below["z"], rel[1], g["similar_gap"])].format(z=below["z"], y=rel[1]))  # reliability outside the group
-                        st.caption(g["what_score"].format(score=row["stage0_score"]))  # small score number
-                        if played and pd.notna(row["what_label"]):  # step B with a stored label
-                            st.write(g["what_reality_yes" if row["what_label"] == 1 else "what_reality_no"])  # stored WHAT label
-                            if flag(row["what_label_after_holdout"]):  # label after the last holdout year
-                                st.caption(g["what_delay_note"])  # cataloguing-delay note
-                        elif played:  # step B without a stored label
-                            st.write(g["what_no_reality"])  # explicit empty state
-                    else:  # no WHAT score for this artist-year
-                        st.write(g["what_missing"].format(n=CONFIG["what"]["min_previous_works"]))  # reason, in both steps
-            if step == "model" and st.button(g["reveal_label"], key=keys["reveal"].format(id=aid)):  # reveal
-                hist.append(play_year(mr, state["answer"]))  # record the year, counted by the counted_1y flag
-                state["step"] = "reveal"  # step B
-                st.rerun()  # redraw with step B
-            if step == "reveal":  # step B
-                nxt = next_year(years, year)  # next playable year
-                if nxt is None:  # end of the data
-                    st.info(g["last_year_text"])  # nothing to play
-                if st.button(g["next_label"], key=keys["next"].format(id=aid), disabled=nxt is None):  # next year
-                    state.update(year=nxt, step="ask", answer=None)  # move on, history kept
-                    st.rerun()  # redraw
-            if st.button(g["restart_label"], key=keys["restart"].format(id=aid)):  # restart this artist
+            nxt = next_year(years, year)  # next playable year
+            played = hist[-1] if step == "reveal" else None  # this year's entry after the reveal
+            with bar[3]:  # action button of the current step
+                if step == "ask":  # the user predicts first
+                    rc, bc = st.columns([1, 1.4], vertical_alignment="center")  # answer and lock side by side
+                    pick = rc.radio(g["question"].format(year=year), list(yn), format_func=yn.get, index=None, horizontal=True, label_visibility="collapsed", key=keys["answer"].format(id=aid, year=year))  # yes / no
+                    if bc.button(g["lock_label"], key=keys["lock"].format(id=aid), disabled=pick is None):  # lock
+                        state["answer"], state["step"] = pick, "model"  # keep the answer
+                        st.rerun()  # redraw with the prediction
+                elif step == "model":  # prediction shown, reveal next
+                    if st.button(g["reveal_label"], key=keys["reveal"].format(id=aid)):  # reveal
+                        hist.append(play_year(mr, state["answer"]))  # record the year, counted by the counted_1y flag
+                        state["step"] = "reveal"  # reality step
+                        st.rerun()  # redraw with the reality
+                else:  # reality shown, next year
+                    if st.button(g["next_label"], key=keys["next"].format(id=aid), disabled=nxt is None):  # next year
+                        state.update(year=nxt, step="ask", answer=None)  # move on, history kept
+                        st.rerun()  # redraw
+                    if nxt is None:  # end of the data
+                        st.caption(g["last_year_text"])  # nothing to play
+            if bar[4].button(g["restart_label"], key=keys["restart"].format(id=aid)):  # restart this artist
                 games[aid] = new_state(years, state["pred"])  # fresh state, same checkbox
                 st.rerun()  # redraw
-        st.subheader(g["scoreboard_title"])  # scoreboard
-        for title, board in ((None, scoreboard(state["history"])), ("total", session_total([s["history"] for s in games.values()]))):  # artist and session
-            if not board["n"]:  # nothing counted
-                if title is None:  # artist board only
-                    st.write(g["board_none"])  # empty state
-                continue  # next board
-            st.write(g["board_model" if title is None else "board_total"].format(right=board["model_right"], n=board["n"]))  # model vs reality
-            if board["user_n"]:  # user played
-                st.write(g["board_user" if title is None else "board_total_user"].format(right=board["user_right"], n=board["user_n"]))  # user vs reality
-                if title is None:  # artist board only
-                    st.write(g["board_agree"].format(right=board["agree"], n=board["user_n"]))  # user vs model
-        cut = first_uncounted_year(load_tables()["when_stored"])  # first year shown but not counted, from the data
-        if cut is not None:  # some year is flagged
-            st.caption(g["uncounted_note"].format(year=cut))  # fixed neutral line
+            st.markdown(f"**{g['question'].format(year=year)}**")  # question of the current year
+            works = load_tables()["works"]  # Works of the demo artists
+            ye = {y: year_end_tag(rt, y) for y in ye_years}  # year-end tag of each year without a Work
+            window = window_years(year, CONFIG["years"]["demo_works_first_year"], max(last, year + 1), poc["years_before"], poc["years_after"])  # years of the window
+            until = min(year + 1, last) if step == "reveal" else year  # last year drawn
+            st.html(timeline_html(works[works["artist_id"] == aid], hidden_counts(works, aid), window, until, year + 1, card_marks(mr, played is not None, row_marks), g, poc, ye))  # one-row timeline, marks on the predicted year
+            lc, tc, sc = st.columns([1, 1.2, 1.2])  # left: the year and the Work, then the Timing and the Style blocks
+            with lc:  # the year and its representative Work
+                st.html(work_panel_html(row, year, poc["texts"]["gap_card"] if mr["is_year_end"] else None, poc))  # year heading and Work title
+            tc.html(timing_html(mr, step, state["answer"] if state["pred"] else None, g, cfg["route"], poc))  # Timing block: the user answer only here
+            sc.html(style_html(mr, step, g, cfg["route"], poc))  # Style block, independent of the Timing block
+            cut = first_uncounted_year(load_tables()["when_stored"])  # first year shown but not counted, from the data
+            extra = [g["what_years_warning"].format(n=CONFIG["what"]["min_previous_works"])]  # WHAT coverage
+            if cut is not None:  # some year is flagged
+                extra.append(g["uncounted_note"].format(year=cut))  # fixed neutral line
+            if played and mr["what_available"] and pd.notna(mr["what_label"]) and not mr["what_safe"]:  # WHAT label after the last holdout year
+                extra.append(g["what_delay_note"])  # cataloguing-delay note
+            with st.expander(rt["how_label"], expanded=False):  # all long explanations, closed by default
+                for line in how_lines("predict", reliability_lines(top, load_tables()["what_below"], g), poc["texts"]["legend_reference"], rt["legend_cascade"], rt["independent_note"]) + extra:  # reliability, legend, cascade sentence and notes
+                    st.caption(line)  # small text
+        board, total = scoreboard(state["history"]), session_total([s["history"] for s in games.values()])  # artist and session boards
+        chips = [g["board_model"].format(right=board["model_right"], n=board["n"]) if board["n"] else g["board_none"]]  # model chip
+        if board["user_n"]:  # user played counted years
+            chips += [g["board_user"].format(right=board["user_right"], n=board["user_n"]), g["board_agree"].format(right=board["agree"], n=board["user_n"])]  # user chips
+        if total["n"]:  # some year counted in the session
+            chips.append(g["board_total"].format(right=total["model_right"], n=total["n"]))  # session chip
+            if total["user_n"]:  # user played in the session
+                chips.append(g["board_total_user"].format(right=total["user_right"], n=total["user_n"]))  # session user chip
+        chips_slot.html(chips_html(chips, poc))  # scoreboard chips, one wrapping line under the bar
 
 with tabs[6]:  # Global style forecast
     st.header(cfg["tabs"][6])  # tab title

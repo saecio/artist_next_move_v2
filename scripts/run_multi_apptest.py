@@ -24,6 +24,8 @@ import demo_multi  # module, to stub the counts in one check
 from demo_multi import hidden_counts, hidden_lines, multi_rows, multi_summary  # logic under test
 
 cfg = load_demo_config()  # settings
+from what_new_styles import stored_labels  # stored labels of both pools
+wl = stored_labels()  # reference: stored WHAT labels and the year they refer to
 rt, g = cfg["route"], cfg["game"]  # route and game settings
 k, tx = rt["keys"], rt["texts"]  # widget keys and texts
 pb = cfg["pool_b"]["paths"]  # pool B file paths
@@ -59,12 +61,12 @@ def table_html(at: AppTest) -> str:  # HTML of the mode 2 table
 
 def artist_cells(at: AppTest) -> dict:  # artist cells of the table
     """Artist name -> inner HTML of its artist cell (the name and, for a year-end row, the grey tag)."""
-    return {html.unescape(re.sub(r"<[^>]+>", "", a.split("<div")[0])): a for a, _ in re.findall(r"<tr><th>(.*?)</th>(.*?)</tr>", table_html(at)) if not a.startswith(tx["col_artist"])}  # name before the tag div
+    return {html.unescape(re.sub(r"<[^>]+>", "", a.split("<div")[0])): a for a, _ in re.findall(r"<tr><th>(.*?)</th>(.*?)</tr>", table_html(at)) if not a.startswith(tx["col_artist"]) and a != html.escape(tx["col_prediction"])}  # name before the tag div, header rows left out
 
 
 def rows_of(at: AppTest) -> list:  # parsed rows
     """(artist, row HTML) of every table row, in display order; the artist is the name only, without the year-end tag."""
-    return [(html.unescape(a.split("<div")[0]), r) for a, r in re.findall(r"<tr><th>(.*?)</th>(.*?)</tr>", table_html(at)) if not a.startswith(tx["col_artist"])]  # artist cells and the rest, header row left out
+    return [(html.unescape(a.split("<div")[0]), r) for a, r in re.findall(r"<tr><th>(.*?)</th>(.*?)</tr>", table_html(at)) if not a.startswith(tx["col_artist"]) and a != html.escape(tx["col_prediction"])]  # artist cells and the rest, header rows left out
 
 
 def tag_text(year: int) -> str:  # escaped year-end tag
@@ -141,18 +143,17 @@ def check_boygenius() -> None:  # test 4
     """boygenius has a year-end row in 2019 and a Work row without a WHAT score in 2018; both show their WHAT text over two columns and stay out of the WHAT count."""
     at = new_app()  # app
     row = dict(rows_of(at))["boygenius"]  # its 2019 row
-    want = html.escape(tx["what_year_end"])  # expected text of a year-end row
-    assert "colspan='2'" in row and want in row, "the year-end WHAT cells must be one colspan text"  # colspan text
+    want = f"title='{cfg['poc']['texts']['what_na_tip']}'"  # expected tooltip of the grey dash
+    assert "colspan='2'" in row and want in row and cfg["poc"]["texts"]["what_na"] in row, "the year-end WHAT cells must be one colspan grey dash"  # colspan dash
     at.selectbox(key=k["year"]).select(2018).run()  # 2018
     go(at, "reveal")  # the state reset, press again
     row18 = dict(rows_of(at))["boygenius"]  # its 2018 row
-    want18 = html.escape(tx["what_missing"].format(n=CONFIG["what"]["min_previous_works"]))  # expected text of a Work row without a WHAT score
-    assert "colspan='2'" in row18 and want18 in row18 and "poc-sub" not in dict(artist_cells(at))["boygenius"], "the Work row must show the not-eligible WHAT text and no year-end tag"  # colspan text
+    assert "colspan='2'" in row18 and want in row18 and "poc-sub" not in dict(artist_cells(at))["boygenius"], "the Work row must show the grey dash and no year-end tag"  # colspan text
     top = load_tables()["what_top10"]["score_cutoff"]  # WHAT cutoff
     for year in (2018, 2019):  # both years
         rows = multi_rows(cfg, rt["artists"], year, g["threshold"], top, rt["max_artists"])  # rows from the logic
         assert not rows[rows["artist"] == "boygenius"]["what_available"].iloc[0], f"boygenius has no WHAT score in {year}"  # not available
-    print("4 boygenius: 2019 year-end row and 2018 Work row both show one colspan=2 WHAT text:", html.unescape(want), "|", html.unescape(want18))  # result
+    print("4 boygenius: 2019 year-end row and 2018 Work row both show the grey dash over two columns:", html.unescape(want))  # result
 
 
 def check_years() -> None:  # test 5
@@ -234,10 +235,10 @@ def check_stages() -> None:  # test 8
     rows1 = dict(rows_of(at))  # rows
     assert "Yes" in h1 or "No" in h1, "model verdicts must show after Predict"  # model columns
     assert "poc-mark" not in h1 and tx["summary_when"].split("{")[0] not in html.unescape(h1), "no mark and no summary before Show reality"  # no reality yet
-    assert html.escape(tx["what_year_end"]) in rows1["boygenius"], "the year-end WHAT text shows after Predict"  # year-end text
+    assert f"title='{cfg['poc']['texts']['what_na_tip']}'" in rows1["boygenius"], "the year-end grey dash shows after Predict"  # year-end cell
     how = next(e for e in at.expander if e.label == tx["how_label"])  # the expander after Predict
     caps = [c.value for c in how.caption]  # its lines
-    assert len(caps) == 4 and cfg["poc"]["texts"]["legend_reference"] in caps and tx["legend_cascade"] in caps and sum("in 10" in c for c in caps) == 2, "the two reliability lines, the legend and the cascade sentence are in the expander"  # contents
+    assert len(caps) == 5 and tx["independent_note"] in caps and cfg["poc"]["texts"]["legend_reference"] in caps and tx["legend_cascade"] in caps and sum("in 10" in c for c in caps) == 2, "the two reliability lines, the legend, the cascade sentence and the independence sentence are in the expander"  # contents
     assert "class='poc-note'" not in h1 and "poc-pill" in h1, "no note under the table after Predict, verdicts are pills"  # notes location
     assert ph in rows1["SZA"], "realities stay placeholders after Predict"  # placeholder reality
     at = go(at, "reveal")  # Show reality
@@ -259,11 +260,18 @@ def check_year_end() -> None:  # test 11
         row = rows1[r["name"]]  # its row
         assert row.count(html.escape(tx["pill_two"])) == int(r["show2"]) and row.count(html.escape(tx["pill_next"])) == 1, f"{r['name']}: the 2-year pill must show only when the next year or the 2-year verdict is No"  # cascade rule
         cell = cells_by_artist[r["name"]]  # artist cell of the row
-        assert (tag_text(rt["year"]) in cell) == bool(r["is_year_end"]) and ("poc-sub" in cell) == bool(r["is_year_end"]) and ((html.escape(tx["what_year_end"]) in row) == bool(r["is_year_end"])), f"{r['name']}: the year-end tag and the WHAT text belong to year-end rows only"  # tag under the artist and WHAT text
+        assert (tag_text(rt["year"]) in cell) == bool(r["is_year_end"]) and ("poc-sub" in cell) == bool(r["is_year_end"]) and (not r["is_year_end"] or f"title='{cfg['poc']['texts']['what_na_tip']}'" in row), f"{r['name']}: the year-end tag belongs to year-end rows only and a year-end row has the grey dash"  # tag under the artist and WHAT text
     at = go(at, "reveal")  # Show reality
     rows2 = dict(rows_of(at))  # rows after Show reality
     for _, r in ref.iterrows():  # every artist with a row
         row = rows2[r["name"]]  # its row
+        lab = wl[(wl["artist_id"] == r["artist_id"]) & (wl["year"] == rt["year"]) & wl["label"].notna()]  # stored WHAT label of the row and the year it refers to
+        if not lab.empty and not r["is_year_end"] and (cfg["poc"]["texts"]["likely"] in row or cfg["poc"]["texts"]["not_likely"] in row):  # a WHAT score and a label
+            ny, word = int(lab.iloc[0]["next_active_year"]), "Yes" if lab.iloc[0]["label"] == 1 else "No"  # release year and word
+            pk = pd.read_csv(ROOT / "results/demo/release_pick.csv").query("artist_id == @r['artist_id'] and year == @ny")  # rule B pick of the next active year
+            cut_t = lambda t: t if len(t) <= rt["title_max_chars"] else t[: rt["title_max_chars"] - 1].rstrip() + "\u2026"  # same cut as the page
+            want_cell = f"{word}: {cut_t(pk.iloc[0]['title'])} ({ny})" if len(pk) else f"{word} ({ny})"  # word, title and the year of the release
+            assert want_cell in html.unescape(row), f"{r['name']}: the WHAT reality carries the title and the year of the release: {want_cell}"  # year of the release
         n_marks = len(re.findall(r"<span class='poc-mark ", row))  # marks of the row
         assert n_marks == 1 + int(r["show2"]) + 1, f"{r['name']}: one mark per pill shown plus the WHAT mark, got {n_marks}"  # marks count
         assert row.count(html.escape(tx["pill_two"])) == 2 * int(r["show2"]), f"{r['name']}: the 2-year reality follows the 2-year pill"  # same structure in the reality cell
@@ -299,8 +307,13 @@ def check_titles() -> None:  # test 13
     picks = pd.read_csv(ROOT / "results/demo/release_pick.csv")  # independent source of the titles
     ref = cascade_reference(rt["artists"], rt["year"])  # stored reference of the default view
     at = new_app()  # full table, default view
-    head = re.findall(r"<th>(.*?)</th>", table_html(at).split("</tr>")[0])  # header cells
-    assert head == [html.escape(tx[c]) for c in ("col_artist", "col_when", "col_when_reality", "col_what", "col_what_reality", "col_result")] and "col_release" not in tx and "Release" not in head, f"the Release column must be gone: {head}"  # header
+    rows_head = re.findall(r"<tr>(.*?)</tr>", table_html(at))[:2]  # the two header rows
+    first = re.findall(r"<th[^>]*>(.*?)</th>", rows_head[0])  # first header row: artist, two group headers, result
+    second = re.findall(r"<th>(.*?)</th>", rows_head[1])  # second header row: prediction and reality twice
+    assert first == [html.escape(tx[c]) for c in ("col_artist", "col_timing", "col_style", "col_result")] and second == [html.escape(tx[c]) for c in ("col_prediction", "col_reality") * 2], f"the two header rows are not the expected ones: {first} {second}"  # new wording
+    assert (tx["col_timing"], tx["col_style"]) == ("New work next year?", "New style in next release?"), "header words"  # requested wording
+    assert f"title='{html.escape(tx['col_style_tip'], quote=True)}'" in table_html(at) and tx["col_style_tip"] == "Next release, whenever it comes. Independent of the first forecast.", "the style header has its tooltip"  # header tooltip
+    assert "Release" not in " ".join(first + second) and "col_release" not in tx, "the Release column must be gone"  # no Release column
     limit, shown_title, shown_cut = rt["title_max_chars"], 0, 0  # title limit and counters
     rows = dict(rows_of(at))  # rows by artist
     for _, r in ref.iterrows():  # every artist with a row
@@ -321,7 +334,7 @@ def check_titles() -> None:  # test 13
     cells_by_artist = artist_cells(at)  # artist cells
     ye_names = {r["name"] for _, r in ref.iterrows() if r["is_year_end"]}  # year-end rows
     assert ye_names and all(("poc-sub" in cells_by_artist[n]) == (n in ye_names) for n in cells_by_artist), "the tag sits under the artist of year-end rows only"  # tag placement
-    assert all(tag_text(rt["year"]) in cells_by_artist[n] for n in ye_names), "the tag text is 'No release in {year} \u00b7 estimated from history'"  # tag text
+    assert all(tag_text(rt["year"]) in cells_by_artist[n] for n in ye_names), "the tag text is 'No release in {year} \u00b7 forecast from earlier releases'"  # tag text
     print(f"13 titles: {shown_title} reality cells with a title ({shown_cut} cut at {limit} with the full title in the tooltip), Release column gone, tag under the artist of {sorted(ye_names)} only")  # result
 
 

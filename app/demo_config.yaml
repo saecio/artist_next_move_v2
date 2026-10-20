@@ -22,7 +22,6 @@ ui:  # interface labels
   genre_label: "Genre"  # genre selector
   all_genres: "All genres"  # genre selector, no filter option
   artist_label: "Artist"  # artist selector
-  id_caption: "Discogs id: {id}"  # selected artist id, {id} is replaced
   year_label: "Year"  # year selector
   empty_rows: "No rows for this artist in this year."  # shown when the filter returns nothing
   projection_column: "is_projection"  # boolean column added to the forecast table
@@ -137,11 +136,11 @@ live:  # live scoring assets and stored files read by src/app_live.py, relative 
   what_scores: results/holdout_what/row_scores.csv  # stored WHAT scores, labels and baseline (c)
   works: results/demo/works_demo.csv  # Works of the demo artists for the timeline
   release_pick: results/demo/release_pick.csv  # release title per artist-year for the reality cells (rule B)
+  what_new_styles: results/demo/what_new_styles.csv  # new styles of the next active year per artist and year, for the WHAT reality of the tab 6 panel
   style_predictions: results/style_forecast/predictions.csv  # stored style forecast, validation display only
 
 game:  # tab 6 flow, thresholds, widget keys and texts
   hide_rerecordings: true  # hide cards of Works flagged is_rerecording, scores and labels are unchanged
-  max_cards_per_year: 6  # most Work cards drawn for one year
   similar_gap: 1  # largest gap, in whole artists out of 10, between the outside rate and the base rate still worded "almost the same"
   default_mode: many  # mode shown first in tab 6: many (several artists) or one (one artist)
   mode_label: "View"  # mode selector label
@@ -158,47 +157,28 @@ game:  # tab 6 flow, thresholds, widget keys and texts
     reveal: "game_reveal_{id}"  # reveal button
     next: "game_next_{id}"  # next year button
     restart: "game_restart_{id}"  # restart button
-  user_prediction_label: "Make my own prediction too"  # checkbox text
+  user_prediction_label: "My own prediction"  # checkbox text
   question: "We are in year {year}, will this artist release a new Work next year?"  # question on screen
   answer_yes: "Yes"  # yes option and verdict word
   answer_no: "No"  # no option and verdict word
   lock_label: "Lock my answer"  # lock button
   reveal_label: "Reveal reality"  # reveal button
   next_label: "Next year"  # next year button
-  restart_label: "Restart this artist"  # restart button
-  model_score: "Model score (next_1y) for year {year}: {score:.3f}"  # step A
-  model_verdict: "Model prediction: {verdict}"  # step A
-  user_answer: "My answer: {answer}"  # step A, only when the user predicted
-  reality_yes: "Reality: Yes ({year})"  # step B, stored label is yes and the year has no release title
-  reality_yes_title: "Reality: Yes: {title} ({year})"  # step B, stored label is yes, title of the release (rule B)
-  reality_no: "Reality: No release in {year}"  # step B, stored label is no
-  no_reality: "No reality yet: the data ends in {year}."  # year without a stored label, {year} is the last data year
+  restart_label: "Restart"  # restart button
   uncounted_note: "Years from {year} on may not reflect reality because of cataloguing delay."  # fixed line under the scoreboard, {year} is read from the data
-  label_part: ", stored label: {label}"  # label part of the information lines, omitted when the label is missing
-  next2_info: "Information, not scored. next_2y score {score:.3f}{label_part}"  # step B
-  when_title: "**WHEN: a new Work next year**"  # title of the WHEN column
-  what_title: "**WHAT: a new style**"  # title of the WHAT column
-  what_score: "WHAT score: {score:.3f}"  # small score number under the verdict, no percent sign
-  what_yes: "Yes: this artist is among those most likely to bring a new style next year"  # WHAT verdict, score at or above the cutoff
-  what_no: "No: this artist is not among those most likely to bring a new style next year"  # WHAT verdict, score below the cutoff
   what_reliability: "In past tests, about {x} in 10 artists in this group did bring a new style, against about {y} in 10 for any artist."  # reliability line of a Yes verdict, x and y come from the holdout file
   what_reliability_no_similar: "In past tests, about {z} in 10 artists outside this group also brought a new style, almost the same as for any artist ({y} in 10)."  # No verdict, z and y equal or one unit apart
   what_reliability_no_other: "In past tests, about {z} in 10 artists outside this group brought a new style, compared with {y} in 10 for any artist."  # No verdict, z and y more than one unit apart
-  what_reality_yes: "WHAT reality: Yes (the artist's next active year brings a new style)"  # step B, stored label is yes
-  what_reality_no: "WHAT reality: No (the artist's next active year brings no new style)"  # step B, stored label is no
+  what_reality_yes: "Reality: Yes, new style: {styles}"  # step B, stored label is yes, {styles} are the new styles of the next active year
+  what_reality_no: "Reality: No new style"  # step B, stored label is no
   what_no_reality: "No WHAT reality for this year: no later Work with style tags in the data."  # step B, score but no stored label
   what_delay_note: "This year may not reflect reality because of cataloguing delay."  # same note as WHEN, for labels after the last holdout year
-  what_missing: "No WHAT score: the artist has fewer than {n} earlier Works."  # step B without WHAT
   hidden_line: "{n} re-recording(s) hidden"  # line under a year with hidden re-recordings
-  future_card: "?"  # card of a year not revealed yet
-  gap_card: "No Work in the data"  # card of a year without Work
   more_line: "+{n} more"  # line under the drawn cards when the year has more Works than the cap
-  hidden_card: "Only re-recordings"  # card of a year whose representative Work is hidden
   last_year_text: "Last year of the data reached: no next year to play."  # next button disabled
   empty_text: "No year with a WHEN score for this artist."  # artist without scores
   unseen_warning: "The model has not seen this artist in training (0 training rows)."  # artist_train_rows is 0
-  what_years_warning: "WHAT is shown for every artist-year from 2018 to the last data year with at least {n} earlier Works."  # WHAT coverage
-  scoreboard_title: "Scoreboard"  # section title
+  what_years_warning: "The style of the next release is shown for every artist-year from 2018 to the last data year with at least {n} earlier Works."  # WHAT coverage
   board_model: "Model vs reality: {right} of {n}"  # artist board
   board_user: "User vs reality: {right} of {n}"  # artist board, user years only
   board_agree: "User vs model: agree in {right} of {n}"  # artist board, user years only
@@ -206,32 +186,28 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   board_total_user: "Session total, user vs reality: {right} of {n}"  # all artists, user years only
   board_none: "No counted year yet."  # no counted year
 
-poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, colors and sizes
-  page_title: "Time Machine, one-screen proof of concept"  # browser tab title
+poc:  # tab 6 mode 1 timeline and panel: texts, colors and sizes shared by tab 6 and tab 7
   titles_per_card: 3  # most Work titles drawn on a card, the rest is a "+N more" line
   years_before: 5  # years shown before the current year, 0 for both years_before and years_after means all years
   years_after: 1  # years shown after the current year
-  keys:  # session_state and widget keys, {id} and {year} are replaced, all with the poc_ prefix
-    state: poc_state  # session_state key holding one state per artist
-    genre: poc_genre  # genre selector
-    artist: poc_artist  # artist selector
-    user_pred: "poc_user_pred_{id}"  # checkbox of the optional user prediction
-    answer: "poc_answer_{id}_{year}"  # yes / no choice
-    action: "poc_action_{id}"  # button of the current step
-    restart: "poc_restart_{id}"  # restart button
   texts:  # texts of the page, the flow texts come from the game: section
-    panel_title: "Prediction vs reality"  # title of the always visible panel
-    col_score: "Score"  # table column
-    col_prediction: "Model prediction"  # table column
-    col_reality: "Reality"  # table column
-    col_result: "Result"  # table column
-    row_when: "WHEN: a new Work next year"  # table row
-    row_what: "WHAT: a new style"  # table row
-    row_you: "Your answer"  # table row, only with the user prediction on
+    label_timing: "Timing"  # small grey label of the first block
+    label_style: "Style"  # small grey label of the second block
+    q_timing: "Will this artist drop a new work next year?"  # question of the Timing block
+    q_style: "Will the next release bring a new style?"  # question of the Style block
+    style_scope: "Next release, whenever it comes. Independent of the answer above. Compared with everything released up to {year}."  # grey line of the Style block, {year} is the shown year
+    your_prediction: "Your prediction:"  # line of the user answer, Timing block only
+    prediction: "Prediction:"  # line of the model prediction
+    within_two: "Within 2 years:"  # line of the 2-year prediction, shown by the cascade rule
+    reality: "Reality:"  # line of the reality
+    reality_two: "Reality, within 2 years:"  # line of the 2-year reality
+    score_tip: "Score: {score:.3f}"  # hover text of a prediction word, never a percentage
+    release_line: "{title} ({year})"  # release under a reality line, {year} is the year of the release
+    release_year_only: "Release in {year}"  # same line when the file has no title
+    used_before: "(all used before)"  # after the styles of the release of a No reality
+    more_styles: "+{n}"  # after the first styles when there are more
+    max_styles: 3  # most style names shown in a line
     unknown: "?"  # cell not known before the reveal
-    no_what_score: "No WHAT score"  # WHAT row of an artist-year that is not eligible
-    result_no_reality: "No reality yet"  # result cell of the last data year
-    result_no_what_reality: "No WHAT reality"  # result cell of a WHAT score without stored label
     earlier_hidden: "Earlier years hidden"  # marker when the window cuts earlier years
     likely: "Likely"  # WHAT verdict Yes
     not_likely: "Not likely"  # WHAT verdict No
@@ -241,21 +217,15 @@ poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, color
     mark_ok_flagged: "✓*"  # prediction equals the reality, result shown for reference only (green, with an asterisk)
     mark_bad_flagged: "✗*"  # prediction differs from the reality, result shown for reference only (red, with an asterisk)
     legend_reference: "An asterisk marks a result shown for reference only, not included in the results."  # fixed legend line under the table
-    mark_when_title: "WHEN"  # hover text of the WHEN mark
-    mark_what_title: "WHAT"  # hover text of the WHAT mark
-    action_lock: "Lock my answer"  # action button, step question
-    action_reveal: "Reveal reality"  # action button, step prediction
-    action_next: "Next year"  # action button, step reality
-    restart: "Restart"  # restart button
+    mark_when_title: "Timing"  # hover text of the timing mark
+    mark_what_title: "Style"  # hover text of the style mark
+    mark_not_forecast: "Not forecast"  # hover text of the grey dot of a row without a WHAT score
+    what_na: "—"  # grey cell of a row without a WHAT score
+    what_na_tip: "Style forecast not available for this row"  # hover text of that cell
     future_card: "?"  # card of a year not revealed yet
-    gap_card: ""  # card of a year without Work, left empty
+    gap_card: "No Work"  # card of a year without Work, replaced by the year-end tag in a year-end year
     only_rerecordings: "Only re-recordings"  # card whose Works are all hidden re-recordings
-    genre_label: "Genre"  # genre selector label
-    artist_label: "Artist"  # artist selector label
   colors:  # result and mark colors, each with its own text color so they do not depend on the theme
-    green: {bg: "#d1fae5", fg: "#065f46"}  # prediction matches the reality
-    red: {bg: "#fee2e2", fg: "#991b1b"}  # prediction does not match the reality
-    grey: {bg: "#e5e7eb", fg: "#374151"}  # before the reveal, or no reality
     mark_green: {bg: "#16a34a", fg: "#ffffff"}  # solid mark: prediction matches the reality, white glyph
     mark_red: {bg: "#dc2626", fg: "#ffffff"}  # solid mark: prediction does not match the reality, white glyph
     mark_grey: {bg: "#6b7280", fg: "#ffffff"}  # solid mark: no reality yet, grey dot
@@ -268,7 +238,7 @@ poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, color
     placeholder_border: "rgba(128,128,128,0.7)"  # dashed border of a placeholder cell
     chip_fg: "#1e3a8a"  # scoreboard chip text
   sizes:  # sizes in pixels, except the opacity
-    card_min_width: 140  # smallest card width, cards grow to fill the line
+    card_min_width: 110  # smallest card width, cards grow to fill the line
     card_gap: 4  # gap between cards
     card_padding: 6  # padding inside a card
     card_radius: 6  # corner radius
@@ -313,24 +283,24 @@ route:  # tab 6 mode 2: several artists in one year, read-only table
     pick_label: "Artists in the table"  # multiselect label
     cap_note: "At most {n} artists in the table."  # shown under the picker
     col_artist: "Artist"  # table column
-    col_when: "WHEN: model"  # table column
-    col_when_reality: "WHEN: reality"  # table column
-    col_what: "WHAT: model"  # table column
-    col_what_reality: "WHAT: reality"  # table column
+    col_timing: "New work next year?"  # header over the prediction and reality columns of the timing forecast
+    col_style: "New style in next release?"  # header over the prediction and reality columns of the style forecast
+    col_style_tip: "Next release, whenever it comes. Independent of the first forecast."  # hover text of the style header
+    col_prediction: "Prediction"  # second header row
+    col_reality: "Reality"  # second header row
     col_result: "Result (WHEN, WHAT)"  # table column
-    year_end_tag: "No release in {year} · estimated from history"  # small grey line of a year-end row (under the artist in mode 2, on the card and in the side panel of mode 1)
+    year_end_tag: "No release in {year} · forecast from earlier releases"  # small grey line of a year-end row (under the artist in mode 2, on the card and in the side panel of mode 1)
     pill_next: "Next year"  # small label of the next-year pill and reality
     pill_two: "Within 2 years"  # small label of the 2-year pill and reality
-    what_year_end: "No WHAT score: no release in this year."  # WHAT cells of a year-end row
     no_history_one: "{n} selected artist has no earlier releases before {year}."  # line under the table, one artist with no history hidden
     no_history_many: "{n} selected artists have no earlier releases before {year}."  # line under the table, several artists with no history hidden
     no_release_one: "{n} selected artist has no release yet in {year}."  # line under the table for the last data year, artist with history but no row
     no_release_many: "{n} selected artists have no release yet in {year}."  # same, several artists
     legend_cascade: "The 2-year view is shown when the next-year answer is No; a Yes next year also holds for 2 years."  # line in How to read this
-    what_missing: "No WHAT score: the artist has fewer than {n} earlier Works."  # WHAT cells of an artist-year that is not eligible
+    independent_note: "The two forecasts are independent: the second one looks at the next release, whenever it comes."  # line in How to read this, both modes
     no_reality: "No reality yet"  # reality cell without a stored label
     summary_when: "Next year: {k} of {n} · Within 2 years (where shown): {k2} of {n2}"  # WHEN summary line, counted rows only
-    summary_what: "WHAT: model right in {k} of {n} rows with a counted reality."  # summary line
+    summary_what: "Style of the next release: model right in {k} of {n} rows with a counted reality."  # summary line
     placeholder: "?"  # placeholder of a column that is not shown yet
     change_label: "Change year or artists"  # collapsed expander with the year, genre and artist pickers
     how_label: "How to read this"  # expander with the reliability lines and the legend, shown after Predict
