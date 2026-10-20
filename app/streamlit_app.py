@@ -218,5 +218,5 @@ with tabs[6]:  # Global style forecast
         st.html(style_table_html(table7, style_summary(year7, stt["top_n"], cfg), status["kind"] == "flagged", stt, cfg["poc"], mark_for, state7["stage"], stt["top_n"]))  # the table for this stage
         if state7["stage"] != "placeholder":  # reading notes from Predict on
             with st.expander(sx["how_label"], expanded=False):  # collapsed by default
-                for line in (cfg["poc"]["texts"]["legend_amber"], stt["range_note"], stt["noise_note"]):  # legend, range and noise notes
+                for line in (cfg["poc"]["texts"]["legend_amber"], stt["growth_note"], stt["range_note"], stt["noise_note"]):  # legend, range and noise notes
                     st.caption(line)  # small text

@@ -109,14 +109,16 @@ def check_stages() -> None:  # test 2
     h0 = table(at)  # table
     assert at.button(key=k["predict"]) and not any(b.key == k["reveal"] for b in at.button), "only Predict first"  # buttons
     first = ref_rows(2019).iloc[0]["style"]  # best forecast style
-    assert first not in html.unescape(h0) and h0.count("class='poc-ph'") == 5 * N, "no style name before Predict, five placeholders per row"  # placeholders
+    assert first not in html.unescape(h0) and h0.count("class='poc-ph'") == 7 * N, "no style name before Predict, seven placeholders per row"  # placeholders
     at = go(at, "predict")  # Predict
     r1 = rows(at)  # rows
     assert len(r1) == N and r1[0][1] == first, "the forecast shows after Predict"  # forecast
     assert "poc-mark" not in table(at) and not any(b.key == k["predict"] for b in at.button) and at.button(key=k["reveal"]), "no mark yet, Show reality offered"  # buttons and marks
+    how = next(e for e in at.expander if e.label == tx["how_label"])  # the expander after Predict
+    assert st_cfg["growth_note"] in [c.value for c in how.caption], "the expander explains the order by expected growth"  # growth note
     at = go(at, "reveal")  # Show reality
     assert marks(at) and not any(b.key in (k["predict"], k["reveal"]) for b in at.button), "marks after Show reality, no step button"  # full
-    print(f"2 stages: {5 * N} placeholders -> forecast of {len(r1)} styles without marks -> actuals and marks")  # result
+    print(f"2 stages: {7 * N} placeholders -> forecast of {len(r1)} styles without marks -> actuals and marks")  # result
 
 
 def check_order_and_reality() -> None:  # tests 3 and 4
@@ -126,9 +128,14 @@ def check_order_and_reality() -> None:  # tests 3 and 4
         at = go(set_year(new_app(), year), "reveal")  # full table
         got, ref = rows(at), ref_rows(year)  # rendered and stored
         assert [g[1] for g in got] == ref["style"].tolist() and [int(g[0]) for g in got] == ref["rank"].tolist(), f"{year}: order and ranks differ from predictions.csv"  # order
-        assert [int(g[2].replace(",", "")) for g in got] == [int(round(v)) for v in ref["expected_works"]], f"{year}: expected Works differ"  # expected
+        assert [g[2] for g in got] == [tx["percent_format"].format(v * 100) for v in ref["expected_growth"]], f"{year}: expected growth differs from predictions.csv"  # expected growth, percent format
+        eg = ref["expected_growth"].tolist()  # stored expected growth in rank order
+        assert all(x >= y for x, y in zip(eg, eg[1:])), f"{year}: stored rows must be ordered by expected growth descending"  # reference order
+        assert [float(g[2].rstrip("%")) for g in got] == sorted([float(g[2].rstrip("%")) for g in got], reverse=True), f"{year}: rendered rows must be ordered by expected growth descending"  # rendered order
+        assert [int(g[3].replace(",", "")) for g in got] == [int(round(v)) for v in ref["expected_works"]], f"{year}: expected Works differ"  # expected
         a = act[act["target_year"] == year].set_index("style")  # actuals of the year
-        assert [int(g[4].replace(",", "")) for g in got] == [int(a.loc[s, "actual_works"]) for s in ref["style"]], f"{year}: actual Works differ"  # actual
+        assert [int(g[5].replace(",", "")) for g in got] == [int(a.loc[s, "actual_works"]) for s in ref["style"]], f"{year}: actual Works differ"  # actual
+        assert [g[6] for g in got] == [tx["percent_format"].format((np.exp(a.loc[s, "label"]) - 1) * 100) for s in ref["style"]], f"{year}: actual growth differs from exp(label) - 1 of actuals.csv"  # actual growth, independent of the app code
         inside = [bool(r["range_low"] <= a.loc[r["style"], "actual_works"] <= r["range_high"]) for _, r in ref.iterrows()]  # independent in-range
         cols = marks(at)  # mark colors
         assert cols == ["green" if i else "red" for i in inside], f"{year}: marks differ from the recount"  # marks
@@ -152,6 +159,9 @@ def check_flagged_and_none() -> None:  # tests 5 and 6
         text = html.unescape(table(at))  # table text
         assert tx["summary_hits"].split("{")[0] not in text and tx["summary_range"].split("{")[0] not in text, f"{year}: no summary for a flagged year"  # no summary
         assert "✓*" in text or "✗*" in text, f"{year}: marks carry the asterisk"  # asterisk
+        assert table(at).count("class='poc-cell amber'") == 2 * N, f"{year}: the two actual cells of every row are amber"  # amber realities
+        g24 = [x[6] for x in rows(at)]  # actual growth cells
+        assert all("%" in c for c in g24), f"{year}: actual growth is shown (computed from actual Works and the base)"  # shown
         r = rows(at)  # rows
         assert len(r) == N and [int(x[0]) for x in r] == list(range(1, N + 1)), f"{year}: {N} ranked rows"  # rows
         if year == 2024:  # stored forecast exists for 2024

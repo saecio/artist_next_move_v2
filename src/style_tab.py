@@ -30,17 +30,20 @@ def year_status(year: int, cfg: dict) -> dict:  # kind and the line shown for th
 
 
 def forecast_table(year: int, top_n: int) -> pd.DataFrame:  # top N styles of the forecast
-    """Random Forest rows of the year with rank at most top_n, in rank order: style, expected Works, range and rank."""
+    """Random Forest rows of the year with rank at most top_n, in rank order: style, expected growth over the base, expected Works, range and rank."""
     rf = style_live(year)  # live rows of the year
     rf = rf[rf["method"] == "random_forest"]  # Random Forest only, repeat_last stays out
-    return rf[rf["rank"] <= top_n].sort_values("rank")[["rank", "style", "expected_works", "range_low", "range_high"]].reset_index(drop=True)  # top N
+    return rf[rf["rank"] <= top_n].sort_values("rank")[["rank", "style", "expected_growth", "expected_works", "range_low", "range_high"]].reset_index(drop=True)  # top N, ordered by the growth that defines the rank
 
 
 def with_reality(table: pd.DataFrame, year: int) -> pd.DataFrame:  # actual Works and the in-range flag
-    """Adds actual_works and in_range (True, False or None when the actual is missing) from actuals.csv."""
+    """Adds actual_works, actual_growth (growth over the base, the units of expected_growth) and in_range (True, False or None when the actual is missing) from actuals.csv."""
     act = load_tables()["actuals"]  # stored actual counts
     a = act[act["target_year"] == year][["style", "actual_works"]]  # actual Works of the year
-    out = table.merge(a, on="style", how="left")  # actual next to the forecast
+    base = load_tables()["panel"]  # panel rows with the base, the mean of the three latest years
+    base = base[base["origin"] == year - 1][["style", "base"]]  # base of the styles eligible at the origin
+    out = table.merge(a, on="style", how="left").merge(base, on="style", how="left")  # actual and base next to the forecast
+    out["actual_growth"] = out["actual_works"].clip(lower=1) / out["base"] - 1  # same units as expected_growth: exp(label) - 1, label = log(max(actual, 1) / base)
     inside = (out["actual_works"] >= out["range_low"]) & (out["actual_works"] <= out["range_high"])  # inside the range
     out["in_range"] = [None if pd.isna(w) else bool(i) for w, i in zip(out["actual_works"], inside)]  # None when no actual
     return out  # table with reality
