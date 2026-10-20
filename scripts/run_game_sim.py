@@ -168,7 +168,7 @@ print("session total over pool A and pool B walks:", tot)  # both pools counted 
 print("\n== mode 2 (several artists in one year)")  # section title
 from demo_multi import multi_rows, multi_summary, route_ids, row_marks  # mode 2 logic
 rcfg = load_demo_config()  # full settings
-rrows = multi_rows(rcfg, route_ids(rcfg), rcfg["route"]["year"], cfg["threshold"], top["score_cutoff"], rcfg["route"]["max_artists"])  # prepared selection, 2018
+rrows = multi_rows(rcfg, route_ids(rcfg), rcfg["route"]["year"], cfg["threshold"], top["score_cutoff"], rcfg["route"]["max_artists"])  # prepared selection, route year
 sc = rrows.loc[rrows["has_row"], "when_score"].tolist()  # scores in display order
 assert sc == sorted(sc, reverse=True), "rows must be sorted by WHEN score descending"  # order
 assert len(rrows) == len(rcfg["route"]["artists"]) <= rcfg["route"]["max_artists"]  # all prepared artists, within the cap
@@ -176,12 +176,16 @@ assert len(multi_rows(rcfg, route_ids(rcfg) * 2, 2018, cfg["threshold"], top["sc
 s = multi_summary(rrows)  # summary
 w = rrows[rrows["when_label"].notna() & rrows["when_counted"]]  # counted WHEN rows
 assert (s["when_right"], s["when_n"]) == (int((w["when_verdict"] == w["when_label"]).sum()), len(w))  # WHEN count
+w2 = rrows[rrows["show2"] & rrows["when2_label"].notna() & rrows["when2_counted"]]  # counted 2-year rows where the second pill is shown
+assert (s["when2_right"], s["when2_n"]) == (int((w2["when2_verdict"] == w2["when2_label"]).sum()), len(w2))  # 2-year count
+assert (rrows["show2"] == ((rrows["when_verdict"] == "no") | (rrows["when2_verdict"] == "no"))).all()  # cascade rule
+assert all(len(row_marks(r)) == 2 + int(r["show2"]) for _, r in rrows.iterrows())  # one mark per pill shown plus WHAT
 a = rrows[rrows["what_available"] & rrows["what_label"].notna() & rrows["what_safe"]]  # counted WHAT rows
 assert (s["what_right"], s["what_n"]) == (int((a["what_verdict"] == a["what_label"]).sum()), len(a))  # WHAT count
-r24 = multi_rows(rcfg, route_ids(rcfg), 2024, cfg["threshold"], top["score_cutoff"], 8)  # 2024: labels after the holdout
+r24 = multi_rows(rcfg, route_ids(rcfg), 2024, cfg["threshold"], top["score_cutoff"], 10)  # 2024: labels after the holdout
 assert multi_summary(r24)["when_n"] == 0 and multi_summary(r24)["what_n"] == 0  # not counted
-assert all(row_marks(r)["when"][1] in ("mark_ok_flagged", "mark_bad_flagged", "mark_dot") for _, r in r24[r24["has_row"]].iterrows())  # asterisk marks or the grey dot only, in 2024
-print(f"2018 rows {len(rrows)} sorted by WHEN score, summary {s}, 2024 summary {multi_summary(r24)}, caps respected")  # result
+assert all(m[1] in ("mark_ok_flagged", "mark_bad_flagged", "mark_dot") for _, r in r24[r24["has_row"]].iterrows() for m in row_marks(r))  # asterisk marks or the grey dot only, in 2024
+print(f"{rcfg['route']['year']} rows {len(rrows)} sorted by WHEN score, summary {s}, 2024 summary {multi_summary(r24)}, caps respected")  # result
 from demo_multi import advance_stage, multi_signature  # two-step state machine
 sig = multi_signature(2018, [1, 2])  # signature of a selection
 s0 = advance_stage(None, sig, None)  # first run
@@ -191,7 +195,7 @@ s3 = advance_stage(s2, sig, "reveal")  # Show reality after Predict
 assert (s0["stage"], s1["stage"], s2["stage"], s3["stage"]) == ("placeholder", "placeholder", "predict", "reveal")  # the three stages in order
 assert advance_stage(s3, multi_signature(2019, [1, 2]), None)["stage"] == "placeholder" and advance_stage(s3, multi_signature(2018, [1]), None)["stage"] == "placeholder"  # a change of year or artists resets
 assert advance_stage(s3, sig, "predict")["stage"] == "reveal"  # no step back
-assert list(multi_rows(rcfg, route_ids(rcfg), 2018, cfg["threshold"], top["score_cutoff"], 8, "placeholder")["artist_id"]) == route_ids(rcfg)  # placeholder keeps the selection order
+assert list(multi_rows(rcfg, route_ids(rcfg), rcfg["route"]["year"], cfg["threshold"], top["score_cutoff"], 10, "placeholder")["artist_id"]) == route_ids(rcfg)  # placeholder keeps the selection order
 print("stage machine checks passed: placeholder -> predict -> reveal, reset on change, selection order before predict")  # result
 print("mode 2 checks passed")  # all asserts held
 print(f"\nsimulation time {time.time() - t0:.2f} s")  # print the result

@@ -68,3 +68,19 @@ def style_summary(year: int, top_n: int, cfg: dict) -> dict | None:  # counted y
     shown = with_reality(forecast_table(year, top_n), year)  # forecast top n with reality
     known = shown[shown["in_range"].notna()]  # rows with an actual
     return {"hits": hits, "n": top_n, "in_range": int(known["in_range"].sum()), "m": len(known)}  # counts
+
+
+def stored_in_range(year: int, top_n: int) -> int:  # in-range count of a stored year
+    """Number of the stored Random Forest top n styles of the year whose actual Works fall inside the stored range (styles without an actual are not counted)."""
+    tables = load_tables()  # stored files
+    pred = tables["predictions"]  # stored forecast
+    top = pred[(pred["method"] == "random_forest") & (pred["target_year"] == year) & (pred["rank"] <= top_n)]  # stored top n of the year
+    act = tables["actuals"]  # stored actuals
+    m = top.merge(act[act["target_year"] == year][["style", "actual_works"]], on="style", how="inner")  # actual Works of the top styles
+    return int(((m["actual_works"] >= m["range_low"]) & (m["actual_works"] <= m["range_high"])).sum())  # inside the range
+
+
+def mean_in_range(cfg: dict) -> float:  # mean in-range count over the counted years
+    """Mean over the counted test years of the stored top n in-range count (the figure behind 'about 5 of the 10 top styles')."""
+    years = cfg["style_tab"]["years"]["counted"]  # counted test years
+    return float(np.mean([stored_in_range(y, cfg["style_tab"]["top_n"]) for y in years]))  # mean of the yearly counts

@@ -1,4 +1,4 @@
-"""AppTest run of mode 2 of tab 6 (several artists in one year). Prints only, writes no files.
+"""AppTest run of mode 2 of tab 6 (several artists in one year, Work rows and year-end rows). Prints only, writes no files.
 
 Usage:
     venv/bin/python3 scripts/run_multi_apptest.py
@@ -19,7 +19,8 @@ from streamlit.testing.v1 import AppTest  # headless app runner
 from app_data import all_artists, load_demo_config  # demo settings
 from app_live import artist_timeline, load_tables  # live data layer, used only to cross-check
 from config import CONFIG  # project settings
-from demo_multi import multi_rows, multi_summary  # logic under test
+import demo_multi  # module, to stub the counts in one check
+from demo_multi import hidden_counts, hidden_lines, multi_rows, multi_summary  # logic under test
 
 cfg = load_demo_config()  # settings
 rt, g = cfg["route"], cfg["game"]  # route and game settings
@@ -60,17 +61,31 @@ def rows_of(at: AppTest) -> list:  # parsed rows
     return [(html.unescape(a), r) for a, r in re.findall(r"<tr><th>(.*?)</th>(.*?)</tr>", table_html(at)) if a != tx["col_artist"]]  # artist cells and the rest, header row left out
 
 
-def stored_when(ids: list, year: int) -> pd.DataFrame:  # independent WHEN reference from the stored files
-    """Stored WHEN score and label of the representative Work of the year, read from the csv files only (no app function)."""
+def stored_when(ids: list, year: int, target: str = "next_1y") -> pd.DataFrame:  # independent WHEN reference from the stored files
+    """Stored WHEN score, label and flags of each artist-year: the representative Work when the artist has a Work in the year, else the year-end row. Read from the csv files only (no app function)."""
     works = pd.concat([pd.read_csv(ROOT / "results/demo/works_demo.csv"), pd.read_csv(ROOT / pb["works"])])  # Works of both pools
     rep = works[(works["year"] == year) & works["is_representative"] & works["artist_id"].isin(ids)][["artist_id", "work_id"]]  # representative Work per artist
     sc = pd.concat([pd.read_csv(ROOT / "results/demo/when_demo_scores.csv"), pd.read_csv(ROOT / pb["when_scores"])])  # stored scores
-    sc = sc[sc["target"] == "next_1y"]  # WHEN next_1y
-    return rep.merge(sc, on=["artist_id", "work_id"])  # score, label and flags
+    work_rows = rep.merge(sc[sc["target"] == target], on=["artist_id", "work_id"]).assign(is_year_end=False)  # Work rows
+    ye = pd.read_csv(ROOT / "results/demo/when_demo_scores_year_end.csv")  # stored year-end scores
+    ye = ye[(ye["snapshot_year"] == year) & ye["artist_id"].isin(ids) & (ye["target"] == target) & ~ye["artist_id"].isin(work_rows["artist_id"])].assign(is_year_end=True)  # year-end rows of artists without a Work row
+    return pd.concat([work_rows, ye], ignore_index=True)  # one row per artist with a row
+
+
+def cascade_reference(ids: list, year: int) -> pd.DataFrame:  # both horizons side by side
+    """One row per artist with a row: both scores, labels, counted flags and whether the 2-year pill is shown, from the stored files."""
+    a, b = stored_when(ids, year, "next_1y"), stored_when(ids, year, "next_2y")  # both horizons
+    m = a.merge(b, on="artist_id", suffixes=("", "_2"))  # side by side
+    m["name"] = m["artist_id"].map(names)  # names
+    m["v1"], m["v2"] = m["score"] >= g["threshold"], m["score_2"] >= g["threshold"]  # Yes verdicts
+    m["show2"] = ~m["v1"] | ~m["v2"]  # second pill when next year is No or the 2-year verdict is No
+    m["c1"] = m["label"].notna() & ~m["is_projection"] & ~m["label_after_holdout"]  # next-year reality counts
+    m["c2"] = m["label_2"].notna() & ~m["is_projection_2"] & ~m["label_after_holdout_2"]  # 2-year reality counts
+    return m  # reference
 
 
 def check_default() -> None:  # test 1
-    """Default view: mode 2, year 2018, the 8 prepared artists, the selection note."""
+    """Default view: mode 2, year 2019, the 10 prepared artists, the selection note."""
     at = new_app("placeholder")  # app, nothing pressed
     assert at.radio(key=g["keys"]["mode"]).value == g["default_mode"], "mode 2 must open first"  # mode
     assert at.selectbox(key=k["year"]).value == rt["year"], "the default year"  # year
@@ -82,37 +97,51 @@ def check_default() -> None:  # test 1
 
 
 def check_order_and_summary() -> None:  # tests 2 and 3
-    """Rows sorted by WHEN score descending against the stored files; the summary equals an independent recount."""
+    """Rows sorted by the next-year score descending against the stored files (Work rows and year-end rows); the summary equals an independent recount."""
     at = new_app()  # app
-    ref = stored_when(rt["artists"], rt["year"])  # stored reference
-    ref["name"] = ref["artist_id"].map(names)  # names
+    ref = cascade_reference(rt["artists"], rt["year"])  # stored reference
     want = ref.sort_values(["score", "name"], ascending=[False, True])["name"].tolist()  # independent order
-    got = [a for a, _ in rows_of(at) if a in want]  # table order of the artists that have a row
+    got = [a for a, _ in rows_of(at)]  # table order
     assert got == want, f"the order differs: {got} vs {want}"  # sorted by score descending
-    ok = ref[ref["label"].notna() & ~ref["is_projection"] & ~ref["label_after_holdout"]]  # counted rows
-    k_when, n_when = int(((ok["score"] >= g["threshold"]) == (ok["label"] == 1)).sum()), len(ok)  # independent WHEN count
-    text = table_html(at)  # table HTML
-    assert tx["summary_when"].format(k=k_when, n=n_when) in html.unescape(text), "the WHEN summary differs from the recount"  # summary line
-    rows = multi_rows(cfg, rt["artists"], rt["year"], g["threshold"], load_tables()["what_top10"]["score_cutoff"], rt["max_artists"])  # rows from the logic
+    k1, n1 = int(((ref["v1"] == (ref["label"] == 1))[ref["c1"]]).sum()), int(ref["c1"].sum())  # independent next-year count
+    sel = ref["show2"] & ref["c2"]  # rows where the 2-year pill is shown and the reality counts
+    k2, n2 = int(((ref["v2"] == (ref["label_2"] == 1))[sel]).sum()), int(sel.sum())  # independent 2-year count
+    text = html.unescape(table_html(at))  # table HTML
+    top = load_tables()["what_top10"]["score_cutoff"]  # WHAT cutoff
+    rows = multi_rows(cfg, rt["artists"], rt["year"], g["threshold"], top, rt["max_artists"])  # rows from the logic
     labs = pd.concat([pd.read_csv(ROOT / "results/demo/live/what_labels.csv"), pd.read_csv(ROOT / pb["what_labels"])])  # stored WHAT labels
-    lab = labs[(labs["year"] == rt["year"]) & labs["artist_id"].isin(rt["artists"]) & labs["label"].notna() & ~labs["label_after_holdout"]]  # counted WHAT labels
-    right = 0  # right WHAT verdicts
+    work_ids = ref.loc[~ref["is_year_end"], "artist_id"]  # artists with a Work row: only they have a WHAT score in the table
+    lab = labs[(labs["year"] == rt["year"]) & labs["artist_id"].isin(work_ids) & labs["label"].notna() & ~labs["label_after_holdout"]]  # counted WHAT labels
+    right, n_what = 0, 0  # right WHAT verdicts and rows with a WHAT score
     for _, r in lab.iterrows():  # every counted WHAT label
         row = rows[rows["artist_id"] == r["artist_id"]].iloc[0]  # same artist in the table rows
+        if not row["what_available"]:  # no WHAT score for that artist-year
+            continue  # not counted
+        n_what += 1  # a counted WHAT row
         right += int(row["what_verdict"] == ("yes" if r["label"] == 1 else "no"))  # verdict against the stored label
     s = multi_summary(rows)  # summary from the logic
-    assert (s["what_right"], s["what_n"]) == (right, len(lab)), "the WHAT summary differs from the recount"  # WHAT count
-    print(f"2 order equals the stored-file order ({len(want)} rows with a score); 3 summary equals the recount: WHEN {k_when} of {n_when}, WHAT {right} of {len(lab)}")  # result
+    assert (s["when_right"], s["when_n"], s["when2_right"], s["when2_n"]) == (k1, n1, k2, n2), "the WHEN summary differs from the recount"  # WHEN counts
+    assert tx["summary_when"].format(k=k1, n=n1, k2=k2, n2=n2) in text, "the WHEN summary line differs from the recount"  # summary line
+    assert (s["what_right"], s["what_n"]) == (right, n_what), "the WHAT summary differs from the recount"  # WHAT count
+    print(f"2 order equals the stored-file order ({len(want)} rows); 3 summary equals the recount: next year {k1} of {n1}, within 2 years {k2} of {n2}, WHAT {right} of {n_what}")  # result
 
 
 def check_boygenius() -> None:  # test 4
-    """boygenius shows the missing-score text over two columns and stays out of the WHAT count."""
+    """boygenius has a year-end row in 2019 and a Work row without a WHAT score in 2018; both show their WHAT text over two columns and stay out of the WHAT count."""
     at = new_app()  # app
-    row = dict(rows_of(at))["boygenius"]  # its row
-    want = html.escape(tx["what_missing"].format(n=CONFIG["what"]["min_previous_works"]))  # expected text
-    assert "colspan='2'" in row and want in row, "the WHAT cells must be one colspan text"  # colspan text
-    assert all(r["artist_id"] != by_name["boygenius"] for _, r in multi_rows(cfg, rt["artists"], rt["year"], g["threshold"], 0.4943, 8).iterrows() if r.get("what_available") is True), "boygenius has no WHAT score"  # not available
-    print("4 boygenius: WHAT cells are one colspan=2 text:", html.unescape(want))  # result
+    row = dict(rows_of(at))["boygenius"]  # its 2019 row
+    want = html.escape(tx["what_year_end"])  # expected text of a year-end row
+    assert "colspan='2'" in row and want in row, "the year-end WHAT cells must be one colspan text"  # colspan text
+    at.selectbox(key=k["year"]).select(2018).run()  # 2018
+    go(at, "reveal")  # the state reset, press again
+    row18 = dict(rows_of(at))["boygenius"]  # its 2018 row
+    want18 = html.escape(tx["what_missing"].format(n=CONFIG["what"]["min_previous_works"]))  # expected text of a Work row without a WHAT score
+    assert "colspan='2'" in row18 and want18 in row18 and tx["release_none"].split("{")[0] not in row18, "the Work row must show the not-eligible WHAT text"  # colspan text
+    top = load_tables()["what_top10"]["score_cutoff"]  # WHAT cutoff
+    for year in (2018, 2019):  # both years
+        rows = multi_rows(cfg, rt["artists"], year, g["threshold"], top, rt["max_artists"])  # rows from the logic
+        assert not rows[rows["artist"] == "boygenius"]["what_available"].iloc[0], f"boygenius has no WHAT score in {year}"  # not available
+    print("4 boygenius: 2019 year-end row and 2018 Work row both show one colspan=2 WHAT text:", html.unescape(want), "|", html.unescape(want18))  # result
 
 
 def check_years() -> None:  # test 5
@@ -121,19 +150,20 @@ def check_years() -> None:  # test 5
     at.selectbox(key=k["year"]).select(2019).run()  # 2019
     go(at, "reveal")  # the state reset, press again
     assert not at.exception  # no exception
-    assert tx["no_work"] in dict(rows_of(at))["boygenius"], "boygenius has no Work in 2019"  # gap row
+    boy = dict(rows_of(at))["boygenius"]  # boygenius in 2019
+    assert tx["release_estimated"] in boy, "boygenius has no Work in 2019, its year-end row is shown"  # year-end row
     at.selectbox(key=k["year"]).select(2024).run()  # 2024
     go(at, "reveal")  # the state reset, press again
     h24 = table_html(at)  # table in 2024
     marks = re.findall(r"<span class='poc-mark (\w+)'>", h24)  # mark colors
     glyphs = re.findall(r"<span class='poc-mark (\w+)'>(.*?)</span>", h24)  # every mark with its glyph
     assert glyphs and "amber" not in h24 and all((c == "grey" and g == "●") or (c in ("green", "red") and g in ("✓*", "✗*") and (c == "green") == (g == "✓*")) for c, g in glyphs), f"2024 marks must be green or red with the asterisk, or the grey dot: {glyphs}"  # no amber, asterisk and color match
-    assert tx["summary_when"].format(k=0, n=0) in html.unescape(h24), "2024 rows are not counted"  # not counted
+    assert tx["summary_when"].format(k=0, n=0, k2=0, n2=0) in html.unescape(h24), "2024 rows are not counted"  # not counted
     at.selectbox(key=k["year"]).select(2026).run()  # 2026
     go(at, "reveal")  # the state reset, press again
     h26 = table_html(at)  # table in 2026
     assert tx["no_reality"] in h26 and set(re.findall(r"<span class='poc-mark (\w+)'>", h26)) <= {"grey"}, "2026 has no reality, grey marks only"  # last data year
-    print(f"5 years: 2019 gap row, 2024 marks {sorted(set(glyphs))} and 0 counted, 2026 no reality with grey marks, no exception")  # result
+    print(f"5 years: 2019 year-end row, 2024 marks {sorted(set(glyphs))} and 0 counted, 2026 no reality with grey marks, no exception")  # result
 
 
 def check_manual_and_cap() -> None:  # test 6
@@ -141,9 +171,9 @@ def check_manual_and_cap() -> None:  # test 6
     at = new_app()  # app
     at.selectbox(key=k["genre"]).select("Country").run()  # genre filter
     ms = at.multiselect(key=k["artists"])  # picker
-    ms.unselect(by_name["BTS"]).unselect(by_name["BLACKPINK"]).run()  # make room: the widget refuses more than the cap
+    ms.unselect(by_name["BTS"]).run()  # make room: the widget refuses more than the cap
     ms = at.multiselect(key=k["artists"])  # picker after the rerun
-    ms.select(by_name["Luke Combs"]).select(by_name["Kacey Musgraves"]).run()  # one artist of each pool
+    ms.select(by_name["Luke Combs"]).run()  # a pool A artist next to the prepared pool B artist Kacey Musgraves
     assert not at.exception  # no exception
     go(at, "reveal")  # the state reset after the artist change, press again
     shown = [a for a, _ in rows_of(at)]  # table artists
@@ -151,7 +181,7 @@ def check_manual_and_cap() -> None:  # test 6
     assert ms.proto.max_selections == rt["max_artists"], "the widget must carry the cap"  # widget cap
     big = multi_rows(cfg, [by_name[n] for n in list(by_name)[:rt["max_artists"] + 3]], 2018, g["threshold"], 0.4943, rt["max_artists"])  # more ids than the cap
     assert len(big) <= rt["max_artists"], "the function must cap the artists"  # function cap
-    print(f"6 manual picks: Luke Combs (A) and Kacey Musgraves (B) added with genre Country, widget cap {ms.proto.max_selections}, function cap {len(big)} rows for {rt['max_artists'] + 3} ids")  # result
+    print(f"6 manual picks: Luke Combs (A) added to Kacey Musgraves (B) with genre Country, widget cap {ms.proto.max_selections}, function cap {len(big)} rows for {rt['max_artists'] + 3} ids")  # result
 
 
 def check_switch() -> None:  # test 7
@@ -193,12 +223,12 @@ def check_stages() -> None:  # test 8
     rows1 = dict(rows_of(at))  # rows
     assert "Yes" in h1 or "No" in h1, "model verdicts must show after Predict"  # model columns
     assert "poc-mark" not in h1 and tx["summary_when"].split("{")[0] not in html.unescape(h1), "no mark and no summary before Show reality"  # no reality yet
-    assert html.escape(tx["what_missing"].format(n=CONFIG["what"]["min_previous_works"])) in rows1["boygenius"], "the WHAT missing text shows after Predict"  # missing text
+    assert html.escape(tx["what_year_end"]) in rows1["boygenius"], "the year-end WHAT text shows after Predict"  # year-end text
     how = next(e for e in at.expander if e.label == tx["how_label"])  # the expander after Predict
     caps = [c.value for c in how.caption]  # its lines
-    assert len(caps) == 3 and cfg["poc"]["texts"]["legend_reference"] in caps and sum("in 10" in c for c in caps) == 2, "the two reliability lines and the legend are in the expander"  # contents
+    assert len(caps) == 4 and cfg["poc"]["texts"]["legend_reference"] in caps and tx["legend_cascade"] in caps and sum("in 10" in c for c in caps) == 2, "the two reliability lines, the legend and the cascade sentence are in the expander"  # contents
     assert "class='poc-note'" not in h1 and "poc-pill" in h1, "no note under the table after Predict, verdicts are pills"  # notes location
-    assert ph in rows1["Kaytranada"], "realities stay placeholders after Predict"  # placeholder reality
+    assert ph in rows1["SZA"], "realities stay placeholders after Predict"  # placeholder reality
     at = go(at, "reveal")  # Show reality
     h2 = table_html(at)  # table
     assert not any(b.key in (k["predict"], k["reveal"]) for b in at.button), "no step button after the reveal"  # buttons gone
@@ -206,6 +236,79 @@ def check_stages() -> None:  # test 8
     assert h2.count("class='poc-note'") == 2 and cfg["poc"]["texts"]["legend_reference"] not in html.unescape(h2), "only the two summary lines under the table, the legend is in the expander"  # notes location
     assert cfg["poc"]["texts"]["legend_reference"] in [c.value for e in at.expander if e.label == tx["how_label"] for c in e.caption], "the legend stays in the expander after Show reality"  # legend
     print(f"8 stages: {h0.count(chr(39) + 'poc-ph' + chr(39))} placeholder cells -> model pills, expander with {len(caps)} lines, realities still '{ph}' -> marks and 2 summary lines under the table")  # result
+
+
+def check_year_end() -> None:  # test 11
+    """Year-end rows: the tag, the WHAT text, the cascade pills only when the next year or the 2-year verdict is No, the marks count, the summary against route_table_year_end.csv, the hidden artists line."""
+    at = new_app("predict")  # Predict stage: pills without realities
+    ref = cascade_reference(rt["artists"], rt["year"])  # stored reference
+    rows1 = dict(rows_of(at))  # rows after Predict
+    for _, r in ref.iterrows():  # every artist with a row
+        row = rows1[r["name"]]  # its row
+        assert row.count(html.escape(tx["pill_two"])) == int(r["show2"]) and row.count(html.escape(tx["pill_next"])) == 1, f"{r['name']}: the 2-year pill must show only when the next year or the 2-year verdict is No"  # cascade rule
+        assert (tx["release_estimated"] in row) == bool(r["is_year_end"]) and ((html.escape(tx["what_year_end"]) in row) == bool(r["is_year_end"])), f"{r['name']}: the year-end tag and the WHAT text belong to year-end rows only"  # tag and WHAT text
+    at = go(at, "reveal")  # Show reality
+    rows2 = dict(rows_of(at))  # rows after Show reality
+    for _, r in ref.iterrows():  # every artist with a row
+        row = rows2[r["name"]]  # its row
+        n_marks = len(re.findall(r"<span class='poc-mark ", row))  # marks of the row
+        assert n_marks == 1 + int(r["show2"]) + 1, f"{r['name']}: one mark per pill shown plus the WHAT mark, got {n_marks}"  # marks count
+        assert row.count(html.escape(tx["pill_two"])) == 2 * int(r["show2"]), f"{r['name']}: the 2-year reality follows the 2-year pill"  # same structure in the reality cell
+    table = pd.read_csv(ROOT / "results/demo/route_table_year_end.csv")  # extended route table
+    t = table[(table["year"] == rt["year"]) & table["artist_id"].isin(rt["artists"])]  # the prepared artists in the route year
+    show2 = (t["verdict_1y"] == "no") | (t["verdict_2y"] == "no")  # rows with the second pill
+    k1, n1 = int((t["right_1y"] == True).sum()), int(t["right_1y"].notna().sum())  # next-year figures of the route table
+    k2, n2 = int((t["right_2y"][show2] == True).sum()), int(t["right_2y"][show2].notna().sum())  # 2-year figures where shown
+    assert (k1, n1, k2, n2) == (5, 10, 2, 4), f"the route table figures for 2019 changed: {(k1, n1, k2, n2)}"  # expected figures
+    kw, nw = int((t["what_right"] == True).sum()), int(t["what_right"].notna().sum())  # WHAT figures of the route table
+    assert tx["summary_when"].format(k=k1, n=n1, k2=k2, n2=n2) in html.unescape(table_html(at)), "the WHEN summary line must equal the route table figures"  # WHEN line
+    assert tx["summary_what"].format(k=kw, n=nw) in html.unescape(table_html(at)), "the WHAT summary line must equal the route table figures"  # WHAT line
+    assert not [c for c in at.caption if "earlier releases" in c.value], "no hidden-artists line when every selected artist has a row"  # no line
+    at.selectbox(key=k["year"]).select(2018).run()  # 2018: two prepared-list artists would be hidden, check the line with the independent rule
+    ids18 = [i for i in rt["artists"]]  # the prepared artists
+    feats = pd.concat([pd.read_csv(ROOT / "results/demo/live/when_features.csv"), pd.read_csv(ROOT / pb["when_features"]), pd.read_csv(ROOT / "results/demo/live/when_features_year_end.csv")])  # every WHEN row of the files
+    for year, extra in ((2018, ["Peso Pluma", "Rauw Alejandro"]), (2019, ["Peso Pluma"])):  # plural and singular
+        has = set(feats[feats["snapshot_year"] == year]["artist_id"])  # artists with a row in the year
+        want_hidden = [i for i in [by_name[n] for n in extra] if i not in has]  # selected artists without a row
+        assert len(want_hidden) == len(extra) and hidden_counts([by_name[n] for n in extra], year, 99) == {"none": len(extra), "yet": 0}, "the hidden count must equal the files"  # independent count
+        sel = ids18[:rt["max_artists"] - len(extra)] + [by_name[n] for n in extra]  # the prepared artists plus the hidden ones
+        at = new_app("placeholder")  # fresh app
+        at.selectbox(key=k["year"]).select(year).run()  # the year
+        at.multiselect(key=k["artists"]).set_value(sel).run()  # the selection
+        key = "no_history_one" if len(extra) == 1 else "no_history_many"  # wording variant
+        assert tx[key].format(n=len(extra), year=year) in [c.value for c in at.caption], f"the hidden artists line is missing for {year}"  # line under the table
+        assert all(n not in [a for a, _ in rows_of(at)] for n in extra), "hidden artists are not in the table"  # not shown
+    print(f"11 year-end: tag and WHAT text on year-end rows only, 2-year pill only when next year or 2-year is No, marks = pills + WHAT, summary equals route_table_year_end.csv ({k1} of {n1}, {k2} of {n2}, WHAT {kw} of {nw}), hidden lines for 2018 (2, plural) and 2019 (1, singular)")  # result
+
+
+def check_hidden_last_year() -> None:  # test 12
+    """Last data year: artists with history but no row get the 'no release yet' line (singular and plural), never the 'no earlier releases' line; both lines show when both cases occur."""
+    last = int(load_tables()["works"]["year"].max())  # last data year
+    feats = pd.concat([pd.read_csv(ROOT / "results/demo/live/when_features.csv"), pd.read_csv(ROOT / pb["when_features"]), pd.read_csv(ROOT / "results/demo/live/when_features_year_end.csv")])  # every WHEN row of the files
+    has = set(feats[feats["snapshot_year"] == last]["artist_id"])  # artists with a row in the last year
+    works = pd.concat([pd.read_csv(ROOT / "results/demo/works_demo.csv"), pd.read_csv(ROOT / pb["works"])])  # Works of both pools
+    early = set(works[works["year"] < last]["artist_id"])  # artists with a Work before the last year
+    cand = [n for n in ("Billy Joel", "Coldplay", "Usher") if by_name[n] not in has and by_name[n] in early]  # selected names with history but no row
+    assert len(cand) == 3, f"expected three artists with history and no {last} row: {cand}"  # test data present
+    for names_sel in (cand[:1], cand):  # singular, then plural
+        ids = [by_name[n] for n in names_sel]  # ids of the selection
+        assert hidden_counts(ids, last, 99) == {"none": 0, "yet": len(ids)}, "the count must come from the data: history but no row"  # independent expectation
+        at = new_app("placeholder")  # fresh app
+        at.selectbox(key=k["year"]).select(last).run()  # last data year
+        at.multiselect(key=k["artists"]).set_value(ids + [by_name["Kacey Musgraves"]]).run()  # hidden artists plus one with a row
+        key = "no_release_one" if len(ids) == 1 else "no_release_many"  # wording variant
+        caps = [c.value for c in at.caption]  # captions on the page
+        assert tx[key].format(n=len(ids), year=last) in caps, f"the no-release line is missing for {len(ids)} artists"  # line under the table
+        assert not [c for c in caps if "earlier releases" in c], "the 'no earlier releases' line must not appear for artists with history"  # false text absent
+        assert all(n not in [a for a, _ in rows_of(at)] for n in names_sel), "hidden artists are not in the table"  # not shown
+    real = demo_multi.hidden_counts  # the real function
+    demo_multi.hidden_counts = lambda ids, year, cap: {"none": 2, "yet": 1}  # no table has both cases in the data, so the counts are stubbed
+    try:  # always restore
+        lines = hidden_lines(cfg, [1], last)  # lines for the stubbed counts
+    finally:  # restore the real function
+        demo_multi.hidden_counts = real  # back
+    assert lines == [tx["no_history_many"].format(n=2, year=last), tx["no_release_one"].format(n=1, year=last)], f"both lines expected, none-case first: {lines}"  # two lines
+    print(f"12 last year {last}: 'no release yet' line for 1 and 3 artists with history, no 'no earlier releases' line; mixed case (counts stubbed) gives the two lines")  # result
 
 
 def check_structure() -> None:  # test 10
@@ -231,7 +334,7 @@ def check_structure() -> None:  # test 10
 def check_reset() -> None:  # test 9
     """The state resets on a year change and on an artist change; a change in mode 1 does not touch it."""
     at = new_app("reveal")  # full table
-    at.selectbox(key=k["year"]).select(2019).run()  # year change
+    at.selectbox(key=k["year"]).select(2020).run()  # year change
     assert at.session_state[k["stage"]]["stage"] == "placeholder" and "poc-mark" not in table_html(at), "a year change must reset to placeholders"  # reset
     at = go(at, "reveal")  # full again
     at.multiselect(key=k["artists"]).unselect(by_name["BTS"]).run()  # artist change
@@ -245,7 +348,7 @@ def check_reset() -> None:  # test 9
     print("9 reset: year change and artist change return to placeholders, mode 1 changes leave the mode 2 stage (predict) untouched")  # result
 
 
-for fn in (check_default, check_order_and_summary, check_boygenius, check_years, check_manual_and_cap, check_switch, check_stages, check_reset, check_structure):  # all checks
+for fn in (check_default, check_order_and_summary, check_boygenius, check_years, check_manual_and_cap, check_switch, check_stages, check_reset, check_structure, check_year_end, check_hidden_last_year):  # all checks
     t = time.time()  # clock
     fn()  # run the check
     print(f"   {fn.__name__} {time.time() - t:.2f} s")  # timing

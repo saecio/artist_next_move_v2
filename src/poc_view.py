@@ -186,6 +186,9 @@ def multi_css(poc: dict) -> str:  # style rules of the mode 2 table, all scoped 
         f".poc-multi .poc-pill{{display:inline-block;padding:{s['pill_pad_v']}px {s['pill_pad_h']}px;border-radius:{s['pill_radius']}px;border:{s['pill_border']}px solid {c['accent']};font-size:{s['pill_font']}px;font-weight:600;white-space:nowrap}}",  # pill shape
         f".poc-multi .poc-pill.yes{{background:{c['accent']};color:{c['accent_fg']}}}",  # Yes and Likely: filled
         f".poc-multi .poc-pill.no{{background:transparent;color:{c['accent']}}}",  # No and Not likely: outlined
+        f".poc-multi .poc-sub{{font-size:{s['note_font']}px;opacity:{s['muted_opacity']}}}",  # small muted line or label
+        f".poc-multi .poc-casc{{display:flex;align-items:flex-end;gap:{s['card_gap']}px;flex-wrap:wrap}}",  # the cascade of pills in one cell
+        ".poc-multi .poc-step{display:flex;flex-direction:column;align-items:flex-start}",  # one label above its pill or text
     ]  # end of the rules
     return "<style>" + "".join(rules) + "</style>"  # the style element
 
@@ -195,44 +198,62 @@ def pill(text: str, yes: bool) -> str:  # a verdict pill
     return f"<span class='poc-pill {'yes' if yes else 'no'}'>{html.escape(text)}</span>"  # pill element
 
 
-def how_lines(stage: str, rel_lines: list, legend: str) -> list:  # lines of the How to read this expander
-    """The two reliability lines and the legend, from the predict stage on; nothing in the placeholder stage."""
-    return [] if stage == "placeholder" else list(rel_lines) + [legend]  # empty before Predict
+def how_lines(stage: str, rel_lines: list, legend: str, cascade: str) -> list:  # lines of the How to read this expander
+    """The two reliability lines, the legend and the cascade sentence, from the predict stage on; nothing in the placeholder stage."""
+    return [] if stage == "placeholder" else list(rel_lines) + [legend, cascade]  # empty before Predict
 
+def short_title(title: str, limit: int) -> str:  # title cut at a maximum number of characters
+    """The title, cut to `limit` characters with an ellipsis when longer."""
+    return title if len(title) <= limit else title[:limit - 1].rstrip() + "\u2026"  # ellipsis counts in the limit
 
-def multi_table_html(rows: pd.DataFrame, summary: dict, g: dict, route: dict, poc: dict, marks_fn, n_min: int, stage: str = "reveal") -> str:  # mode 2 table
-    """The mode 2 table as one HTML string. Stage placeholder: the artist column and placeholders. Stage predict: the model verdicts as pills. Stage reveal: the realities, the marks and the two summary lines."""
+def release_cell(r: pd.Series, rt: dict, year: int) -> str:  # release column cell
+    """'Title (Style)' with the full title in a tooltip for a Work year; 'No release in {year}' and a small muted line for a year-end row. Re-recording flags are not shown."""
+    if r["is_year_end"]:  # no Work that year
+        return f"<td>{html.escape(rt['release_none'].format(year=year))}<div class='poc-sub'>{html.escape(rt['release_estimated'])}</div></td>"  # text and muted line
+    short = short_title(str(r["title"]), rt["title_max_chars"])  # cut title
+    text = short if pd.isna(r["style"]) or not r["style"] else f"{short} ({r['style']})"  # style in brackets when there is one
+    return f"<td><span title='{html.escape(str(r['title']), quote=True)}'>{html.escape(text)}</span></td>"  # tooltip with the full title
+
+def cascade_cell(r: pd.Series, items: list, rt: dict) -> str:  # one cell with the next-year item and, when shown, the 2-year item
+    """Cell with the next-year item first (small label above) and, when show2, an arrow and the 2-year item. `items` holds the two inner HTML strings."""
+    parts = [f"<div class='poc-step'><span class='poc-sub'>{html.escape(rt['pill_next'])}</span>{items[0]}</div>"]  # next-year item
+    if r["show2"]:  # the second item is shown
+        parts.append("<span class='poc-arrow'>\u2192</span>")  # arrow
+        parts.append(f"<div class='poc-step'><span class='poc-sub'>{html.escape(rt['pill_two'])}</span>{items[1]}</div>")  # 2-year item
+    return f"<td><div class='poc-casc'>{''.join(parts)}</div></td>"  # the cell
+
+def multi_table_html(rows: pd.DataFrame, summary: dict, g: dict, route: dict, poc: dict, marks_fn, n_min: int, year: int, stage: str = "reveal") -> str:  # mode 2 table
+    """The mode 2 table as one HTML string. Stage placeholder: the artist, the release and placeholders. Stage predict: the model verdicts as pills (next year, then within 2 years where shown). Stage reveal: the realities, the marks and the two summary lines."""
     t, rt = poc["texts"], route["texts"]  # poc and route texts
+    rt = {**rt, "title_max_chars": route["title_max_chars"]}  # the title limit sits next to the texts
     yn = {"yes": g["answer_yes"], "no": g["answer_no"]}  # Yes / No words
-    head = "".join(f"<th>{html.escape(rt[k])}</th>" for k in ("col_artist", "col_when", "col_when_reality", "col_what", "col_what_reality", "col_result"))  # header cells
+    head = "".join(f"<th>{html.escape(rt[k])}</th>" for k in ("col_artist", "col_release", "col_when", "col_when_reality", "col_what", "col_what_reality", "col_result"))  # header cells
     ph = f"<td class='poc-ph'><span>{html.escape(rt['placeholder'])}</span></td>"  # one placeholder cell, one per column
     body = []  # table rows
     for _, r in rows.iterrows():  # one row per artist
-        name = f"<th>{html.escape(r['artist'])}</th>"  # artist cell, always shown
-        if stage == "placeholder":  # nothing but the artist
+        name = f"<th>{html.escape(r['artist'])}</th>{release_cell(r, rt, year)}"  # artist and release cells, always shown
+        if stage == "placeholder":  # nothing but the artist and the release
             body.append(f"<tr>{name}{ph * 5}</tr>")  # five equal placeholder cells
             continue  # next artist
-        if not r["has_row"]:  # no Work or no score in that year
-            body.append(f"<tr>{name}<td colspan='5'>{html.escape(rt['no_work'])}</td></tr>")  # one text for the row
-            continue  # next artist
-        when = f"<td>{pill(yn[r['when_verdict']], r['when_verdict'] == 'yes')}</td>"  # WHEN verdict pill
+        when = cascade_cell(r, [pill(yn[r["when_verdict"]], r["when_verdict"] == "yes"), pill(yn[r["when2_verdict"]], r["when2_verdict"] == "yes")], rt)  # WHEN verdict pills
         if r["what_available"]:  # WHAT score exists
             what_model = f"<td>{pill(t['likely'] if r['what_verdict'] == 'yes' else t['not_likely'], r['what_verdict'] == 'yes')}</td>"  # WHAT verdict pill
-        else:  # no WHAT score: one text over the two WHAT columns, in both stages
-            what_model = f"<td colspan='2'>{html.escape(rt['what_missing'].format(n=n_min))}</td>"  # reason from the yaml
+            what_rest = ph  # WHAT reality placeholder
+        elif r["is_year_end"]:  # year-end row: no WHAT score because no release
+            what_model, what_rest = f"<td colspan='2'>{html.escape(rt['what_year_end'])}</td>", ""  # one text over the two WHAT columns
+        else:  # Work year without a WHAT score
+            what_model, what_rest = f"<td colspan='2'>{html.escape(rt['what_missing'].format(n=n_min))}</td>", ""  # reason from the yaml
         if stage == "predict":  # realities and marks stay placeholders
-            what_rest = "" if not r["what_available"] else ph  # WHAT reality placeholder
             body.append(f"<tr>{name}{when}{ph}{what_model}{what_rest}{ph}</tr>")  # model columns shown
             continue  # next artist
-        m = marks_fn(r)  # WHEN and WHAT marks
-        mk = "".join(f"<span class='poc-mark {k}'>{html.escape(t[key])}</span>" for k, key in (m["when"], m["what"]))  # two marks
-        wr = rt["no_reality"] if pd.isna(r["when_label"]) else yn[r["when_label"]]  # WHEN reality text, plain
-        what_rest = "" if not r["what_available"] else f"<td>{html.escape(rt['no_reality'] if pd.isna(r['what_label']) else yn[r['what_label']])}</td>"  # WHAT reality, plain
-        body.append(f"<tr>{name}{when}<td>{html.escape(wr)}</td>{what_model}{what_rest}<td>{mk}</td></tr>")  # full row
-    lines = [rt["summary_when"].format(k=summary["when_right"], n=summary["when_n"]), rt["summary_what"].format(k=summary["what_right"], n=summary["what_n"])] if stage == "reveal" else []  # only the two summary lines, after Show reality
+        word = lambda label: html.escape(rt["no_reality"] if label is None or pd.isna(label) else yn[label])  # reality text, plain
+        reality = cascade_cell(r, [word(r["when_label"]), word(r["when2_label"])], rt)  # WHEN realities in the same structure
+        what_real = f"<td>{word(r['what_label'])}</td>" if r["what_available"] else ""  # WHAT reality, plain
+        mk = "".join(f"<span class='poc-mark {k}'>{html.escape(t[key])}</span>" for k, key in marks_fn(r))  # one mark per pill shown plus WHAT
+        body.append(f"<tr>{name}{when}{reality}{what_model}{what_real}<td>{mk}</td></tr>")  # full row
+    lines = [rt["summary_when"].format(k=summary["when_right"], n=summary["when_n"], k2=summary["when2_right"], n2=summary["when2_n"]), rt["summary_what"].format(k=summary["what_right"], n=summary["what_n"])] if stage == "reveal" else []  # only the two summary lines, after Show reality
     notes_html = "".join(f"<div class='poc-note'>{html.escape(x)}</div>" for x in lines)  # small notes
     return css(poc) + multi_css(poc) + f"<div class='poc-panel poc-multi'><table class='poc-table'><tr>{head}</tr>{''.join(body)}</table>{notes_html}</div>"  # table and notes in the scoped wrapper
-
 
 def style_table_html(rows: pd.DataFrame, summary: dict | None, flagged: bool, st: dict, poc: dict, marks_fn, stage: str, top_n: int) -> str:  # tab 7 table
     """The tab 7 table as one HTML string. Stage placeholder: ranks and placeholder cells. Stage predict: style, expected Works as a pill and the range. Stage reveal: actual Works, the in-range mark and, for a counted year, the two summary lines under the table."""

@@ -133,6 +133,7 @@ live:  # live scoring assets and stored files read by src/app_live.py, relative 
   style_actuals: actuals.csv  # actual Works and labels per style and target year, 2018 to 2024, inside style_folder
   style_extra_years: [2023]  # target years with an extra per-year model in style_folder
   when_scores: results/demo/when_demo_scores.csv  # stored WHEN scores, labels and train rows
+  when_year_end: results/demo/when_demo_scores_year_end.csv  # stored WHEN scores of the year-end rows (artist-years without a Work), long format
   what_scores: results/holdout_what/row_scores.csv  # stored WHAT scores, labels and baseline (c)
   works: results/demo/works_demo.csv  # Works of the demo artists for the timeline
   style_predictions: results/style_forecast/predictions.csv  # stored style forecast, validation display only
@@ -292,10 +293,11 @@ poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, color
     chip_font: 12  # chip text size
 
 route:  # tab 6 mode 2: several artists in one year, read-only table
-  year: 2018  # year shown first
-  artists: [3160392, 90037, 137418, 6774153, 1778977, 5210284, 1967268, 5034422]  # prepared selection by discogs_id: Kaytranada, Pharrell Williams, Billy Joel, boygenius, Kendrick Lamar, BLACKPINK, Tyler, the Creator, BTS
-  max_artists: 8  # most artists in the table
-  selection_note: "Prepared selection for the demo: these artists were chosen after seeing the model results, to show both hits and misses. It is not a sample and not an evaluation."  # one line above the table
+  year: 2019  # year shown first
+  artists: [3272791, 3094075, 7592689, 6774153, 391170, 2866928, 1345479, 4357593, 5034422, 1154116]  # prepared selection by discogs_id: SZA, Romeo Santos, Olivia Rodrigo, boygenius, Arctic Monkeys, Kacey Musgraves, Charli XCX, Dua Lipa, BTS, Labrinth
+  max_artists: 10  # most artists in the table
+  title_max_chars: 28  # longest title in the Release column, longer titles end with an ellipsis and keep the full title in a tooltip
+  selection_note: "Prepared selection for the demo, built for 2019: these artists were chosen after seeing the model results, to show both hits and misses. It is not a sample and not an evaluation."  # one line above the table
   keys:  # widget keys
     year: route_year  # year selector
     genre: route_genre  # genre filter
@@ -314,10 +316,20 @@ route:  # tab 6 mode 2: several artists in one year, read-only table
     col_what: "WHAT: model"  # table column
     col_what_reality: "WHAT: reality"  # table column
     col_result: "Result (WHEN, WHAT)"  # table column
-    no_work: "No Work this year"  # row of an artist without a WHEN score in that year
+    col_release: "Release"  # table column after the artist
+    release_none: "No release in {year}"  # release cell of a year-end row
+    release_estimated: "estimated from history"  # small muted line under the text of a year-end row
+    pill_next: "Next year"  # small label of the next-year pill and reality
+    pill_two: "Within 2 years"  # small label of the 2-year pill and reality
+    what_year_end: "No WHAT score: no release in this year."  # WHAT cells of a year-end row
+    no_history_one: "{n} selected artist has no earlier releases before {year}."  # line under the table, one artist with no history hidden
+    no_history_many: "{n} selected artists have no earlier releases before {year}."  # line under the table, several artists with no history hidden
+    no_release_one: "{n} selected artist has no release yet in {year}."  # line under the table for the last data year, artist with history but no row
+    no_release_many: "{n} selected artists have no release yet in {year}."  # same, several artists
+    legend_cascade: "The 2-year view is shown when the next-year answer is No; a Yes next year also holds for 2 years."  # line in How to read this
     what_missing: "No WHAT score: the artist has fewer than {n} earlier Works."  # WHAT cells of an artist-year that is not eligible
     no_reality: "No reality yet"  # reality cell without a stored label
-    summary_when: "WHEN: model right in {k} of {n} rows with a counted reality."  # summary line
+    summary_when: "Next year: {k} of {n} · Within 2 years (where shown): {k2} of {n2}"  # WHEN summary line, counted rows only
     summary_what: "WHAT: model right in {k} of {n} rows with a counted reality."  # summary line
     placeholder: "?"  # placeholder of a column that is not shown yet
     change_label: "Change year or artists"  # collapsed expander with the year, genre and artist pickers
@@ -336,9 +348,7 @@ style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
     2023: "Year 2023 is shown for reference only and is not included in the results: its Discogs counts show unusual jumps in some styles and cannot be confirmed as complete."
     2024: "Year 2024 is shown for reference only and is not included in the results: Discogs was still adding its releases."
   none_text: "No forecast for this year: Discogs was still adding releases of 2024 and later, so their counts are incomplete and would read as a fall in growth."  # years without forecast
-  notice: "The Random Forest is not separable from repeating last year: on the test years {validation}, top 10 hits {rf} against {rl} for repeat_last (95% intervals overlap). The recommendation stays repeat_last. The ranges of the predicted top 10 under-cover: {obs} observed against {nom} nominal on the development years."  # notice on top
-  figures: {validation: "2018 to 2022", rf: "6.00 [5.20, 7.00]", rl: "5.40 [4.00, 6.80]", obs: "0.62 to 0.64", nom: "0.80"}  # figures of the notice, from the entries "Style trend forecast, adoption and pass rule results" and the Limitations bullet on the 5-year test
-  noise_note: "Only five test years: hits are noisy."  # in How to read this
+  validation_text: "How reliable is this forecast? It was tested on 2018 to 2022. On average, 6 of the 10 styles it picked were among the 10 styles that really grew the most. Simply repeating last year's ranking gets 5.4 of 10, so the two are about equal; for that reason repeating last year is the recommended method and this model is shown for comparison. The ranges are a guide: on the tested years the real value fell inside the range for about 5 of the 10 top styles. Only five years were tested, so these figures can change."  # text of the Validation and limits expander
   growth_note: "The table is ordered by expected growth over the mean of the three latest years, so a small style with a high growth can rank above a large style."  # in How to read this
   range_note: "The range is the 10th to 90th percentile of the past log errors; an actual count inside it is marked as a check."  # in How to read this
   keys:  # widget and state keys

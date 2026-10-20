@@ -65,6 +65,7 @@ def load_tables() -> dict:  # load the cached tables
         "percentiles": pd.concat([pd.read_csv(style / live["style_percentiles"]), pd.read_csv(style / live["style_percentiles_extra"])], ignore_index=True),  # residual percentiles, old and extra files
         "actuals": pd.read_csv(style / live["style_actuals"]),  # actual Works and labels per style and target year
         "predictions": pd.read_csv(ROOT / live["style_predictions"]),  # stored style forecast, validation display only
+        "when_year_end": pd.read_csv(ROOT / live["when_year_end"]),  # stored WHEN scores of the year-end rows, long format with is_year_end
     }  # close the table dict
 
 
@@ -119,3 +120,24 @@ def style_live(target_year: int) -> pd.DataFrame:  # style table of one target y
     tables = load_tables()  # cached tables
     model = {target_year: load_models()["style"][target_year]}  # only the model of this year
     return rescore(tables["panel"], model, tables["percentiles"])  # same columns as predictions.csv
+
+
+def horizon_of(score, label, projection, after) -> dict:  # one horizon of a WHEN row
+    """Score, label text ('yes', 'no' or None) and whether the reality counts (label present, not a projection, not after the holdout)."""
+    text = None if pd.isna(label) else ("yes" if label == 1 else "no")  # stored label as text
+    flagged = bool(pd.notna(projection) and projection) or bool(pd.notna(after) and after)  # flags of the stored files
+    return {"score": float(score), "label": text, "counted": text is not None and not flagged}  # horizon
+
+
+def when_rows(artist_id: int, year: int) -> dict | None:  # WHEN rows of an artist-year, both horizons
+    """WHEN rows for the horizons 'next_1y' and 'next_2y': the representative Work row when the artist has a Work in the year, else the year-end row, else None (no history before the year, or a year with no row)."""
+    tl = artist_timeline(artist_id)  # timeline, representative Work per year
+    r = tl[tl["year"] == year]  # row of the year, empty outside the timeline
+    if len(r) and pd.notna(r.iloc[0]["work_id"]) and pd.notna(r.iloc[0]["next_1y"]):  # a Work row with a score
+        r = r.iloc[0]  # the row
+        return {"kind": "work", "row": r, "next_1y": horizon_of(r["next_1y"], r["label_next_1y"], r["is_projection_next_1y"], r["label_after_holdout_next_1y"]), "next_2y": horizon_of(r["next_2y"], r["label_next_2y"], r["is_projection_next_2y"], r["label_after_holdout_next_2y"])}  # both horizons of the Work
+    ye = load_tables()["when_year_end"]  # stored year-end scores
+    ye = ye[(ye["artist_id"] == artist_id) & (ye["snapshot_year"] == year)].set_index("target")  # the artist-year, one row per horizon
+    if ye.empty:  # no year-end row either
+        return None  # nothing to show
+    return {"kind": "year_end", "row": None, **{t: horizon_of(ye.loc[t, "score"], ye.loc[t, "label"], ye.loc[t, "is_projection"], ye.loc[t, "label_after_holdout"]) for t in ("next_1y", "next_2y")}}  # both horizons of the year-end row

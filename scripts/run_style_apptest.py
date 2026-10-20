@@ -19,6 +19,7 @@ from streamlit.testing.v1 import AppTest  # headless app runner
 
 from app_data import load_demo_config  # demo settings
 from app_live import style_live  # live scoring, only for the timing
+from style_tab import mean_in_range, stored_in_range, style_summary  # figures behind the validation text
 
 cfg = load_demo_config()  # settings
 st_cfg = cfg["style_tab"]  # tab 7 settings
@@ -92,19 +93,23 @@ def ref_rows(year: int) -> pd.DataFrame:  # stored top N of the year
 
 
 def check_default() -> None:  # test 1
-    """Every target year in the selector, the notice with its figures, the status line, no exception."""
+    """Every target year in the selector, the validation text with its figures, the status line, no exception."""
     at = new_app()  # app
     sel = at.selectbox(key=k["year"])  # year selector
     assert list(sel.options) == [str(y) for y in range(2018, 2027)], f"every year must be listed: {list(sel.options)}"  # nothing hidden
-    notice = st_cfg["notice"].format(**st_cfg["figures"])  # expected full text
-    assert not any(notice in w.value for w in at.warning), "the full text is no longer a permanent warning"  # no warning
+    text = st_cfg["validation_text"]  # expected full text
+    assert not any(text in w.value for w in at.warning), "the full text is no longer a permanent warning"  # no warning
     assert st_cfg["headline"] in [c.value for c in at.caption], "the neutral headline line is visible"  # headline
     ex = next(e for e in at.expander if e.label == tx["validation_label"])  # the validation expander, there before Predict
-    assert not ex.proto.expanded and notice in [c.value for c in ex.caption] and st_cfg["noise_note"] in [c.value for c in ex.caption], "closed expander with the full text and the noise note"  # contents
+    assert not ex.proto.expanded and [c.value for c in ex.caption] == [text], "closed expander with the validation text only"  # contents
     assert cfg["notices"]["style_notice"] in [w.value for w in at.warning], "the style notice is shown"  # replaced notice
-    for fig in st_cfg["figures"].values():  # every figure comes from the yaml
-        assert fig in notice  # figure present
-    print(f"1 default: years {list(sel.options)}, notice with figures {list(st_cfg['figures'].values())}, no exception")  # result
+    years = st_cfg["years"]["counted"]  # counted test years
+    mean_range = mean_in_range(cfg)  # mean in-range count from the stored actuals and predictions
+    assert [stored_in_range(y, st_cfg["top_n"]) for y in years] == [style_summary(y, st_cfg["top_n"], cfg)["in_range"] for y in years], "the stored counts must equal the live summary"  # cross-check
+    assert f"about {round(mean_range)} of the 10 top styles" in text, f"the in-range wording must follow the data: mean {mean_range}"  # in-range figure
+    mean_hits = sum(style_summary(y, st_cfg["top_n"], cfg)["hits"] for y in years) / len(years)  # mean top 10 hits
+    assert f"{round(mean_hits)} of the 10 styles" in text and "{:.1f}".format(mean_hits) in st_cfg["headline"], "the hits wording must follow the data"  # hits figure
+    print(f"1 default: years {list(sel.options)}, validation text in the closed expander, mean in range {mean_range} (about {round(mean_range)}), mean hits {mean_hits}, no exception")  # result
 
 
 def check_stages() -> None:  # test 2

@@ -14,7 +14,7 @@ from app_data import (  # noqa: E402  data access functions
 from app_live import artist_timeline, load_tables  # noqa: E402  live data layer
 from config import CONFIG  # noqa: E402  project settings
 from style_tab import forecast_table, mark_for, style_summary, style_years, with_reality, year_status  # noqa: E402  tab 7 logic
-from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, picker_options, reliability_lines, route_ids, row_marks  # noqa: E402  mode 2 logic
+from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, reliability_lines, route_ids, row_marks  # noqa: E402  mode 2 logic
 from poc_view import how_lines, multi_table_html, style_table_html  # noqa: E402  mode 2 table
 from demo_game import (  # noqa: E402  pure game functions
     card_status, hidden_counts, names, new_state, next_year, play, scored_years, scoreboard, session_total, verdict, year_cards, first_uncounted_year, flag, reliability, outside_text_key,  # imported names
@@ -46,10 +46,14 @@ def render_multi(cfg: dict) -> None:  # tab 6 mode 2: widgets only, the rows and
         st.session_state[k["stage"]] = advance_stage(state, multi_signature(year, ids), "reveal")  # show the realities
         st.rerun()  # redraw
     rows = multi_rows(cfg, ids, year, g["threshold"], top["score_cutoff"], rt["max_artists"], state["stage"])  # table rows, selection order until predict
-    if rows.empty:  # nothing selected
+    if rows.empty:  # nothing selected, or no selected artist has a row
+        for line in hidden_lines(cfg, ids, year):  # the hidden-artists lines
+            st.caption(line)  # one caption each
         return  # nothing to draw
-    st.html(multi_table_html(rows, multi_summary(rows), g, rt, cfg["poc"], row_marks, CONFIG["what"]["min_previous_works"], state["stage"]))  # the table for this stage
-    lines = how_lines(state["stage"], reliability_lines(top, load_tables()["what_below"], g), cfg["poc"]["texts"]["legend_reference"])  # reliability lines and legend, from Predict on
+    st.html(multi_table_html(rows, multi_summary(rows), g, rt, cfg["poc"], row_marks, CONFIG["what"]["min_previous_works"], year, state["stage"]))  # the table for this stage
+    for line in hidden_lines(cfg, ids, year):  # the hidden-artists lines under the table
+        st.caption(line)  # one caption each
+    lines = how_lines(state["stage"], reliability_lines(top, load_tables()["what_below"], g), cfg["poc"]["texts"]["legend_reference"], tx["legend_cascade"])  # reliability lines, legend and cascade sentence, from Predict on
     if lines:  # not in the placeholder stage
         with st.expander(tx["how_label"], expanded=False):  # collapsed by default
             for line in lines:  # one line each
@@ -203,8 +207,7 @@ with tabs[6]:  # Global style forecast
     st.warning(notes["style_notice"])  # forecast is global
     st.caption(stt["headline"])  # one neutral visible line
     with st.expander(sx["validation_label"], expanded=False):  # closed, on the page from the start
-        st.caption(stt["notice"].format(**stt["figures"]))  # comparison with repeat_last, recommendation, under-coverage, validation years
-        st.caption(stt["noise_note"])  # few years, hits are noisy
+        st.caption(stt["validation_text"])  # one text: tested years, hits, repeat_last, ranges, few years
     year7 = st.selectbox(sx["year_label"], style_years(cfg), key=sk["year"])  # every target year, none hidden
     status = year_status(year7, cfg)  # kind and status line
     (st.info if status["kind"] != "none" else st.warning)(status["text"])  # reason of a flagged year or the no-forecast text
