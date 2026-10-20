@@ -15,13 +15,21 @@ sys.path.append(str(ROOT / "src"))  # src/ importable
 import pandas as pd  # cleaned Works table
 
 from config import CONFIG  # project settings
-from static_assets import build_figures, build_h1, build_h6, build_source_counts, build_summary, build_works_per_year, check_controls, check_new_controls, output_paths, static_config, write_new  # asset logic
+from static_assets import build_figures, build_quality, check_quality_controls, build_h1, build_h6, build_source_counts, build_summary, build_works_per_year, check_controls, check_new_controls, output_paths, static_config, write_new  # asset logic
 
 sc = static_config()  # static_tabs settings
 paths = output_paths(sc)  # the five output files
 base_keys = ("h1_buckets", "h6_buckets", "data_figures", "hypotheses")  # files of the first build
-if paths["works_per_year"].exists():  # never overwrite
-    sys.exit(f"refusing to run, this file exists: {paths['works_per_year']}")  # stop with a message
+if paths["data_quality"].exists():  # never overwrite
+    sys.exit(f"refusing to run, this file exists: {paths['data_quality']}")  # stop with a message
+if paths["works_per_year"].exists():  # the first five files are built, only the quality file is new
+    quality = build_quality(pd.read_parquet(ROOT / CONFIG["paths"]["works"], columns=["year"]))  # undated Works
+    failed = check_quality_controls(sc, quality, pd.read_csv(paths["data_figures"]), pd.read_csv(paths["works_per_year"]))  # printed controls
+    if failed:  # a control does not hold: nothing is written
+        sys.exit(f"controls failed: {failed}; no file written")  # report instead of forcing
+    write_new(paths["data_quality"], quality)  # exclusive creation
+    print(f"written {paths['data_quality'].relative_to(ROOT)}")  # confirmation
+    sys.exit(0)  # done, nothing else to build
 present = [k for k in base_keys if paths[k].exists()]  # first-build files already there
 if present and len(present) != len(base_keys):  # a half-built state is not touched
     sys.exit(f"refusing to run, only some files exist: {present}")  # stop with a message

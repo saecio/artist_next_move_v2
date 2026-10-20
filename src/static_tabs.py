@@ -1,15 +1,16 @@
 """Static tabs 1 to 5 and 8: cached file loaders and the HTML of each tab. Texts and settings come from the static_tabs config."""
 
+import html  # escape of artist names
 import json  # result files of the Timing model
 
 import pandas as pd  # tables
 import streamlit as st  # cache decorator
 
 from ui_components import card, card_title, chip, headline, kpi_card  # design system helpers
-from static_diagrams import clean_svg, flow_svg  # schemas of tabs 1 and 2
+from static_diagrams import clean_flow  # HTML and CSS flow of tab 2
 
 from config import CONFIG, ROOT  # project settings and root
-from static_charts import steps_chart  # Altair chart of tab 3
+from static_charts import steps_chart, timeline_chart  # Altair charts of tabs 3 and 1
 from style_tab import validation_figures  # tab 7 test years, reused for tab 8 (read only)
 
 
@@ -57,21 +58,49 @@ def figure_values(cfg: dict) -> dict:  # data_figures.csv as a dict
     sc = cfg["static_tabs"]  # settings
     return load_csv(static_path(sc, "data_figures")).set_index("metric")["value"].to_dict()  # metric -> value
 
-def tab1_html(cfg: dict) -> str:  # problem and question
-    """Headline, use sentence, the flow schema and the strip of four numbers."""
+def tab1_head_html(cfg: dict) -> str:  # headline of tab 1
+    """Story headline with the cutoff year, and the use sentence."""
+    sc = cfg["static_tabs"]  # settings
+    return headline(sc["texts"]["t1_headline"].format(year=sc["story"]["cutoff_year"]), sc["texts"]["t1_use"])  # block
+
+
+def timeline_data(cfg: dict, artist: str) -> pd.DataFrame:  # one row per release year of one artist
+    """Dated Works up to the cutoff year without re-recordings: year, releases, title (picked title, else the representative Work)."""
+    sc = cfg["static_tabs"]  # settings
+    pa, cutoff = sc["paths"], sc["story"]["cutoff_year"]  # paths and cutoff year
+    rt = load_csv(pa["route_table"])  # artist names and ids
+    aid = int(rt.loc[rt["artist"] == artist, "artist_id"].iloc[0])  # Discogs id
+    works = pd.concat([load_csv(f) for f in pa["works"]])  # both pools
+    w = works[(works["artist_id"] == aid) & (works["year"] <= cutoff) & ~works["is_rerecording"]]  # this artist, dated up to the cutoff, no re-recordings
+    out = w.groupby("year").size().rename("releases").reset_index()  # releases per year
+    rep = w[w["is_representative"]].drop_duplicates("year").set_index("year")["title"]  # representative title per year
+    pick = load_csv(pa["release_pick"])  # picked titles
+    pick = pick[pick["artist_id"] == aid].set_index("year")["title"]  # this artist's picks
+    out["title"] = out["year"].map(pick).fillna(out["year"].map(rep)).fillna("")  # picked title when available
+    return out  # year, releases, title
+
+
+def tab1_panels(cfg: dict) -> list:  # the two story cards
+    """Per card: title html (artist name in the question color), timeline chart and question html."""
+    sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
+    t, st_ = sc["texts"], sc["story"]  # texts and story settings
+    cards = ((st_["timing_artist"], pal["timing"], t["t1_q_timing"]), (st_["style_artist"], pal["style"], t["t1_q_style"]))  # artist, color, question
+    return [{"title": f"<div class='ui-card-title' style='color:{color}'>{html.escape(name)}</div>", "chart": timeline_chart(timeline_data(cfg, name), st_["cutoff_year"], st_["future_years"], color, t, cfg), "question": f"<div class='ui-label'>{html.escape(q.format(artist=name))}</div>"} for name, color, q in cards]  # two cards
+
+
+def tab1_kpis_html(cfg: dict) -> str:  # strip of four numbers
+    """Hypotheses tested, models compared, predictions tested on unseen years, test years untouched."""
     sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
     t, y = sc["texts"], CONFIG["years"]  # texts and split years
-    fig = figure_values(cfg)  # artists and works
-    tests = load_json(sc["paths"]["when_tests"])["test_rows"]  # test snapshots
     names = sc["models_compared"]  # compared models
+    tests = load_json(sc["paths"]["when_tests"])["test_rows"]  # test snapshots
     cards = [  # label, value, tooltip
-        (t["t1_kpi_artists"], f"{int(fig['artists']):,}", t["t1_tip_artists"]),  # artists
-        (t["t1_kpi_works"], f"{int(fig['works']):,}", t["t1_tip_works"]),  # works
-        (t["t1_kpi_models"], str(len(names)), t["t1_tip_models"].format(names=", ".join(names))),  # models compared
-        (t["t1_kpi_tests"], f"{int(tests):,}", t["t1_tip_tests"].format(first=y["holdout_start"], last=y["holdout_end"])),  # predictions tested
+        (t["t1_kpi_hyp"], str(len(load_csv(static_path(sc, "hypotheses")))), t["t1_tip_hyp"]),  # hypotheses
+        (t["t1_kpi_models"], str(len(names)), t["t1_tip_models"].format(names=", ".join(names))),  # models
+        (t["t1_kpi_tests"], f"{int(tests):,}", t["t1_tip_tests"]),  # predictions
+        (t["t1_kpi_years"], t["t1_years_value"].format(first=y["holdout_start"], last=y["holdout_end"]), t["t1_tip_years"]),  # test years
     ]
-    strip = "<div class='ui-row'>" + "".join(card(kpi_card(lab, val, "", pal["highlight"], tip)) for lab, val, tip in cards) + "</div>"  # four cards
-    return "<div class='ui-stack'>" + headline(t["t1_headline"], t["t1_use"]) + card(flow_svg(cfg, t, cfg["poc"]["texts"])) + strip + "</div>"  # page
+    return "<div class='ui-row'>" + "".join(card(kpi_card(lab, val, "", pal["highlight"], tip)) for lab, val, tip in cards) + "</div>"  # four cards
 
 def tab2_head_html(cfg: dict) -> str:  # headline of tab 2
     """Headline and the dump date subtitle with its tooltip."""
@@ -89,17 +118,18 @@ def tab2_chart_title_html(cfg: dict) -> str:  # title line of the chart card
     return card_title(t["t2_chart_title"], t["t2_tip_chart"])  # title
 
 def tab2_right_html(cfg: dict) -> str:  # right blocks of tab 2
-    """Two number cards, then the cleaning schema with the counts of both sources."""
+    """The cleaning flow card, then the chip with the share of Works without a year."""
     sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
     t, rw = sc["texts"], sc["rows"]  # texts and row names
     fig = figure_values(cfg)  # counts
     n = CONFIG["works"]["min_standalone_releases"]  # threshold of standalone releases
-    kpis = "<div class='ui-row'>" + card(kpi_card(t["t2_works"], f"{int(fig['works']):,}", "", pal["highlight"], t["t2_tip_works"].format(n=n))) + card(kpi_card(t["t2_artists"], f"{int(fig['artists']):,}", "", pal["highlight"], t["t2_tip_artists"])) + "</div>"  # two cards
-    counts = {"master": f"{int(fig[rw['metric_master']]):,}", "standalone": f"{int(fig[rw['metric_standalone']]):,}", "works": f"{int(fig['works']):,}"}  # schema numbers
-    return "<div class='ui-stack'>" + kpis + card(clean_svg(cfg, t, n, counts)) + "</div>"  # blocks
+    counts = {"master": f"{int(fig[rw['metric_master']]):,}", "standalone": f"{int(fig[rw['metric_standalone']]):,}", "works": f"{int(fig['works']):,}", "artists": f"{int(fig['artists']):,}"}  # flow numbers
+    undated = int(load_csv(static_path(sc, "data_quality")).set_index("metric").loc["works_undated", "value"])  # Works without a year
+    pct = f"{undated / int(fig['works']) * 100:.1f}"  # share in percent
+    return "<div class='ui-stack'>" + card(clean_flow(cfg, t, n, counts)) + "<div class='ui-chips' style='margin:0'>" + chip(t["t2_undated"].format(pct=pct), pal["muted"], t["t2_tip_undated"]) + "</div></div>"  # flow and chip
 
 def tab4_html(cfg: dict) -> str:  # method
-    """Timeline of the split, the two question lines and the simple rule line."""
+    """Timeline of the split, the two question lines and the rule of thumb line."""
     sc = cfg["static_tabs"]  # settings
     t, p, y = sc["texts"], cfg["poc"]["texts"], CONFIG["years"]  # texts and years
     gap, first, last = y["label_gap"], y["holdout_start"], y["holdout_end"]  # split years
@@ -121,7 +151,7 @@ def tab8_html(cfg: dict) -> str:  # limits and next steps
 
 
 def results_data(cfg: dict) -> pd.DataFrame:  # chart table of tab 5
-    """One row per bar: panel, label, value, lo, hi, color, title_color. Chance has no interval."""
+    """One row per bar: panel, label, value, lo, hi, color, title_color, subtitle, tag. Chance has no interval, only the model bar has a tag."""
     sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
     t, p = sc["texts"], cfg["poc"]["texts"]  # texts
     pa, rw = sc["paths"], sc["rows"]  # paths and row names
@@ -132,11 +162,13 @@ def results_data(cfg: dict) -> pd.DataFrame:  # chart table of tab 5
         p["label_timing"]: (pal["timing"], wm["positive_rate"], (wb["pr_auc"], wb["pr_auc_lo"], wb["pr_auc_hi"]), (wm["pr_auc"], wm["pr_auc_lo"], wm["pr_auc_hi"])),  # Timing
         p["label_style"]: (pal["style"], m["positive_rate"], (b["pr_auc"], b["pr_auc_lo"], b["pr_auc_hi"]), (m["pr_auc"], m["pr_auc_lo"], m["pr_auc_hi"])),  # Style
     }
+    lines = {p["label_timing"]: t["t5_line_timing"], p["label_style"]: t["t5_line_style"]}  # visible line under each panel title
     rows = []  # one dict per bar
     for panel, (color, chance, rule, model) in cols.items():  # in panel order
-        rows.append({"panel": panel, "label": t["t5_col_chance"], "value": chance, "lo": None, "hi": None, "color": pal["chance"], "title_color": color})  # By chance
-        rows.append({"panel": panel, "label": t["t5_col_rule"], "value": rule[0], "lo": rule[1], "hi": rule[2], "color": pal["rule"], "title_color": color})  # History only
-        rows.append({"panel": panel, "label": t["t5_col_model"], "value": model[0], "lo": model[1], "hi": model[2], "color": color, "title_color": color})  # Our model
+        base = {"panel": panel, "title_color": color, "subtitle": lines[panel], "tag": None}  # shared fields
+        rows.append({**base, "label": t["t5_col_chance"], "value": chance, "lo": None, "hi": None, "color": pal["chance"]})  # By chance
+        rows.append({**base, "label": t["t5_col_rule"], "value": rule[0], "lo": rule[1], "hi": rule[2], "color": pal["rule"]})  # Rule of thumb
+        rows.append({**base, "label": t["t5_col_model"], "value": model[0], "lo": model[1], "hi": model[2], "color": color, "tag": t["t5_advantage"].format(d=f"{model[0] - rule[0]:.3f}")})  # Our model with its advantage tag
     return pd.DataFrame(rows)  # six rows
 
 
@@ -156,22 +188,41 @@ def tab5_head_html(cfg: dict, data: pd.DataFrame) -> str:  # headline and subtit
 
 
 def tab5_chips_html(cfg: dict) -> str:  # the three column labels with tooltips
-    """By chance, History only, Our model: one chip each, the tooltip explains the bar."""
+    """By chance, Rule of thumb, Our model: one chip each, the tooltip explains the bar."""
     t, pal, p = cfg["static_tabs"]["texts"], cfg["design"]["palette"], cfg["poc"]["texts"]  # texts, palette, labels
     rule = f"{p['label_timing']}: {t['t5_tip_rule_timing']} {p['label_style']}: {t['t5_tip_rule_style']}"  # both baseline definitions
     chips = chip(t["t5_col_chance"], pal["chance"], t["t5_tip_chance"]) + chip(t["t5_col_rule"], pal["rule"], rule) + chip(t["t5_col_model"], pal["text"], t["t5_tip_model"])  # three chips
     return f"<div class='ui-chips' style='margin:0 0 {cfg['design']['box']['gap']}px 0'>{chips}</div>"  # row
 
+def top_share(cfg: dict) -> tuple:  # share of the top group
+    """Share of artists in the top group (selected_share of the stage 0 row) and s = round(100 x share)."""
+    sc = cfg["static_tabs"]  # settings
+    share = float(load_csv(sc["paths"]["what_top10"]).set_index("model").loc[sc["rows"]["what_model"], "selected_share"])  # fraction of rows selected
+    return share, round(100 * share)  # fraction and whole percent
+
+
+def strip_html(cfg: dict) -> str:  # sorted-artists strip of the dot card
+    """Muted line, a strip whose first segment (selected_share wide) is in the Style color, end labels and the segment label."""
+    t, pal = cfg["static_tabs"]["texts"], cfg["design"]["palette"]  # texts and palette
+    share, s = top_share(cfg)  # width and label number
+    seg = f"<div class='ui-strip-top' style='width:{share * 100:.2f}%;background:{pal['style']}'></div>"  # highlighted segment
+    ends = f"<div class='ui-strip-labels'><span>{html.escape(t['t5_strip_most'])}</span><span>{html.escape(t['t5_strip_least'])}</span></div>"  # end labels
+    top = f"<div class='ui-strip-top-label' style='color:{pal['style']}'>{html.escape(t['t5_strip_top'].format(s=s))}</div>"  # segment label
+    return f"<div class='ui-caption'>{html.escape(t['t5_dot_sort'])}</div><div class='ui-strip' style='margin-top:{cfg['design']['box']['gap']}px'>{seg}</div>{ends}{top}"  # whole block
+
+
 def dots_panels(cfg: dict) -> tuple:  # data of the 100-dot card
-    """Headline line and the two panels (title, k, exact rate, big number) from top10_lift.csv; k = round(n x rate)."""
+    """Headline line and the two panels (title, k, exact rate, big number, caption) from top10_lift.csv; k = round(n x rate)."""
     sc = cfg["static_tabs"]  # settings
     t, n = sc["texts"], sc["sizes"]["dots_side"] ** 2  # texts and circles per grid
     top = load_csv(sc["paths"]["what_top10"]).set_index("model").loc[sc["rows"]["what_model"]]  # Style top group row
     rates = [top["holdout_positive_rate"], top["precision_top"]]  # overall rate, top group rate
     ks = [round(n * r) for r in rates]  # circles filled per grid
-    titles = [t["t5_dot_left"].format(n=n), t["t5_dot_right"].format(n=n)]  # grid titles
-    panels = [{"title": ti, "k": k, "rate_text": f"{r * 100:.1f}%", "big": t["t5_dot_big"].format(k=k, n=n)} for ti, k, r in zip(titles, ks, rates)]  # two panels
-    return t["t5_dot_head"].format(n=n, b=ks[0], k=ks[1]), panels  # line and panels
+    s = top_share(cfg)[1]  # whole percent of the top group
+    titles = [t["t5_dot_left"], t["t5_dot_right"].format(s=s)]  # grid titles
+    panels = [{"title": ti, "k": k, "rate_text": f"{r * 100:.1f}%", "big": t["t5_dot_big"].format(k=k), "caption": t["t5_dot_caption"].format(n=n)} for ti, k, r in zip(titles, ks, rates)]  # two panels
+    return t["t5_dot_head"].format(s=s, n=n, b=ks[0], k=ks[1]), panels  # line and panels
+
 
 def series_data(cfg: dict) -> list:  # the two series of tab 3
     """For each configured series: its config entry, its table and its color."""

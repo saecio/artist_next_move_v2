@@ -21,7 +21,7 @@ def static_config() -> dict:  # static_tabs section of the demo config
 def output_paths(sc: dict) -> dict:  # absolute path of each new file
     """Map each output key to its path under the static folder."""
     folder = ROOT / sc["paths"]["dir"]  # output folder
-    return {k: folder / sc["paths"][k] for k in ("h1_buckets", "h6_buckets", "data_figures", "hypotheses", "works_per_year")}  # five files
+    return {k: folder / sc["paths"][k] for k in ("h1_buckets", "h6_buckets", "data_figures", "hypotheses", "works_per_year", "data_quality")}  # six files
 
 
 def build_h1(works: pd.DataFrame) -> pd.DataFrame:  # Hypothesis 1 buckets
@@ -112,3 +112,21 @@ def write_new(path: Path, table: pd.DataFrame) -> None:  # exclusive creation
     """Write a CSV that must not exist yet (mode x raises if it does)."""
     with open(path, "x", encoding="utf-8", newline="") as f:  # exclusive creation
         table.to_csv(f, index=False)  # no index column
+
+
+def build_quality(works: pd.DataFrame) -> pd.DataFrame:  # data quality figures
+    """One row: the number of Works without a year."""
+    return pd.DataFrame({"metric": ["works_undated"], "value": [int(works["year"].isna().sum())]})  # metric, value
+
+
+def check_quality_controls(sc: dict, quality: pd.DataFrame, figures: pd.DataFrame, per_year: pd.DataFrame) -> list:  # failed controls
+    """Undated count must equal the configured value and Works minus the dated yearly counts."""
+    fig = dict(zip(figures["metric"], figures["value"]))  # metric -> value
+    found = int(quality["value"].iloc[0])  # undated count from the Works table
+    checks = {"undated": (found, sc["controls"]["undated"]), "undated_vs_yearly": (found, int(fig["works"]) - int(per_year["works"].sum()))}  # name -> (found, expected)
+    failed = []  # failures
+    for name, (f, e) in checks.items():  # compare each control
+        print(f"control {name}: found {f}, expected {e}, {'OK' if f == e else 'FAIL'}")  # printed result
+        if f != e:  # control does not hold
+            failed.append(name)  # remember it
+    return failed  # empty when all hold

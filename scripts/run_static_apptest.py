@@ -58,34 +58,60 @@ for i, txt in texts.items():  # all six tabs
 assert not any("Pending." in x.value for x in at.info), "no info box says Pending."  # no notice left
 print("all six tabs: not empty, no Pending., no WHEN or WHAT")  # result
 
+def spec_rows(i: int) -> list:  # data rows of every Altair chart of one tab
+    """One list of rows per vega chart of tab i, read from the spec the app sent."""
+    return [[r for d in e.proto.datasets for r in arrow.ipc.open_stream(d.data.data).read_all().to_pylist()] for e in at.tabs[i].get("vega_lite_chart")]  # all datasets of each chart (one per panel), Arrow bytes to rows
+
+
 norm = lambda x: re.sub(r"\s+", " ", x)  # whitespace collapsed, wrapped SVG labels read as one line
 n1, n2 = norm(texts[0]), norm(texts[1])  # visible text of tabs 1 and 2
 works_file = pd.read_parquet(ROOT / CONFIG["paths"]["works"], columns=["year"])  # year column of the cleaned Works
 undated = int(works_file["year"].isna().sum())  # Works without a year
 tests_rows = json.load(open(ROOT / pa["when_tests"]))["test_rows"]  # test snapshots from the Timing result file
-assert t["t1_headline"] in n1 and t["t1_use"] in n1, "tab 1 headline and use sentence"  # tab 1 sentences
-assert "Timing and Style" not in n1 and len(raws[0]) > 0, "tab 1 old long sentence gone"  # old text removed
-for number, label in ((f"{int(fig['artists']):,}", t["t1_kpi_artists"]), (f"{int(fig['works']):,}", t["t1_kpi_works"]), (str(len(sc["models_compared"])), t["t1_kpi_models"]), (f"{int(tests_rows):,}", t["t1_kpi_tests"])):  # four numbers
+st_ = sc["story"]  # story settings
+cutoff = st_["cutoff_year"]  # year the reader is in
+assert t["t1_headline"].format(year=cutoff) in n1 and t["t1_use"] in n1, "tab 1 headline with the configured year and the use sentence"  # tab 1 sentences
+for name, qkey in ((st_["timing_artist"], "t1_q_timing"), (st_["style_artist"], "t1_q_style")):  # both story artists
+    assert name in n1 and t[qkey].format(artist=name) in n1, f"tab 1 artist and question {name}"  # name and question on screen
+route = pd.read_csv(ROOT / pa["route_table"])  # artist names and ids
+works_all = pd.concat([pd.read_csv(ROOT / f) for f in pa["works"]])  # Works of both pools
+picks = pd.read_csv(ROOT / pa["release_pick"])  # picked titles
+(chart_a, chart_b) = spec_rows(0)  # the two timelines
+for chart, name in ((chart_a, st_["timing_artist"]), (chart_b, st_["style_artist"])):  # Timing then Style card
+    aid = int(route.loc[route["artist"] == name, "artist_id"].iloc[0])  # Discogs id from the route table
+    w = works_all[(works_all["artist_id"] == aid) & (works_all["year"] <= cutoff) & ~works_all["is_rerecording"]]  # dated up to the cutoff, no re-recordings
+    expected_counts = w.groupby("year").size().to_dict()  # releases per year from the files
+    dots = [r for r in chart if "releases" in r]  # timeline dots
+    assert {int(r["year"]): int(r["releases"]) for r in dots} == expected_counts and len(dots) == len(expected_counts), f"timeline of {name} equals the demo files"  # same years and counts
+    assert all(int(r["year"]) <= cutoff for r in dots) and max(int(r["year"]) for r in dots) <= cutoff, "no point after the cutoff year"  # no reveal
+    pk = picks[picks["artist_id"] == aid].set_index("year")["title"]  # picked titles of this artist
+    assert all(r["title"] == pk[int(r["year"])] for r in dots if int(r["year"]) in pk.index), "picked titles from release_pick.csv"  # tooltip titles
+    assert any(r.get("text") == t["t1_here"] for r in chart) and any(r.get("text") == "?" for r in chart), "cutoff label and question mark"  # annotations
+kpi_values = [str(len(hyp)), str(len(sc["models_compared"])), f"{int(tests_rows):,}", t["t1_years_value"].format(first=y["holdout_start"], last=y["holdout_end"])]  # four numbers from the files and config
+for number, label in zip(kpi_values, (t["t1_kpi_hyp"], t["t1_kpi_models"], t["t1_kpi_tests"], t["t1_kpi_years"])):  # four numbers
     assert number in n1 and label in n1, f"tab 1 KPI {label}"  # equal to the files and the config list
-assert len(sc["models_compared"]) == 5 and raws[0].count("class='ui-card'") == 5, "five models, one schema card and four KPI cards"  # card count
-for lab in (t["t1_node_source"], t["t1_node_clean"], t["t1_node_past"], t["t1_node_check"], f"{poc['label_timing']} {poc['q_timing']}", f"{poc['label_style']} {poc['q_style']}"):  # schema labels
-    assert lab in n1, f"tab 1 schema label {lab}"  # labels from the config
-assert "<svg viewBox=" in raws[0] and "px'" not in re.search(r"<svg[^>]*>", raws[0]).group(0), "schema scales through the view box"  # no fixed pixel width
+assert not {f"{int(fig['works']):,}", f"{int(fig['artists']):,}"} & set(kpi_values) and f"{int(fig['works']):,}" not in n1 and f"{int(fig['artists']):,}" not in n1, "tab 1 repeats no Works or artist count"  # no figure shared with tab 2
+assert raws[0].count("class='ui-card'") == 4, "four KPI cards, no schema card"  # card count
+assert "<svg" not in raws[0] and len(at.tabs[0].get("vega_lite_chart")) == 2, "tab 1 has no inline svg and two timelines"  # no svg
 print("tab 1 ok")  # result
 
+undated_file = int(pd.read_csv(folder / pa["data_quality"]).set_index("metric").loc["works_undated", "value"])  # undated Works from the new file
+pct = f"{undated_file / int(fig['works']) * 100:.1f}"  # share in percent
 assert t["t2_headline"] in n2 and t["t2_source"].format(date=sc["dump_date"]) in n2, "tab 2 headline and dump date"  # headline and date from the config
-assert f"{int(fig['works']):,}" in n2 and f"{int(fig['artists']):,}" in n2, "tab 2 numbers equal data_figures.csv"  # file values
+for key in ("works", "artists"):  # flow numbers
+    assert f"{int(fig[key]):,}" in n2, f"tab 2 flow {key} equals data_figures.csv"  # file values
 assert fig[sc["rows"]["metric_master"]] + fig[sc["rows"]["metric_standalone"]] == fig["works"], "source counts sum to the total"  # control
 for number in (fig[sc["rows"]["metric_master"]], fig[sc["rows"]["metric_standalone"]]):  # both counts on screen
-    assert f"{int(number):,}" in n2, "tab 2 schema count"  # from the file
-for lab in (t["t2_in_master"], t["t2_in_standalone"].format(n=CONFIG["works"]["min_standalone_releases"]), t["t2_out"], t["t2_chart_title"]):  # labels
+    assert f"{int(number):,}" in n2, "tab 2 flow count"  # from the file
+for lab in (t["t2_in_master"], t["t2_in_standalone"].format(n=CONFIG["works"]["min_standalone_releases"]), t["t2_out"], t["t2_artists"], t["t2_chart_title"]):  # labels
     assert lab in n2, f"tab 2 label {lab}"  # threshold from config.yaml
+assert "<svg" not in raws[1] and "ui-flow-box" in raws[1] and raws[1].count("ui-flow-box") == 4, "tab 2 flow is HTML and CSS with four boxes"  # no svg
+boxes = re.findall(r"<div class='ui-flow-box'.*?</div></div>", raws[1])  # flow boxes
+assert len(boxes) == 4 and all(plain(b_).strip() for b_ in boxes), "every flow box has text"  # non-empty cards
+assert t["t2_undated"].format(pct=pct) in n2 and html.escape(t["t2_tip_undated"], quote=True) in raws[1], "undated chip equals the file value, with its tooltip"  # chip
+assert undated_file == undated, "undated count equals the Works table"  # control
+assert not any("<svg" in r for r in raws.values()), "no inline svg in any static tab"  # all tabs
 print("tab 2 ok")  # result
-
-def spec_rows(i: int) -> list:  # data rows of every Altair chart of one tab
-    """One list of rows per vega chart of tab i, read from the spec the app sent."""
-    return [[r for d in e.proto.datasets for r in arrow.ipc.open_stream(d.data.data).read_all().to_pylist()] for e in at.tabs[i].get("vega_lite_chart")]  # all datasets of each chart (one per panel), Arrow bytes to rows
-
 
 charts3 = spec_rows(2)  # the two tab 3 charts
 assert len(charts3) == 2, "tab 3 has two charts"  # Style and Timing
@@ -123,11 +149,27 @@ assert len(grids) == 2 * n_dots, "two grids of circles"  # 2 x n
 for g, k, rate in zip((grids[:n_dots], grids[n_dots:]), ks, (top["holdout_positive_rate"], top["precision_top"])):  # left then right
     assert sum(r["state"] == t["t5_dot_yes"] for r in g) == k, "filled circles equal round(n x rate)"  # from the files
     assert {r["rate"] for r in g} == {f"{rate * 100:.1f}%"}, "exact rate in the tooltip"  # from the files
-assert t["t5_dot_head"].format(n=n_dots, b=ks[0], k=ks[1]) in norm(texts[4]), "line above the dot card"  # computed line
-assert t["t5_col_rule"] == "History only" and t["t5_col_rule"] in texts[4], "History only label on screen"  # renamed
-assert "Simple rule" not in texts[4] and all(r["label"] != "Simple rule" for r in rows5) and "Simple rule" not in open(ROOT / "app/demo_config.yaml").read(), "Simple rule is gone"  # no trace
+assert t["t5_col_rule"] == "Rule of thumb" and t["t5_col_rule"] in texts[4], "Rule of thumb label on screen"  # renamed
+cfg_text = open(ROOT / "app/demo_config.yaml").read()  # config file text
+assert "History only" not in texts[4] and "Simple rule" not in texts[4] and all(r["label"] not in ("History only", "Simple rule") for r in rows5) and "Simple rule" not in cfg_text and "History only" not in cfg_text, "old names are gone"  # no trace
 for key in ("t5_tip_chance", "t5_tip_rule_timing", "t5_tip_rule_style", "t5_tip_model"):  # the three column tooltips
     assert html.escape(t[key], quote=True) in raws[4], f"tooltip {key}"  # on screen
+tags = {r["panel"]: r["tag"] for r in rows5 if r.get("tag")}  # advantage tags by panel
+assert tags == {poc["label_timing"]: t["t5_advantage"].format(d=f"{wm['pr_auc'] - wb['pr_auc']:.3f}"), poc["label_style"]: t["t5_advantage"].format(d=f"{m['pr_auc'] - b['pr_auc']:.3f}")}, "advantage tags equal model minus rule from the files"  # computed
+chart5 = json.dumps([e.proto.spec for e in at.tabs[4].get("vega_lite_chart")])  # specs sent to the browser
+assert t["t5_line_timing"] in chart5 and t["t5_line_style"] in chart5, "visible rule of thumb line under each panel title"  # chart subtitles
+assert t["t5_caption"] in raws[4] and t["t5_headline"] in raws[4], "caption and headline"  # on screen
+old_dot = ("the 100 the model ranks highest", "ranks highest", "artists picked at random", "Picking at random", "Picking with our model")  # removed wording
+assert not any(w_ in texts[4] or w_ in cfg_text for w_ in old_dot), "old dot chart wording is gone"  # no trace
+share = float(top["selected_share"])  # share of the top group from the file
+s_ = round(100 * share)  # whole percent
+assert s_ == round(100 * share) and t["t5_dot_head"].format(s=s_, n=n_dots, b=ks[0], k=ks[1]) in norm(texts[4]), "headline with s, k and b from the files"  # computed line
+assert t["t5_dot_left"] in chart5 and t["t5_dot_right"].format(s=s_) in chart5, "grid titles"  # titles in the specs
+assert t["t5_strip_top"].format(s=s_) in texts[4] and t["t5_strip_most"] in texts[4] and t["t5_strip_least"] in texts[4] and t["t5_dot_sort"] in texts[4], "strip labels and sort line"  # strip texts
+wd = re.search(r"class='ui-strip-top' style='width:([\d.]+)%", raws[4])  # width of the highlighted segment
+assert wd and abs(float(wd.group(1)) - share * 100) < 0.01 and "<svg" not in raws[4], "strip segment width equals selected_share, no svg"  # width from the file
+assert ks[1] > ks[0], "right grid is the top segment, better than blind"  # statement stays true
+assert sum(r.get("text") == t["t5_dot_caption"].format(n=n_dots) for r in rows_dots) >= 1, "caption under each big number"  # captions
 import static_tabs  # the module the app uses
 data5 = static_tabs.results_data(cfg)  # chart table
 assert static_tabs.models_beat_rule(data5, cfg), "true case"  # data supports it
@@ -159,6 +201,7 @@ assert len(peak_rows) == 1 and int(peak_rows[0]["year"]) == int(top_row["year"])
 assert peak_rows[0]["label"] == t["t2_peak"].format(year=int(top_row["year"]), works=f"{int(top_row['works']):,}"), "peak label"  # text from the config
 assert len(band_rows) == 1 and int(band_rows[0]["x0"]) == cfg["design"]["incomplete_from_year"] and int(band_rows[0]["x1"]) == int(wpy["year"].max()), "band starts at design.incomplete_from_year"  # band
 assert band_rows[0]["label"] == t["t2_incomplete"], "band label"  # text from the config
+assert band_rows[0]["tip"] == t["t2_band_tip"].format(year=int(top_row["year"])), "band tooltip names the data peak year"  # sentence from the config
 print("tab 2 chart ok")  # result
 
 tag = cfg["header"]["tagline"]  # header tagline

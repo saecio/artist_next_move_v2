@@ -25,6 +25,17 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f".ui-stack{{display:flex;flex-direction:column;gap:{b['gap']}px}}",  # blocks one under the other
         f".ui-row{{display:flex;gap:{b['gap']}px;align-items:stretch}}",  # cards side by side
         f".ui-row>.ui-card{{flex:1}}",  # equal cards in a row
+        f".ui-strip{{display:flex;height:{d['strip']['height']}px;border-radius:{d['strip']['height']}px;overflow:hidden;background:{c['chance']}}}",  # sorted artists strip, muted rest
+        f".ui-strip-top{{height:100%}}",  # highlighted first segment, width and color inline
+        f".ui-strip-labels{{display:flex;justify-content:space-between;font-size:{ty['caption']}px;color:{c['muted']};margin-top:{d['strip']['gap']}px}}",  # end labels
+        f".ui-strip-top-label{{font-size:{ty['caption']}px;margin-top:{d['strip']['gap']}px}}",  # label of the highlighted segment, color inline
+        f".ui-flow{{display:flex;flex-direction:column;align-items:center}}",  # flow card, boxes and arrows in a column
+        f".ui-flow-row{{display:flex;gap:{b['gap']}px;width:100%}}",  # the two inputs side by side
+        f".ui-flow-box{{flex:1;box-sizing:border-box;border:{b['border']}px solid;border-radius:{b['radius'] // 2}px;padding:{d['flow']['box_pad']}px;text-align:center;background:{c['background']}}}",  # one box, border color inline
+        f".ui-flow>.ui-flow-box{{width:60%;flex:none}}",  # single boxes narrower than the input row
+        f".ui-flow-count{{font-size:{d['flow']['count_font']}px;font-weight:700;line-height:1.2}}",  # count in a box
+        f".ui-flow-arrow{{position:relative;width:{d['flow']['arrow_width']}px;height:{d['flow']['arrow_len']}px;background:{c['muted']};margin-bottom:{d['flow']['arrow_head']}px}}",  # arrow shaft
+        f".ui-flow-arrow::after{{content:'';position:absolute;left:50%;bottom:-{d['flow']['arrow_head']}px;transform:translateX(-50%);border-left:{d['flow']['arrow_head']}px solid transparent;border-right:{d['flow']['arrow_head']}px solid transparent;border-top:{d['flow']['arrow_head']}px solid {c['muted']}}}",  # arrow head made with borders
         f".ui-app-head{{display:flex;align-items:baseline;gap:{hd['gap']}px;white-space:nowrap;overflow:hidden}}",  # header, one line
         f".ui-app-title{{font-size:{hd['title_font']}px;font-weight:700;color:{c['text']}}}",  # project name
         f".ui-app-tag{{font-size:{hd['tagline_font']}px;color:{c['muted']};overflow:hidden;text-overflow:ellipsis}}",  # tagline

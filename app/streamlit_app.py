@@ -17,7 +17,7 @@ from style_tab import forecast_table, mark_for, style_summary, style_years, vali
 from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reliability_lines, route_for_year, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
 from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, open_year_text, star_in_row, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
 from static_charts import dots_chart, results_chart, works_chart  # noqa: E402  Altair charts of tabs 2 and 5
-from static_tabs import dots_panels, results_data, tab1_html, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab3_chips_html, tab3_head_html, tab3_panels, tab4_html, tab5_chips_html, tab5_head_html, tab8_html, works_per_year  # noqa: E402  static tabs
+from static_tabs import dots_panels, strip_html, results_data, tab1_head_html, tab1_kpis_html, tab1_panels, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab3_chips_html, tab3_head_html, tab3_panels, tab4_html, tab5_chips_html, tab5_head_html, tab8_html, works_per_year  # noqa: E402  static tabs
 from ui_components import base_css, header_html  # noqa: E402  design system
 from demo_game import (  # noqa: E402  pure game functions
     hidden_counts, new_state, next_year, scored_years, scoreboard, session_total,  # imported names
@@ -78,7 +78,13 @@ st.html(header_html(cfg))  # project name and tagline above the tabs
 tabs = st.tabs(cfg["tabs"])  # one tab per title, in config order
 
 with tabs[0]:  # Problem and question
-    st.html(tab1_html(cfg))  # headline, schema and numbers
+    st.html(tab1_head_html(cfg))  # story headline and use sentence
+    for col, panel in zip(st.columns(2), tab1_panels(cfg)):  # Timing card and Style card
+        with col, st.container(border=True):  # card
+            st.html(panel["title"])  # artist name in the question color
+            st.altair_chart(panel["chart"], theme=None, width="stretch")  # releases up to the cutoff
+            st.html(panel["question"])  # the question of this artist
+    st.html(tab1_kpis_html(cfg))  # four numbers
 
 with tabs[1]:  # Data and cleaning
     st.html(tab2_head_html(cfg))  # headline and dump date
@@ -86,7 +92,7 @@ with tabs[1]:  # Data and cleaning
     left, right = st.columns(sct["sizes"]["tab2_columns"])  # chart card and right blocks
     with left, st.container(border=True):  # chart card
         st.html(tab2_chart_title_html(cfg))  # title with tooltip
-        st.altair_chart(works_chart(works_per_year(cfg), cfg["design"]["incomplete_from_year"], {"incomplete": sct["texts"]["t2_incomplete"], "peak": sct["texts"]["t2_peak"]}, cfg), theme=None, width="stretch")  # Works per year
+        st.altair_chart(works_chart(works_per_year(cfg), cfg["design"]["incomplete_from_year"], {"incomplete": sct["texts"]["t2_incomplete"], "peak": sct["texts"]["t2_peak"], "band_tip": sct["texts"]["t2_band_tip"]}, cfg), theme=None, width="stretch")  # Works per year
     right.html(tab2_right_html(cfg))  # numbers and cleaning schema
 
 for i, build in ((3, tab4_html), (7, tab8_html)):  # static tabs with one HTML block
@@ -110,11 +116,13 @@ with tabs[4]:  # Results
     with left, st.container(border=True):  # chart card
         st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
         st.altair_chart(results_chart(results, cfg), theme=None, width="stretch")  # Timing and Style panels
+        st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}</div>")  # what the score is
     dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
     dtx = cfg["static_tabs"]["texts"]  # texts of the dot card
     right.html(f"<div class='ui-card-title'>{dot_line}</div>")  # one headline line
     with right, st.container(border=True):  # dot card
-        st.altair_chart(dots_chart(dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"yes": dtx["t5_dot_yes"], "no": dtx["t5_dot_no"], "tip": dtx["t5_dot_tip"], "caption": dtx["t5_dot_caption"]}, cfg), theme=None, width="stretch")  # two grids
+        st.html(strip_html(cfg))  # sorted-artists strip
+        st.altair_chart(dots_chart(dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"yes": dtx["t5_dot_yes"], "no": dtx["t5_dot_no"], "tip": dtx["t5_dot_tip"]}, cfg), theme=None, width="stretch")  # two grids
 
 with tabs[5]:  # Time Machine demo
     st.header(cfg["tabs"][5])  # tab title
