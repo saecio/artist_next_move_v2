@@ -1,0 +1,12 @@
+control,passed,detail
+"(a) point in time, cut 2022",True,"41 rows, 0 unmatched, max diff 0"
+"(a) point in time, cut 2024",True,"70 rows, 0 unmatched, max diff 0"
+(b) gap-row label equals the label of its L row,True,"87 rows, 0 differ"
+(b) new_styles file agrees with the label (label == new styles not empty),True,"58 labelled L rows compared, 0 differ"
+(c) model columns equal columns.json,True,25 columns
+(c) no infinite value,True,"87 rows x 25 columns, NaN cells 1"
+(c) scores between 0 and 1,True,"min 0.1121, max 0.6289"
+"(c) no duplicated (artist_id, year)",True,87 rows
+(d) normal-year scores reproduce stored stage0_score,True,"160 rows, max diff 2.8e-08"
+(e) existing files unchanged (before the write),True,"50 files hashed, live_scores.csv neither read nor hashed"
+(e) existing files unchanged (after the write),True,50 files hashed
