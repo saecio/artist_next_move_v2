@@ -19,6 +19,8 @@ from config import CONFIG  # project settings
 from demo_game import scoreboard  # scoreboard of a history
 
 cfg = load_demo_config()  # settings
+CFG_RT = cfg["route"]["texts"]  # route texts: forecast title
+last_complete_year = CONFIG["years"]["last_complete"]  # last year whose results count
 g, keys = cfg["game"], cfg["game"]["keys"]  # game texts and keys
 import html  # unescape of HTML texts
 import re  # tags of the HTML
@@ -61,7 +63,7 @@ def pick(at: AppTest, name: str) -> int:  # select genre and artist from the mix
 def show(at: AppTest, label: str) -> None:  # print the main texts of the page
     """Assert no exception and print the main texts of the page."""
     assert not at.exception, [e.value for e in at.exception]  # no exception on the page
-    keep = ("Model", "My answer", "Reality", "Information", "**WHEN", "**Style", "Style", "In past tests", "This year may", "No WHAT", "No reality", "Years from", "Last year", "User", "Session")  # line prefixes of the game texts
+    keep = ("Model", "My answer", "Reality", "Information", "**WHEN", "**Style", "Style", "In past tests", "This year may", "No WHAT", "No reality", "Last year", "User", "Session")  # line prefixes of the game texts
     lines = [m.value for m in list(at.markdown) + list(at.caption) + list(at.info) if m.value and (m.value.startswith(keep) or "hidden" in m.value)]  # game lines and hidden-count captions
     print(f"-- {label}: {len(at.exception)} exceptions, {len(at.button)} buttons")  # summary
     for s in at.subheader:  # section titles
@@ -116,10 +118,22 @@ def play_to_end(artist_name: str, user_on: bool) -> None:  # play one artist to 
             at.radio(key=keys["answer"].format(id=aid, year=year)).set_value("yes").run()  # answer yes
             at.button(key=keys["lock"].format(id=aid)).click().run()  # lock
         n_before = scoreboard(state["history"])  # board before the reveal
-        at.button(key=keys["reveal"].format(id=aid)).click().run()  # reveal
-        n_after = scoreboard(at.session_state[keys["state"]][aid]["history"])  # board after the reveal
-        if year in (2024, 2026):  # requested years
+        rev = [b for b in at.button if b.key == keys["reveal"].format(id=aid)]  # reveal button of the question
+        if year >= CONFIG["years"]["partial"]:  # forecast year: no reality, no reveal step
+            assert not rev, "no reveal button in the forecast year"  # no reveal
+            assert any(CFG_RT["forecast_title"].format(year=year + 1) in i.value for i in at.info), "the forecast title is on screen"  # title
+            n_after = n_before  # nothing recorded
+        else:  # a normal year
+            rev[0].click().run()  # reveal
+            n_after = scoreboard(at.session_state[keys["state"]][aid]["history"])  # board after the reveal
+            last = at.session_state[keys["state"]][aid]["history"][-1]  # entry of the year
+            assert last["counted"] == (year + 1 <= CONFIG["years"]["last_complete"] and last["label"] is not None), f"counted flag of {year} follows the reality year"  # rule
+            assert n_after["n"] == n_before["n"] + int(last["counted"]), f"board of {year} follows the counted flag"  # board
+            if year == last_complete_year and last["label"] is not None:  # a reality in 2026: asterisk mark and its legend near the scoreboard
+                assert poc_tx["legend_open_year"] in [c.value for c in at.caption], f"{year}: the open-year legend is on screen"  # legend
+        if year in (2025, 2026):  # reality in 2026 or later
             assert n_before["n"] == n_after["n"] and n_before["user_n"] == n_after["user_n"], f"board changed in {year}"  # no change
+        if year in (2024, 2025, 2026):  # requested years
             show(at, f"year {year}, n {n_before['n']} -> {n_after['n']}")  # page lines
         assert not at.exception  # no exception
         nxt = at.button(key=keys["next"].format(id=aid))  # next year button
@@ -199,6 +213,7 @@ import html  # unescape of the panel text
 import re  # tags of the panel HTML
 import pandas as pd  # tables
 route = pd.read_csv(ROOT / "results/demo/route_table_year_end.csv")  # independent reference: verdicts, realities, flags of every artist-year
+route["counted_1y"] = route["reality_1y"].notna() & (route["year"] + 1 <= CONFIG["years"]["last_complete"])  # counting rule by reality year, derived here, the stored flag follows the old rule
 picks = pd.read_csv(ROOT / "results/demo/release_pick.csv")  # independent reference: release titles
 rt_tx = cfg["route"]["texts"]  # route texts
 
@@ -263,21 +278,42 @@ def want_timing(r, reveal: bool, answer: str | None = None) -> list:  # expected
     return out  # all lines
 
 
-def want_style(r, reveal: bool) -> list:  # expected lines of the Style block
-    """Expected visible lines of the Style block from the route table, the label file, the new styles file and the pick file."""
-    out = [poc_tx["label_style"], poc_tx["q_style"], poc_tx["style_scope"].format(year=r.year)]  # label, question, grey line with the shown year
+ye_what = pd.read_csv(ROOT / "results/demo/what_scores_year_end.csv")  # independent reference: year-end WHAT scores
+cutoff = float(pd.read_csv(ROOT / "results/holdout_what/top10_lift.csv").set_index("model").loc["stage 0", "score_cutoff"])  # independent reference: WHAT cutoff
+
+
+def ref_what(r) -> dict | None:  # reference WHAT values of a route row
+    """Verdict, score, new-styles year, label and release year of a route row, from the year-end file for a year-end row and from the route table and label file otherwise; None without a shown score."""
+    if r.is_year_end:  # reference-only row
+        y = ye_what[(ye_what["artist_id"] == r.artist_id) & (ye_what["year"] == r.year)]  # stored row
+        if y.empty:  # fewer than 3 earlier Works
+            return None  # grey dash
+        y = y.iloc[0]  # the row
+        nol = pd.isna(y["what_label"])  # score without a resolved label
+        return {"verdict": "yes" if y["stage0_score"] >= cutoff else "no", "score": y["stage0_score"], "src": int(y["last_active_year"]), "label": None if nol else y["what_label"], "ny": None if nol else int(y["next_active_year"])}  # values
     if not r.what_available:  # no WHAT score
+        return None  # grey dash
+    lab = labels[(labels["artist_id"] == r.artist_id) & (labels["year"] == r.year)]  # stored label of the artist-year
+    empty = lab.empty or pd.isna(lab.iloc[0]["label"])  # score without a label
+    return {"verdict": r.what_verdict, "score": r.what_score, "src": r.year, "label": None if empty else lab.iloc[0]["label"], "ny": None if empty else int(lab.iloc[0]["next_active_year"])}  # values
+
+
+def want_style(r, reveal: bool) -> list:  # expected lines of the Style block
+    """Expected visible lines of the Style block from the route table, the year-end file, the label file, the new styles file and the pick file."""
+    out = [poc_tx["label_style"], poc_tx["q_style"], poc_tx["style_scope"].format(year=r.year)]  # label, question, grey line with the shown year
+    w = ref_what(r)  # reference values
+    if w is None:  # no WHAT score
         return out + [poc_tx["what_na"]]  # grey dash
-    out.append(f"{poc_tx['prediction']} {poc_tx['likely'] if r.what_verdict == 'yes' else poc_tx['not_likely']}")  # prediction word
+    out.append(f"{poc_tx['prediction']} {poc_tx['likely'] if w['verdict'] == 'yes' else poc_tx['not_likely']}")  # prediction word
     if not reveal:  # nothing but ?
         return out + [f"{poc_tx['reality']} {poc_tx['unknown']}"]  # reality
-    lab = labels[(labels["artist_id"] == r.artist_id) & (labels["year"] == r.year)]  # stored label of the artist-year
-    if lab.empty or pd.isna(lab.iloc[0]["label"]):  # score without a label
-        return out + [g["what_no_reality"]]  # explicit empty state
-    ny = int(lab.iloc[0]["next_active_year"])  # year of the release the label refers to
-    ns = json.loads(new_styles[(new_styles["artist_id"] == r.artist_id) & (new_styles["year"] == r.year)].iloc[0]["new_styles"])  # new styles
-    assert r.what_reality == ("yes" if lab.iloc[0]["label"] == 1 else "no"), "route table and label file disagree"  # same label
-    if lab.iloc[0]["label"] == 1:  # new style
+    if w["label"] is None:  # score without a label
+        return out + [poc_tx["what_na_tip_no_later"] if r.is_year_end else g["what_no_reality"]]  # explicit empty state
+    ny = w["ny"]  # year of the release the label refers to
+    ns = json.loads(new_styles[(new_styles["artist_id"] == r.artist_id) & (new_styles["year"] == w["src"])].iloc[0]["new_styles"])  # new styles
+    if not r.is_year_end:  # the route table holds the WHAT reality of Work rows only
+        assert r.what_reality == ("yes" if w["label"] == 1 else "no"), "route table and label file disagree"  # same label
+    if w["label"] == 1:  # new style
         assert ns, "a Yes label needs new styles"  # label rule
         return out + [g["what_reality_yes"].format(styles=cap3(ns)), release(r.artist_id, ny)]  # Yes, new styles, release
     assert not ns, "a No label has no new styles"  # label rule
@@ -302,8 +338,8 @@ def case(name: str, year: int, show: bool = False) -> None:  # one mode 1 year a
     assert lines_of(raw_t) == want_timing(r, False), f"{name} {year}: Timing lines {lines_of(raw_t)}"  # order, words and ?
     assert lines_of(block_raw(at, poc_tx["label_style"])) == want_style(r, False), f"{name} {year}: Style lines before the reveal"  # Style block
     assert f"title='{poc_tx['score_tip'].format(score=r.score_1y)}'" in raw_t and "%" not in re.sub(r"<style>.*?</style>", "", raw_t, flags=re.S), f"{name} {year}: the score sits in the tooltip, never as a percentage"  # tooltip
-    if r.what_available:  # a WHAT prediction word has its own score tooltip
-        assert f"title='{poc_tx['score_tip'].format(score=r.what_score)}'" in block_raw(at, poc_tx["label_style"]), f"{name} {year}: WHAT score tooltip"  # tooltip
+    if ref_what(r) is not None:  # a WHAT prediction word has its own score tooltip
+        assert f"title='{poc_tx['score_tip'].format(score=ref_what(r)['score'])}'" in block_raw(at, poc_tx["label_style"]), f"{name} {year}: WHAT score tooltip"  # tooltip
     page = " ".join([m.value for m in list(at.markdown) + list(at.caption)])  # visible markdown and captions
     assert "score" not in page.lower().replace("scoreboard", ""), f"{name} {year}: no score text on the page"  # scores only in tooltips
     at.button(key=keys["reveal"].format(id=aid)).click().run()  # reveal
@@ -326,7 +362,7 @@ case(a_no["artist"], int(a_no["year"]))  # Work year, reality No
 case("boygenius", 2019)  # year-end year, counted, cascade with the 2-year line
 c_yes = ye[(ye["reality_1y"] == "yes") & ye["counted_1y"]].iloc[0]  # a counted year-end row whose reality is Yes
 case(c_yes["artist"], int(c_yes["year"]), show=True)  # year-end year with a title (example, gap year)
-c_unc = ye[~ye["counted_1y"] & ye["reality_1y"].notna()].iloc[0]  # a reference-only year-end row (2024 on)
+c_unc = ye[~ye["counted_1y"] & ye["reality_1y"].notna()].iloc[0]  # a year-end row whose reality is in 2026 (2025)
 case(c_unc["artist"], int(c_unc["year"]))  # year-end year that must not change the scoreboard
 w_yes = route[route["what_available"] & (route["what_reality"] == "yes") & ~route["is_year_end"]].iloc[0]  # WHAT reality Yes
 case(w_yes["artist"], int(w_yes["year"]), show=True)  # example: new styles
@@ -394,7 +430,7 @@ def layout_checks(name: str) -> None:  # one artist, three states
         assert "score" not in " ".join(lt + ls).lower(), f"{state}: no score text in the blocks"  # scores only in tooltips
         assert any(e.label == rt_tx["how_label"] for e in at.expander), f"{state}: one How to read this expander"  # expander
         body = [c.value for c in at.caption]  # captions, the expander holds the long lines
-        assert poc_tx["legend_reference"] in body and rt_tx["legend_cascade"] in body and rt_tx["independent_note"] in body and g["what_years_warning"].format(n=CONFIG_MIN) in body, f"{state}: legend, cascade sentence, independence sentence and warning live in the expander"  # long text
+        assert poc_tx["legend_open_year"] in body and rt_tx["legend_cascade"] in body and rt_tx["independent_note"] in body and g["what_years_warning"].format(n=CONFIG_MIN) in body, f"{state}: legend, cascade sentence, independence sentence and warning live in the expander"  # long text
         assert g["unseen_warning"] not in [w.value for w in at.warning], f"{state}: a seen artist has no unseen warning"  # no warning
         if state == "reveal":  # reality state
             after = scoreboard(at.session_state[keys["state"]][aid]["history"])  # board after

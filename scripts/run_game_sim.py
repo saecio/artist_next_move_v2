@@ -16,7 +16,7 @@ import pandas as pd  # tables
 from app_data import load_demo_config  # demo settings
 from app_live import artist_timeline, load_tables  # live data layer
 from config import CONFIG  # project settings
-from demo_game import hidden_counts, new_state, next_year, play, scored_years, scoreboard, session_total, year_cards, first_uncounted_year, reliability, verdict, outside_text_key  # game functions
+from demo_game import hidden_counts, new_state, next_year, play, scored_years, scoreboard, session_total, year_cards, reliability, verdict, outside_text_key  # game functions
 
 cfg = load_demo_config()["game"]  # game settings
 CAP = load_demo_config()["poc"]["titles_per_card"]  # most titles drawn on one card
@@ -43,7 +43,7 @@ def expected(aid: int, history: list) -> pd.DataFrame:  # counted rows from the 
     tl = artist_timeline(aid)  # timeline, representative Work per year
     reps = tl[tl["year"].isin([h["year"] for h in history])][["year", "work_id"]].rename(columns={"year": "snapshot_year"})  # played representative Works
     s = stored[stored["artist_id"] == aid].merge(reps, on=["snapshot_year", "work_id"])  # stored rows of those Works
-    return s[s["label"].notna() & ~s["is_projection"] & ~s["label_after_holdout"]]  # counted rows
+    return s[s["label"].notna() & (s["snapshot_year"] + 1 <= CONFIG["years"]["last_complete"])]  # counted rows: a label whose reality year is a complete year
 
 
 t0 = time.time()  # clock
@@ -83,14 +83,12 @@ for aid in (7592689, 1124645):  # the requested case and a case with hidden re-r
         print(f"{aid} hide={hide}: Works in file {yc['total']} (direct {len(in_year)}), visible {visible}, cards drawn {len(yc['cards'])}, +{yc['more']} more, cap {CAP}")  # print the result
         assert yc["total"] == len(in_year) and len(yc["cards"]) == min(visible, CAP) and yc["more"] == max(visible - CAP, 0)  # cap and more count
 print("cap checks passed")  # print the result
-print("\n== uncounted years, 7592689 and 1124645 (label_after_holdout and last data year)")  # section title
-cut = first_uncounted_year(stored.assign(target="next_1y"))  # first uncounted year from the stored scores
-print("first uncounted year from the data:", cut)  # derived, not hard-coded
+print("\n== uncounted years, 7592689 and 1124645 (reality year after the last complete year)")  # section title
 for aid in (7592689, 1124645):  # the two requested artists
     for user_on in (False, True):  # both modes
         h = walk(aid, user_on)  # full walk
         for i, x in enumerate(h):  # every played year
-            if x["year"] >= cut:  # years shown but not counted
+            if x["year"] >= CONFIG["years"]["last_complete"]:  # reality in 2026 or later: not counted
                 before = scoreboard(h[:i])  # board before the year
                 after = scoreboard(h[:i + 1])  # board after the year
                 print(f"{aid} user={user_on} {x['year']}: model {x['model']}, user {x['user']}, label {x['label']}, counted {x['counted']}, n {before['n']} -> {after['n']}, user_n {before['user_n']} -> {after['user_n']}")  # one line per year
@@ -136,7 +134,7 @@ print(cfg[key].format(z=below["z"], y=y))  # the No-verdict line
 print(cfg["what_reliability"].format(x=reliability(top)[0], y=y))  # the Yes-verdict line
 print("WHAT scoreboard checks passed")  # all asserts held
 print("\n== pool A regression against the earlier runs")  # section title
-pins = {7592689: (5, 3), 1124645: (6, 6), 4778: (6, 6)}  # counted years and model right of the earlier runs
+pins = {7592689: (6, 3), 1124645: (7, 7), 4778: (7, 6)}  # counted years and model right under the rule by reality year (the earlier runs had 5/3, 6/6 and 6/6: 2024 now counts)
 for aid, (n_old, right_old) in pins.items():  # three pool A artists
     b = scoreboard(walk(aid, False))  # scoreboard now
     print(f"{aid}: n {b['n']} (earlier {n_old}), model right {b['model_right']} (earlier {right_old})")  # one line per artist
@@ -181,11 +179,18 @@ w2 = rrows[rrows["show2"] & rrows["when2_label"].notna() & rrows["when2_counted"
 assert (s["when2_right"], s["when2_n"]) == (int((w2["when2_verdict"] == w2["when2_label"]).sum()), len(w2))  # 2-year count
 assert (rrows["show2"] == ((rrows["when_verdict"] == "no") | (rrows["when2_verdict"] == "no"))).all()  # cascade rule
 assert all(len(row_marks(r)) == 2 + int(r["show2"]) for _, r in rrows.iterrows())  # one mark per pill shown plus WHAT
-a = rrows[rrows["what_available"] & rrows["what_label"].notna() & rrows["what_safe"]]  # counted WHAT rows
+a = rrows[rrows["what_available"] & rrows["what_label"].notna() & rrows["what_counted"]]  # counted WHAT rows
 assert (s["what_right"], s["what_n"]) == (int((a["what_verdict"] == a["what_label"]).sum()), len(a))  # WHAT count
-r24 = multi_rows(rcfg, route_ids(rcfg), 2024, cfg["threshold"], top["score_cutoff"], 10)  # 2024: labels after the holdout
-assert multi_summary(r24)["when_n"] == 0 and multi_summary(r24)["what_n"] == 0  # not counted
-assert all(m[1] in ("mark_ok_flagged", "mark_bad_flagged", "mark_dot") for _, r in r24[r24["has_row"]].iterrows() for m in row_marks(r))  # asterisk marks or the grey dot only, in 2024
+r24 = multi_rows(rcfg, route_ids(rcfg), 2024, cfg["threshold"], top["score_cutoff"], 10)  # 2024: next-year reality in 2025 counts
+assert multi_summary(r24)["when_n"] == int((r24["when_label"].notna() & r24["when_counted"]).sum()) > 0  # counted without asterisk
+assert (r24["when_counted"] == r24["when_label"].notna()).all() and not r24["when_star"].any()  # reality year 2025: counted exactly when a label exists, no asterisk
+assert (r24["when2_star"] == (r24["when2_label"].notna() & (r24["when_label"] != "yes"))).all()  # 2-year reality in 2026 (no release in 2025) carries the asterisk
+r25 = multi_rows(rcfg, route_ids(rcfg), 2025, cfg["threshold"], top["score_cutoff"], 10)  # 2025: every reality is in 2026
+assert multi_summary(r25)["when_n"] == 0 and multi_summary(r25)["what_n"] == 0 and not r25["when_counted"].any()  # not counted
+assert (r25["when_star"] == r25["when_label"].notna()).all()  # asterisk exactly where a reality exists
+assert not r24[r24["is_year_end"]]["what_star"].any() and not r25[r25["is_year_end"]]["what_star"].any()  # year-end rows never carry the WHAT asterisk
+r26 = multi_rows(rcfg, route_ids(rcfg), 2026, cfg["threshold"], top["score_cutoff"], 10)  # 2026: forecast for 2027
+assert r26["is_forecast"].all() and r26["when_label"].isna().all() and not (r26["when_counted"] | r26["when_star"] | r26["what_counted"] | r26["what_star"]).any()  # no reality, nothing counted, no asterisk
 print(f"{rcfg['route']['year']} rows {len(rrows)} sorted by WHEN score, summary {s}, 2024 summary {multi_summary(r24)}, caps respected")  # result
 from demo_multi import advance_stage, multi_signature  # two-step state machine
 sig = multi_signature(2018, [1, 2])  # signature of a selection
@@ -218,6 +223,7 @@ assert set(picks["year"]) >= {2024, 2025, 2026}, "the file must cover the years 
 print(f"rule B recomputed independently: {len(want)} artist-years, {picks['picked_by'].value_counts().to_dict()}")  # counts
 assert reality_titles(picks, 4778, 2021, "yes", "yes")[0] == picks[(picks["artist_id"] == 4778) & (picks["year"] == 2022)]["title"].iloc[0]  # next year uses year + 1
 route = pd.read_csv(ROOT / "results/demo/route_table_year_end.csv")  # route table with the year-end rows
+route["counted_1y"] = route["reality_1y"].notna() & (route["year"] + 1 <= CONFIG["years"]["last_complete"])  # counting rule by reality year, derived here, the stored flag follows the old rule
 rows_by = {}  # (artist id, year) -> mode 2 row
 all_ids = sorted(route["artist_id"].unique().tolist())  # every artist of both pools
 for yr in sorted(route["year"].unique()):  # one call per year, cap above the number of artists
@@ -237,9 +243,9 @@ assert n_t > 0  # something was checked
 print(f"reality titles of {len(route)} route rows equal the rule: {n_t} titles checked")  # result
 n_w, n_y, n_ns = 0, 0, 0  # rows with a stored WHAT label, of them yes, year-end rows checked
 for (aid_, yr_), mr in rows_by.items():  # every mode 2 row of both pools
-    if mr["is_year_end"]:  # a year-end row has no WHAT score, its new-styles row is the one of the last active year
+    if mr["is_year_end"]:  # a year-end WHAT row is reference only, its new-styles row is the one of the last active year
         n_ns += 1  # count
-        assert not mr["what_available"], "a year-end row must have no WHAT score"  # grey dash
+        assert not mr["what_counted"] and not mr["what_star"], "a year-end WHAT row is never counted and has no asterisk"  # outside every count
         continue  # nothing else to compare
     if mr["what_available"] and isinstance(mr["what_label"], str):  # a stored WHAT label
         n_w += 1  # count
@@ -247,7 +253,7 @@ for (aid_, yr_), mr in rows_by.items():  # every mode 2 row of both pools
         assert mr["what_year"] is not None and int(mr["what_year"]) > yr_, f"{aid_} {yr_}: the label refers to a later release"  # next active year
         n_y += int(mr["what_label"] == "yes")  # count
 assert n_w > 0 and n_y > 0, "no WHAT label was checked"  # something was compared
-print(f"WHAT new styles: {n_w} stored labels agree with the new styles ({n_y} yes), {n_ns} year-end rows have no WHAT score")  # result
+print(f"WHAT new styles: {n_w} stored labels agree with the new styles ({n_y} yes), {n_ns} year-end rows are reference only")  # result
 board_checks = 0  # artists whose boards were checked
 for aid in all_ids:  # every artist
     tl = artist_timeline(aid)  # timeline
@@ -257,9 +263,9 @@ for aid in all_ids:  # every artist
     ye_years = set(sub[sub["is_year_end"]]["year"])  # year-end years
     h_all = [play_year(rows_by[(aid, y)], None) for y in years]  # history over every playable year
     h_work = [h for h in h_all if h["year"] not in ye_years]  # Work years only
-    h_ye_unc = [h for h in h_all if h["year"] in set(sub[sub["is_year_end"] & ~sub["counted_1y"]]["year"])]  # year-end years that are reference only
+    h_ye_unc = [h for h in h_all if h["year"] in set(sub[sub["is_year_end"] & ~sub["counted_1y"]]["year"])]  # year-end years whose reality is in 2026
     assert scoreboard(h_all)["n"] == int(sub["counted_1y"].sum()), f"{aid}: the scoreboard must follow counted_1y"  # counted flag of the route table
-    assert scoreboard([h for h in h_all if h not in h_ye_unc]) == scoreboard(h_all), f"{aid}: reference-only year-end rows changed the scoreboard"  # asterisk rows add nothing
+    assert scoreboard([h for h in h_all if h not in h_ye_unc]) == scoreboard(h_all), f"{aid}: year-end rows with a reality in 2026 changed the scoreboard"  # uncounted rows add nothing
     assert scoreboard(h_work)["n"] == int(sub[~sub["is_year_end"]]["counted_1y"].sum()), f"{aid}: the Work-year scoreboard changed"  # Work years as before
     board_checks += 1  # counted
 print(f"mode 1 years equal the route table years and the scoreboard follows counted_1y for {board_checks} artists")  # result

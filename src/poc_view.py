@@ -34,10 +34,10 @@ def css(poc: dict) -> str:  # style block from the config
 
 
 def badge_kind(done: bool, label: str | None, counted: bool, predicted: str) -> tuple:  # color and mark key of a prediction
-    """Color and mark key: grey before the reveal or without reality, green or red otherwise, with an asterisk after the glyph when the result is shown for reference only (not counted)."""
+    """Color and mark key: grey before the reveal or without reality, green or red otherwise, with an asterisk after the glyph when the caller passes counted False for a shown result (the year is not over)."""
     if not done or label is None:  # before the reveal, or no stored label
         return "grey", "mark_dot"  # grey dot
-    if not counted:  # result shown for reference only: the real result, green or red, with an asterisk
+    if not counted:  # result of a year not over yet: the real result, green or red, with an asterisk
         return ("green", "mark_ok_flagged") if predicted == label else ("red", "mark_bad_flagged")  # check or cross followed by an asterisk
     return ("green", "mark_ok") if predicted == label else ("red", "mark_bad")  # match or mismatch
 
@@ -48,6 +48,16 @@ def what_parts(row: pd.Series, top: dict) -> tuple:  # WHAT verdict, label and f
         return None, None, True  # nothing to show
     label = None if pd.isna(row["what_label"]) else ("yes" if row["what_label"] == 1 else "no")  # stored WHAT label
     return verdict(row["stage0_score"], top["score_cutoff"]), label, not flag(row["what_label_after_holdout"])  # verdict, label, not flagged
+
+
+def star_in_row(r: pd.Series) -> bool:  # whether a mode 2 row shows an asterisk mark
+    """True when the next-year result, the 2-year result (where that pill is shown) or the WHAT result of the row has a reality in the year that is not over."""
+    return bool(r["when_star"] or (r["show2"] and r["when2_star"]) or r["what_star"])  # any shown mark with an asterisk
+
+
+def mark_title(t: dict, title_key: str, mark_key: str) -> str:  # hover text of a mark
+    """The open-year sentence for a mark with an asterisk, else the text of the title key."""
+    return t["legend_open_year"] if mark_key.endswith("_flagged") else t[title_key]  # asterisk marks explain themselves
 
 
 def window_years(current: int, first: int, last_shown: int, before: int, after: int) -> tuple:  # years of the window
@@ -75,7 +85,7 @@ def card_html(year: int, aw: pd.DataFrame, hidden: dict, until: int, pred_year: 
         body.append(f"<div class='poc-muted'>{html.escape(g['hidden_line'].format(n=hidden[year]))}</div>")  # count line
     if year == pred_year:  # the predicted year carries the marks
         t = poc["texts"]  # texts
-        body.append("<div class='poc-marks'>" + "".join(f"<span class='poc-mark {k}' title='{html.escape(t[title])}'>{html.escape(t[m])}</span>" for title, k, m in mark_list) + "</div>")  # two marks, no text
+        body.append("<div class='poc-marks'>" + "".join(f"<span class='poc-mark {k}' title='{html.escape(mark_title(t, title, m))}'>{html.escape(t[m])}</span>" for title, k, m in mark_list) + "</div>")  # two marks, no text
     cls = "poc-card poc-pred" if year == pred_year else "poc-card"  # predicted card is highlighted
     return f"<div class='{cls}' data-year='{year}'>{''.join(body)}</div>"  # the card
 
@@ -133,19 +143,20 @@ def multi_css(poc: dict) -> str:  # style rules of the mode 2 table, all scoped 
     return "<style>" + "".join(rules) + "</style>"  # the style element
 
 
-def na_cell(poc: dict) -> str:  # grey cell of a row without a WHAT score
-    """Grey dash with a tooltip, the same for a year-end row and a row that is not eligible."""
+def na_cell(poc: dict, reason: str | None = None) -> str:  # grey cell of a row without a WHAT score
+    """Grey dash with a tooltip: the default one, or the one of a year-end reason ('needs_three' or 'no_later')."""
     t = poc["texts"]  # texts
-    return f"<span class='poc-muted' title='{html.escape(t['what_na_tip'], quote=True)}'>{html.escape(t['what_na'])}</span>"  # dash and tooltip
+    tip = t["what_na_tip"] if reason is None or pd.isna(reason) else t[f"what_na_tip_{reason}"]  # hover text
+    return f"<span class='poc-muted' title='{html.escape(tip, quote=True)}'>{html.escape(t['what_na'])}</span>"  # dash and tooltip
 
 def pill(text: str, yes: bool, tip: str = "") -> str:  # a verdict pill
     """A rounded verdict pill: filled for Yes and Likely, outlined for No and Not likely; `tip` is the hover text (the score)."""
     return f"<span class='poc-pill {'yes' if yes else 'no'}'{f' title={chr(39)}{html.escape(tip, quote=True)}{chr(39)}' if tip else ''}>{html.escape(text)}</span>"  # pill element, tooltip only when given
 
 
-def how_lines(stage: str, rel_lines: list, legend: str, cascade: str, independent: str) -> list:  # lines of the How to read this expander
-    """The two reliability lines, the legend, the cascade sentence and the independence sentence, from the predict stage on; nothing in the placeholder stage."""
-    return [] if stage == "placeholder" else list(rel_lines) + [legend, cascade, independent]  # empty before Predict
+def how_lines(stage: str, rel_lines: list, legend: str, cascade: str, independent: str, year_end: str = "") -> list:  # lines of the How to read this expander
+    """The two reliability lines, the legend, the cascade sentence, the independence sentence and the year-end style sentence, from the predict stage on; nothing in the placeholder stage."""
+    return [] if stage == "placeholder" else list(rel_lines) + [legend, cascade, independent] + ([year_end] if year_end else [])  # empty before Predict
 
 def short_title(title: str, limit: int) -> str:  # title cut at a maximum number of characters
     """The title, cut to `limit` characters with an ellipsis when longer."""
@@ -196,6 +207,11 @@ def release_line(title, year: int, rt: dict) -> str:  # 'Title (year)' under a r
         return html.escape(rt["release_year_only"].format(year=year))  # year only
     return f"<span title='{html.escape(str(title), quote=True)}'>{html.escape(rt['release_line'].format(title=short_title(str(title), rt['title_max_chars']), year=year))}</span>"  # cut title, year, full title on hover
 
+def forecast_html(year: int, rt: dict) -> str:  # title and note of the forecast year
+    """'Forecast for {year + 1}' and the line saying there is no reality to compare, from the yaml."""
+    return f"**{rt['forecast_title'].format(year=year + 1)}**\n\n{rt['forecast_note'].format(year=year + 1)}"  # markdown for st.info
+
+
 def block_html(label: str, question: str, lines: list, poc: dict) -> str:  # one question block of mode 1
     """Small grey label, the question and the lines, inside the scoped wrapper."""
     return css(poc) + multi_css(poc) + f"<div class='poc-multi poc-blk'><div class='poc-sub'>{html.escape(label)}</div><div class='poc-q'>{html.escape(question)}</div>{''.join(lines)}</div>"  # label, question, lines
@@ -212,10 +228,11 @@ def timing_html(r: pd.Series, step: str, answer: str | None, g: dict, route: dic
     lines.append(line(t["prediction"], pill(yn[r["when_verdict"]], r["when_verdict"] == "yes", tip_of(poc, r["when_score"])) if shown else html.escape(t["unknown"])))  # next-year prediction
     if two:  # within 2 years
         lines.append(line(t["within_two"], pill(yn[r["when2_verdict"]], r["when2_verdict"] == "yes", tip_of(poc, r["when2_score"]))))  # 2-year prediction
-    if not done:  # before the reveal: only '?'
-        lines.append(line(t["reality"], html.escape(t["unknown"])))  # next-year reality
+    if not done:  # before the reveal: only '?', or "Not yet" in the forecast year
+        unknown = rt["not_yet"] if r["is_forecast"] else t["unknown"]  # the forecast year has no reality to wait for
+        lines.append(line(t["reality"], html.escape(unknown)))  # next-year reality
         if two:  # second reality line
-            lines.append(line(t["reality_two"], html.escape(t["unknown"])))  # 2-year reality
+            lines.append(line(t["reality_two"], html.escape(unknown)))  # 2-year reality
         return block_html(t["label_timing"], t["q_timing"], lines, poc)  # block
     first = r["when_label"] if isinstance(r["when_label"], str) else None  # next-year label
     items = [(t["reality"], first, r["when_title"], year + 1)]  # next-year reality: label, title, release year
@@ -233,23 +250,25 @@ def style_html(r: pd.Series, step: str, g: dict, route: dict, poc: dict) -> str:
     shown, done = step != "ask", step == "reveal"  # stage flags
     lines = [f"<div class='poc-sub'>{html.escape(t['style_scope'].format(year=int(r['year'])))}</div>"]  # grey line, always visible
     if not r["what_available"]:  # no WHAT score: year-end row or not eligible
-        lines.append(f"<div class='poc-ln'>{na_cell(poc)}</div>")  # grey dash with tooltip
+        lines.append(f"<div class='poc-ln'>{na_cell(poc, r.get('what_na'))}</div>")  # grey dash with tooltip
         return block_html(t["label_style"], t["q_style"], lines, poc)  # block
     likely = r["what_verdict"] == "yes"  # model answer
     lines.append(line(t["prediction"], pill(t["likely"] if likely else t["not_likely"], likely, tip_of(poc, r["what_score"])) if shown else html.escape(t["unknown"])))  # prediction word, the score in the tooltip
-    if not done:  # before the reveal: only '?'
-        lines.append(line(t["reality"], html.escape(t["unknown"])))  # reality
+    if not done:  # before the reveal: only '?', or "Not yet" in the forecast year
+        lines.append(line(t["reality"], html.escape(rt["not_yet"] if r["is_forecast"] else t["unknown"])))  # reality
         return block_html(t["label_style"], t["q_style"], lines, poc)  # block
     label = r["what_label"] if isinstance(r["what_label"], str) else None  # stored WHAT label
     if label is None:  # score but no stored label
-        lines.append(f"<div class='poc-ln'>{html.escape(g['what_no_reality'])}</div>")  # explicit empty state
+        lines.append(f"<div class='poc-ln'>{html.escape(t['what_na_tip_no_later'] if r['is_year_end'] else g['what_no_reality'])}</div>")  # explicit empty state
     elif label == "yes":  # new style: the styles come from the artist-year file
         lines.append(f"<div class='poc-ln'>{html.escape(g['what_reality_yes'].format(styles=styles_text(r['what_new'], poc)))}</div>")  # Yes with the new styles
-        lines.append(f"<div class='poc-ln'>{release_line(r['what_release_title'], int(r['what_year']), {**t, 'title_max_chars': rt['title_max_chars']})}</div>")  # release title and its year, the next active year
+        if pd.notna(r["what_year"]):  # the next active year is known
+            lines.append(f"<div class='poc-ln'>{release_line(r['what_release_title'], int(r['what_year']), {**t, 'title_max_chars': rt['title_max_chars']})}</div>")  # release title and its year, the next active year
     else:  # no new style: the release styles are all used before
         lines.append(f"<div class='poc-ln'>{html.escape(g['what_reality_no'])}</div>")  # No
         used = f" \u00b7 {html.escape(styles_text(r['what_styles'], poc))} {html.escape(t['used_before'])}" if r["what_styles"] else ""  # release styles, all used before
-        lines.append(f"<div class='poc-ln'>{release_line(r['what_release_title'], int(r['what_year']), {**t, 'title_max_chars': rt['title_max_chars']})}{used}</div>")  # release title, its year and styles
+        if pd.notna(r["what_year"]):  # the next active year is known
+            lines.append(f"<div class='poc-ln'>{release_line(r['what_release_title'], int(r['what_year']), {**t, 'title_max_chars': rt['title_max_chars']})}{used}</div>")  # release title, its year and styles
     return block_html(t["label_style"], t["q_style"], lines, poc)  # block
 
 def multi_table_html(rows: pd.DataFrame, summary: dict, g: dict, route: dict, poc: dict, marks_fn, year: int, stage: str = "reveal") -> str:  # mode 2 table
@@ -273,17 +292,23 @@ def multi_table_html(rows: pd.DataFrame, summary: dict, g: dict, route: dict, po
             what_model = f"<td>{pill(t['likely'] if r['what_verdict'] == 'yes' else t['not_likely'], r['what_verdict'] == 'yes')}</td>"  # WHAT verdict pill
             what_rest = ph  # WHAT reality placeholder
         else:  # no WHAT score (year-end row or not eligible): one grey dash over the two WHAT columns
-            what_model, what_rest = f"<td colspan='2'>{na_cell(poc)}</td>", ""  # data-driven, a score in the data shows as in any row
+            what_model, what_rest = f"<td colspan='2'>{na_cell(poc, r.get('what_na'))}</td>", ""  # data-driven, a score in the data shows as in any row
         if stage == "predict":  # realities and marks stay placeholders
-            body.append(f"<tr>{name}{when}{ph}{what_model}{what_rest}{ph}</tr>")  # model columns shown
+            nope = f"<td><span class='poc-muted'>{html.escape(rt['not_yet'])}</span></td>"  # forecast year: no reality will come
+            when_real, what_real_ph, mark_ph = (nope, nope if r["what_available"] else "", nope) if r["is_forecast"] else (ph, what_rest, ph)  # reality cells, result cell
+            body.append(f"<tr>{name}{when}{when_real}{what_model}{what_real_ph}{mark_ph}</tr>")  # model columns shown
             continue  # next artist
         reality = cascade_cell(r, [reality_item(r["when_label"], r["when_title"], yn, rt, year + 1 if r["when_label"] == "yes" else None), reality_item(r["when2_label"], r["when2_title"], yn, rt, (year + 1 if r["when_label"] == "yes" else year + 2) if r["when2_label"] == "yes" else None)], rt)  # WHEN realities in the same structure, with the release title and its year
-        what_real = f"<td>{reality_item(r['what_label'], r['what_release_title'], yn, rt, r['what_year'])}</td>" if r["what_available"] else ""  # WHAT reality, with the title and year of the next active year
+        no_later = r["is_year_end"] and pd.isna(r["what_label"])  # year-end row with a score and no resolved label
+        what_real = (f"<td>{html.escape(t['what_na_tip_no_later'])}</td>" if no_later else f"<td>{reality_item(r['what_label'], r['what_release_title'], yn, rt, r['what_year'])}</td>") if r["what_available"] else ""  # WHAT reality, with the title and year of the next active year
         shown = marks_fn(r)  # next year, optional 2-year, WHAT
-        tips = [""] * (len(shown) - 1) + ["" if r["what_available"] else f" title='{html.escape(t['mark_not_forecast'], quote=True)}'"]  # only the WHAT mark of a row without a score gets a tooltip
+        tips = [f" title='{html.escape(t['legend_open_year'], quote=True)}'" if key.endswith("_flagged") else "" for _, key in shown]  # the asterisk marks carry the open-year sentence
+        tips[-1] = tips[-1] if r["what_available"] else f" title='{html.escape(t['mark_not_forecast'], quote=True)}'"  # the WHAT mark of a row without a score gets its own tooltip
         mk = "".join(f"<span class='poc-mark {k}'{tip}>{html.escape(t[key])}</span>" for (k, key), tip in zip(shown, tips))  # one mark per pill shown plus WHAT
         body.append(f"<tr>{name}{when}{reality}{what_model}{what_real}<td>{mk}</td></tr>")  # full row
-    lines = [rt["summary_when"].format(k=summary["when_right"], n=summary["when_n"], k2=summary["when2_right"], n2=summary["when2_n"]), rt["summary_what"].format(k=summary["what_right"], n=summary["what_n"])] if stage == "reveal" else []  # only the two summary lines, after Show reality
+    lines = [rt["summary_when"].format(k=summary["when_right"], n=summary["when_n"], k2=summary["when2_right"], n2=summary["when2_n"]), rt["summary_what"].format(k=summary["what_right"], n=summary["what_n"])] if stage == "reveal" else []  # the two summary lines, after Show reality
+    if stage == "reveal" and any(star_in_row(r) for _, r in rows.iterrows()):  # a shown asterisk needs its legend under the table
+        lines.append(t["legend_open_year"])  # open-year legend
     notes_html = "".join(f"<div class='poc-note'>{html.escape(x)}</div>" for x in lines)  # small notes
     return css(poc) + multi_css(poc) + f"<div class='poc-panel poc-multi'><table class='poc-table'><tr>{head}</tr>{''.join(body)}</table>{notes_html}</div>"  # table and notes in the scoped wrapper
 

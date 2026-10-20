@@ -9,7 +9,7 @@ from xgboost import XGBClassifier  # WHEN and WHAT models
 
 from app_data import load_demo_config  # demo settings
 from config import CONFIG, ROOT  # project settings and root
-from demo_game import outside_rate  # holdout rate below the WHAT cutoff
+from demo_game import outside_rate, reality_status  # holdout rate below the WHAT cutoff and the counting rule by reality year
 from live_style_assets import FIRST, LAST, PROJECTION, rescore  # style rescoring and its target years
 from when_demo import TARGETS, demo_artist_ids  # WHEN targets and the demo artist ids
 
@@ -67,6 +67,7 @@ def load_tables() -> dict:  # load the cached tables
         "predictions": pd.read_csv(ROOT / live["style_predictions"]),  # stored style forecast, validation display only
         "release_pick": pd.read_csv(ROOT / live["release_pick"]),  # release title per artist-year, rule B
         "what_new_styles": pd.read_csv(ROOT / live["what_new_styles"]).assign(new_styles=lambda t: t["new_styles"].map(json.loads)),  # new styles of the next active year, as lists
+        "what_year_end": pd.read_csv(ROOT / live["what_scores_year_end"]),  # stored WHAT scores of the year-end rows, reference only
         "when_year_end": pd.read_csv(ROOT / live["when_year_end"]),  # stored WHEN scores of the year-end rows, long format with is_year_end
     }  # close the table dict
 
@@ -124,11 +125,18 @@ def style_live(target_year: int) -> pd.DataFrame:  # style table of one target y
     return rescore(tables["panel"], model, tables["percentiles"])  # same columns as predictions.csv
 
 
-def horizon_of(score, label, projection, after) -> dict:  # one horizon of a WHEN row
-    """Score, label text ('yes', 'no' or None) and whether the reality counts (label present, not a projection, not after the holdout)."""
+def horizon_of(score, label, reality_year: int) -> dict:  # one horizon of a WHEN row
+    """Score, label text ('yes', 'no' or None), whether the reality counts and whether it carries the asterisk (a label whose reality year is after the last complete year)."""
     text = None if pd.isna(label) else ("yes" if label == 1 else "no")  # stored label as text
-    flagged = bool(pd.notna(projection) and projection) or bool(pd.notna(after) and after)  # flags of the stored files
-    return {"score": float(score), "label": text, "counted": text is not None and not flagged}  # horizon
+    status = reality_status(text, reality_year)  # counting rule by reality year
+    return {"score": float(score), "label": text, "counted": status == "counted", "star": status == "open"}  # horizon
+
+
+def horizons_of(scores, labels, year: int) -> dict:  # both horizons of an artist-year
+    """next_1y has the reality year + 1; next_2y has year + 1 when the next-year label is Yes, else year + 2 (the release the cell shows)."""
+    h1 = horizon_of(scores["next_1y"], labels["next_1y"], year + 1)  # next-year horizon
+    h2 = horizon_of(scores["next_2y"], labels["next_2y"], year + 1 if h1["label"] == "yes" else year + 2)  # 2-year horizon, reality year as shown
+    return {"next_1y": h1, "next_2y": h2}  # both horizons
 
 
 def when_rows(artist_id: int, year: int) -> dict | None:  # WHEN rows of an artist-year, both horizons
@@ -137,9 +145,9 @@ def when_rows(artist_id: int, year: int) -> dict | None:  # WHEN rows of an arti
     r = tl[tl["year"] == year]  # row of the year, empty outside the timeline
     if len(r) and pd.notna(r.iloc[0]["work_id"]) and pd.notna(r.iloc[0]["next_1y"]):  # a Work row with a score
         r = r.iloc[0]  # the row
-        return {"kind": "work", "row": r, "next_1y": horizon_of(r["next_1y"], r["label_next_1y"], r["is_projection_next_1y"], r["label_after_holdout_next_1y"]), "next_2y": horizon_of(r["next_2y"], r["label_next_2y"], r["is_projection_next_2y"], r["label_after_holdout_next_2y"])}  # both horizons of the Work
+        return {"kind": "work", "row": r, **horizons_of({t: r[t] for t in TARGETS}, {t: r[f"label_{t}"] for t in TARGETS}, year)}  # both horizons of the Work
     ye = load_tables()["when_year_end"]  # stored year-end scores
     ye = ye[(ye["artist_id"] == artist_id) & (ye["snapshot_year"] == year)].set_index("target")  # the artist-year, one row per horizon
     if ye.empty:  # no year-end row either
         return None  # nothing to show
-    return {"kind": "year_end", "row": None, **{t: horizon_of(ye.loc[t, "score"], ye.loc[t, "label"], ye.loc[t, "is_projection"], ye.loc[t, "label_after_holdout"]) for t in ("next_1y", "next_2y")}}  # both horizons of the year-end row
+    return {"kind": "year_end", "row": None, **horizons_of({t: ye.loc[t, "score"] for t in TARGETS}, {t: ye.loc[t, "label"] for t in TARGETS}, year)}  # both horizons of the year-end row

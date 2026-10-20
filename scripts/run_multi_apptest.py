@@ -21,7 +21,8 @@ from app_data import all_artists, load_demo_config  # demo settings
 from app_live import artist_timeline, load_tables  # live data layer, used only to cross-check
 from config import CONFIG  # project settings
 import demo_multi  # module, to stub the counts in one check
-from demo_multi import hidden_counts, hidden_lines, multi_rows, multi_summary  # logic under test
+from poc_view import multi_table_html  # table renderer, for the single-row check
+from demo_multi import hidden_counts, hidden_lines, multi_rows, multi_summary, pick_route, row_marks  # logic under test
 
 cfg = load_demo_config()  # settings
 from what_new_styles import stored_labels  # stored labels of both pools
@@ -143,8 +144,9 @@ def check_boygenius() -> None:  # test 4
     """boygenius has a year-end row in 2019 and a Work row without a WHAT score in 2018; both show their WHAT text over two columns and stay out of the WHAT count."""
     at = new_app()  # app
     row = dict(rows_of(at))["boygenius"]  # its 2019 row
-    want = f"title='{cfg['poc']['texts']['what_na_tip']}'"  # expected tooltip of the grey dash
-    assert "colspan='2'" in row and want in row and cfg["poc"]["texts"]["what_na"] in row, "the year-end WHAT cells must be one colspan grey dash"  # colspan dash
+    want = f"title='{cfg['poc']['texts']['what_na_tip']}'"  # expected tooltip of the grey dash of a Work row
+    want19 = f"title='{cfg['poc']['texts']['what_na_tip_needs_three']}'"  # expected tooltip of the year-end row
+    assert "colspan='2'" in row and want19 in row and cfg["poc"]["texts"]["what_na"] in row, "the year-end WHAT cells must be one colspan grey dash"  # colspan dash
     at.selectbox(key=k["year"]).select(2018).run()  # 2018
     go(at, "reveal")  # the state reset, press again
     row18 = dict(rows_of(at))["boygenius"]  # its 2018 row
@@ -153,29 +155,63 @@ def check_boygenius() -> None:  # test 4
     for year in (2018, 2019):  # both years
         rows = multi_rows(cfg, rt["artists"], year, g["threshold"], top, rt["max_artists"])  # rows from the logic
         assert not rows[rows["artist"] == "boygenius"]["what_available"].iloc[0], f"boygenius has no WHAT score in {year}"  # not available
-    print("4 boygenius: 2019 year-end row and 2018 Work row both show the grey dash over two columns:", html.unescape(want))  # result
+    print("4 boygenius: 2019 year-end row and 2018 Work row both show the grey dash over two columns:", html.unescape(want19), "|", html.unescape(want))  # result
 
 
 def check_years() -> None:  # test 5
-    """2019 has a row without Work; 2024 has asterisk marks and is uncounted; 2026 has no reality."""
+    """2019 has a row without Work; reality 2025 counts without asterisk; reality 2026 carries the asterisk and is not counted; 2026 is a forecast for 2027."""
     at = new_app()  # app
     at.selectbox(key=k["year"]).select(2019).run()  # 2019
     go(at, "reveal")  # the state reset, press again
     assert not at.exception  # no exception
     boy = artist_cells(at)["boygenius"]  # boygenius artist cell in 2019
     assert tag_text(2019) in boy, "boygenius has no Work in 2019, its year-end row is shown"  # year-end row
-    at.selectbox(key=k["year"]).select(2024).run()  # 2024
+    open_txt = cfg["poc"]["texts"]["legend_open_year"]  # asterisk legend and tooltip
+    at.selectbox(key=k["year"]).select(2024).run()  # 2024: next-year reality 2025 counts, 2-year and WHAT realities in 2026 carry the asterisk
     go(at, "reveal")  # the state reset, press again
     h24 = table_html(at)  # table in 2024
-    marks = re.findall(r"<span class='poc-mark (\w+)'>", h24)  # mark colors
-    glyphs = re.findall(r"<span class='poc-mark (\w+)'>(.*?)</span>", h24)  # every mark with its glyph
-    assert glyphs and "amber" not in h24 and all((c == "grey" and g == "●") or (c in ("green", "red") and g in ("✓*", "✗*") and (c == "green") == (g == "✓*")) for c, g in glyphs), f"2024 marks must be green or red with the asterisk, or the grey dot: {glyphs}"  # no amber, asterisk and color match
-    assert tx["summary_when"].format(k=0, n=0, k2=0, n2=0) in html.unescape(h24), "2024 rows are not counted"  # not counted
-    at.selectbox(key=k["year"]).select(2026).run()  # 2026
+    glyphs = re.findall(r"<span class='poc-mark (\w+)'[^>]*>(.*?)</span>", h24)  # every mark with its glyph
+    assert glyphs and "amber" not in h24 and all((c == "grey" and g == "\u25cf") or (c in ("green", "red") and g.rstrip("*") in ("\u2713", "\u2717") and (c == "green") == (g.startswith("\u2713"))) for c, g in glyphs), f"2024 marks must be green or red, with or without the asterisk, or the grey dot: {glyphs}"  # no amber, color and glyph match
+    ref = cascade_reference(rt["artists"], 2024)  # stored reference
+    c1, c2 = ref["label"].notna(), ref["label_2"].notna() & (ref["label"] == 1)  # reality year 2025 counts: next-year label present, 2-year cell only when the release is in 2025
+    k1, n1 = int(((ref["v1"] == (ref["label"] == 1))[c1]).sum()), int(c1.sum())  # independent next-year count
+    sel = ref["show2"] & c2  # 2-year rows counted where the pill is shown
+    k2, n2 = int(((ref["v2"] == (ref["label_2"] == 1))[sel]).sum()), int(sel.sum())  # independent 2-year count
+    assert n1 > 0 and tx["summary_when"].format(k=k1, n=n1, k2=k2, n2=n2) in html.unescape(h24), "2024 next-year rows (reality 2025) count without asterisk"  # counted
+    stars24 = [g for _, g in glyphs if g.endswith("*")]  # asterisk marks of 2024
+    assert stars24 and html.unescape(h24).count(open_txt) >= len(stars24) + 1, "each asterisk mark carries the tooltip and the legend is under the table"  # tooltip and legend
+    at.selectbox(key=k["year"]).select(2025).run()  # 2025: every reality is in 2026
     go(at, "reveal")  # the state reset, press again
-    h26 = table_html(at)  # table in 2026
-    assert tx["no_reality"] in h26 and set(re.findall(r"<span class='poc-mark (\w+)'>", h26)) <= {"grey"}, "2026 has no reality, grey marks only"  # last data year
-    print(f"5 years: 2019 year-end row, 2024 marks {sorted(set(glyphs))} and 0 counted, 2026 no reality with grey marks, no exception")  # result
+    h25 = table_html(at)  # table in 2025
+    g25 = re.findall(r"<span class='poc-mark (\w+)'[^>]*>(.*?)</span>", h25)  # marks
+    assert tx["summary_when"].format(k=0, n=0, k2=0, n2=0) in html.unescape(h25) and tx["summary_what"].format(k=0, n=0) in html.unescape(h25), "2025 rows (reality 2026) are not counted"  # nothing counted
+    assert any(g.endswith("*") for _, g in g25) and open_txt in html.unescape(h25), "2025 results (reality 2026) carry the asterisk and the legend is under the table"  # marks and legend
+    print(f"5 years: 2019 year-end row, 2024 next year {k1} of {n1} counted without asterisk and {len(stars24)} asterisk marks, 2025 nothing counted with the legend")  # result
+
+
+def check_forecast() -> None:  # test 5b
+    """2026: the prepared list of the year, the forecast title and line, no reveal step, Not yet in the reality cells, no mark, nothing counted; going back to 2019 restores the default list."""
+    at = new_app("placeholder")  # app
+    at.selectbox(key=k["year"]).select(2026).run()  # 2026 changes the selection to the prepared list of the year
+    want = [int(i) for i in rt["artists_by_year"][2026]]  # prepared list
+    assert [int(i) for i in at.multiselect(key=k["artists"]).value] == want, "the year change selects the prepared list of 2026"  # selection
+    top = load_tables()["what_top10"]["score_cutoff"]  # WHAT cutoff
+    assert pick_route(cfg, 2026, g["threshold"]) == want, "the stored 2026 list equals the rule"  # rule
+    rows = multi_rows(cfg, want, 2026, g["threshold"], top, rt["max_artists"])  # rows of the logic
+    assert len(rows) == len(want) == 10 and rows["is_forecast"].all() and not rows["is_year_end"].any(), "ten Work rows, no year-end row in 2026"  # rows
+    assert rows["when_label"].isna().all() and not rows["when_counted"].any() and not rows["when_star"].any() and not rows["when2_star"].any() and not rows["what_counted"].any() and not rows["what_star"].any(), "no reality, nothing counted, no asterisk in 2026"  # flags
+    assert rows["when_verdict"].eq("yes").sum() == 8 and rows["when_verdict"].eq("no").sum() == 2, "the 2026 list mixes 8 Yes and 2 No verdicts"  # mix
+    assert tx["selection_note_by_year"][2026] in [c.value for c in at.caption], "the 2026 selection note is on screen"  # note
+    title = tx["forecast_title"].format(year=2027)  # forecast title
+    assert any(title in i.value and tx["forecast_note"].format(year=2027) in i.value for i in at.info), "the forecast title and line are on screen"  # title
+    at.button(key=k["predict"]).click().run()  # Predict
+    assert not any(b.key == k["reveal"] for b in at.button), "no Show reality button for the forecast year"  # no reveal
+    h = table_html(at)  # table after Predict
+    assert h.count(tx["not_yet"]) >= 10 and "poc-mark" not in h and "class='poc-note'" not in h, "Not yet in the reality cells, no mark, no summary"  # reality cells
+    at.selectbox(key=k["year"]).select(2019).run()  # back to 2019
+    assert [int(i) for i in at.multiselect(key=k["artists"]).value] == [int(i) for i in rt["artists"]], "going back to 2019 restores the default list"  # default list
+    assert not at.exception, [e.value for e in at.exception]  # no exception
+    print("5b forecast 2026: prepared list equals the rule (8 Yes, 2 No), title and line on screen, no reveal, Not yet cells, nothing counted, back to 2019 restores the default list")  # result
 
 
 def check_manual_and_cap() -> None:  # test 6
@@ -235,19 +271,55 @@ def check_stages() -> None:  # test 8
     rows1 = dict(rows_of(at))  # rows
     assert "Yes" in h1 or "No" in h1, "model verdicts must show after Predict"  # model columns
     assert "poc-mark" not in h1 and tx["summary_when"].split("{")[0] not in html.unescape(h1), "no mark and no summary before Show reality"  # no reality yet
-    assert f"title='{cfg['poc']['texts']['what_na_tip']}'" in rows1["boygenius"], "the year-end grey dash shows after Predict"  # year-end cell
+    assert f"title='{cfg['poc']['texts']['what_na_tip_needs_three']}'" in rows1["boygenius"], "the year-end grey dash shows after Predict"  # year-end cell, no score
     how = next(e for e in at.expander if e.label == tx["how_label"])  # the expander after Predict
     caps = [c.value for c in how.caption]  # its lines
-    assert len(caps) == 5 and tx["independent_note"] in caps and cfg["poc"]["texts"]["legend_reference"] in caps and tx["legend_cascade"] in caps and sum("in 10" in c for c in caps) == 2, "the two reliability lines, the legend, the cascade sentence and the independence sentence are in the expander"  # contents
+    assert len(caps) == 6 and tx["year_end_what_note"] in caps and tx["independent_note"] in caps and cfg["poc"]["texts"]["legend_open_year"] in caps and tx["legend_cascade"] in caps and sum("in 10" in c for c in caps) == 2, "the two reliability lines, the legend, the cascade sentence and the independence sentence and the year-end style sentence are in the expander"  # contents
     assert "class='poc-note'" not in h1 and "poc-pill" in h1, "no note under the table after Predict, verdicts are pills"  # notes location
     assert ph in rows1["SZA"], "realities stay placeholders after Predict"  # placeholder reality
     at = go(at, "reveal")  # Show reality
     h2 = table_html(at)  # table
     assert not any(b.key in (k["predict"], k["reveal"]) for b in at.button), "no step button after the reveal"  # buttons gone
     assert "poc-mark" in h2 and tx["summary_when"].split("{")[0] in html.unescape(h2) and tx["summary_what"].split("{")[0] in html.unescape(h2), "marks and both summary lines after Show reality"  # full
-    assert h2.count("class='poc-note'") == 2 and cfg["poc"]["texts"]["legend_reference"] not in html.unescape(h2), "only the two summary lines under the table, the legend is in the expander"  # notes location
-    assert cfg["poc"]["texts"]["legend_reference"] in [c.value for e in at.expander if e.label == tx["how_label"] for c in e.caption], "the legend stays in the expander after Show reality"  # legend
+    assert h2.count("class='poc-note'") == 2 and cfg["poc"]["texts"]["legend_open_year"] not in html.unescape(h2), "2019 has no asterisk result: only the two summary lines under the table, the legend is in the expander"  # notes location
+    assert cfg["poc"]["texts"]["legend_open_year"] in [c.value for e in at.expander if e.label == tx["how_label"] for c in e.caption], "the legend stays in the expander after Show reality"  # legend
     print(f"8 stages: {h0.count(chr(39) + 'poc-ph' + chr(39))} placeholder cells -> model pills, expander with {len(caps)} lines, realities still '{ph}' -> marks and 2 summary lines under the table")  # result
+
+
+def ye_state(aid: int, year: int) -> str:  # what the year-end WHAT file says about a row
+    """'score' (stored score and resolved label), 'no_later' (stored score, no label) or 'needs_three' (no stored row), read directly from results/demo/what_scores_year_end.csv."""
+    y = pd.read_csv(ROOT / "results/demo/what_scores_year_end.csv")  # independent read
+    m = y[(y["artist_id"] == aid) & (y["year"] == year)]  # row of the artist-year
+    return "needs_three" if m.empty else ("no_later" if pd.isna(m.iloc[0]["what_label"]) else "score")  # state
+
+
+def check_year_end_what() -> None:  # test 14
+    """Year-end WHAT rows: Arctic Monkeys and Kacey Musgraves have a score in 2019 and show it with a plain mark, SZA, Olivia Rodrigo and boygenius show the grey dash with the 'needs 3' tooltip; no year-end WHAT row is ever counted."""
+    top = load_tables()["what_top10"]["score_cutoff"]  # WHAT cutoff
+    rows = multi_rows(cfg, rt["artists"], rt["year"], g["threshold"], top, rt["max_artists"]).set_index("artist")  # rows of the route year
+    for name in ("Arctic Monkeys", "Kacey Musgraves"):  # have a WHAT score
+        assert rows.loc[name, "is_year_end"] and rows.loc[name, "what_available"] and not rows.loc[name, "what_counted"] and not rows.loc[name, "what_star"], f"{name}: a year-end WHAT score is shown and never counted"  # shown, uncounted
+        assert ye_state(by_name[name], rt["year"]) == "score", f"{name}: the year-end file has a score and a label"  # independent file
+    for name in ("SZA", "Olivia Rodrigo", "boygenius"):  # no WHAT score
+        assert ye_state(by_name[name], rt["year"]) == "needs_three", f"{name}: no year-end WHAT row in the file"  # independent file
+        if rows.loc[name, "is_year_end"]:  # a year-end row (boygenius): grey dash, the reason is the number of earlier releases
+            assert not rows.loc[name, "what_available"] and rows.loc[name, "what_na"] == "needs_three", f"{name}: fewer than 3 earlier releases, grey dash"  # no score
+        else:  # SZA and Olivia Rodrigo have a Work in 2019, so their row is a Work row and never a year-end WHAT row
+            assert pd.isna(rows.loc[name, "what_na"]), f"{name}: a Work row keeps the default WHAT handling"  # Work row
+    assert multi_summary(rows.reset_index().query("is_year_end"))["what_n"] == 0, "no year-end WHAT row is in any count"  # never counted
+    for name, row in rows_of(new_app()):  # every row of the table at the reveal stage
+        if name in ("Arctic Monkeys", "Kacey Musgraves"):  # year-end WHAT score
+            last = re.findall(r"<span class='poc-mark [^']*'[^>]*>([^<]*)</span>", row)[-1]  # text of the WHAT mark
+            assert last in (cfg["poc"]["texts"]["mark_ok"], cfg["poc"]["texts"]["mark_bad"]), f"{name}: the year-end WHAT mark is green or red with no asterisk, got {last}"  # no asterisk
+        if name in ("SZA", "Olivia Rodrigo", "boygenius") and rows.loc[name, "is_year_end"]:  # year-end row without a score
+            assert f"title='{cfg['poc']['texts']['what_na_tip_needs_three']}'" in row, f"{name}: the tooltip says it needs 3 earlier releases"  # tooltip
+    y = pd.read_csv(ROOT / "results/demo/what_scores_year_end.csv")  # independent read
+    r0 = y[y["what_label"].isna()].iloc[0]  # a year-end row with a score but no resolved label
+    one = multi_rows(cfg, [int(r0["artist_id"])], int(r0["year"]), g["threshold"], top, rt["max_artists"]).iloc[0]  # its row
+    assert one["what_available"] and pd.isna(one["what_label"]) and not one["what_counted"] and pd.isna(one["what_na"]), "a year-end row without a resolved label keeps the verdict, uncounted"  # no label
+    one_row = multi_rows(cfg, [int(r0["artist_id"])], int(r0["year"]), g["threshold"], top, rt["max_artists"])  # the row alone
+    assert cfg["poc"]["texts"]["what_na_tip_no_later"] in html.unescape(multi_table_html(one_row, multi_summary(one_row), g, cfg["route"], cfg["poc"], row_marks, int(r0["year"]))), "the Style reality cell says there is no later release yet"  # reality text
+    print("14 year-end WHAT: Arctic Monkeys and Kacey Musgraves scored with a plain mark, SZA, Olivia Rodrigo and boygenius grey with the needs-3 tooltip, never counted, unresolved label keeps the verdict with the no-later Style reality")  # result
 
 
 def check_year_end() -> None:  # test 11
@@ -260,7 +332,7 @@ def check_year_end() -> None:  # test 11
         row = rows1[r["name"]]  # its row
         assert row.count(html.escape(tx["pill_two"])) == int(r["show2"]) and row.count(html.escape(tx["pill_next"])) == 1, f"{r['name']}: the 2-year pill must show only when the next year or the 2-year verdict is No"  # cascade rule
         cell = cells_by_artist[r["name"]]  # artist cell of the row
-        assert (tag_text(rt["year"]) in cell) == bool(r["is_year_end"]) and ("poc-sub" in cell) == bool(r["is_year_end"]) and (not r["is_year_end"] or f"title='{cfg['poc']['texts']['what_na_tip']}'" in row), f"{r['name']}: the year-end tag belongs to year-end rows only and a year-end row has the grey dash"  # tag under the artist and WHAT text
+        assert (tag_text(rt["year"]) in cell) == bool(r["is_year_end"]) and ("poc-sub" in cell) == bool(r["is_year_end"]) and (not r["is_year_end"] or (cfg["poc"]["texts"]["likely"] in row or cfg["poc"]["texts"]["not_likely"] in row) == (ye_state(r["artist_id"], rt["year"]) != "needs_three")), f"{r['name']}: the year-end tag belongs to year-end rows only and a year-end row has a WHAT pill exactly when it has a stored score"  # tag under the artist and WHAT pill
     at = go(at, "reveal")  # Show reality
     rows2 = dict(rows_of(at))  # rows after Show reality
     for _, r in ref.iterrows():  # every artist with a row
@@ -434,7 +506,7 @@ def check_reset() -> None:  # test 9
     print("9 reset: year change and artist change return to placeholders, mode 1 changes leave the mode 2 stage (predict) untouched")  # result
 
 
-for fn in (check_default, check_order_and_summary, check_boygenius, check_years, check_manual_and_cap, check_switch, check_stages, check_reset, check_structure, check_year_end, check_titles, check_no_widget_warning, check_hidden_last_year):  # all checks
+for fn in (check_default, check_order_and_summary, check_boygenius, check_years, check_forecast, check_manual_and_cap, check_switch, check_stages, check_reset, check_structure, check_year_end, check_year_end_what, check_titles, check_no_widget_warning, check_hidden_last_year):  # all checks
     t = time.time()  # clock
     fn()  # run the check
     print(f"   {fn.__name__} {time.time() - t:.2f} s")  # timing

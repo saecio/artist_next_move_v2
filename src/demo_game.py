@@ -4,6 +4,10 @@ import json  # list columns stored as JSON text
 
 import pandas as pd  # missing-value checks
 
+from config import CONFIG  # project settings
+
+LAST_COUNTED = CONFIG["years"]["last_complete"]  # last year whose releases are fully catalogued, a reality after it is not counted
+
 
 def scored_years(timeline: pd.DataFrame, first_year: int) -> list:  # playable years of an artist
     """Years from first_year on whose representative Work has a live next_1y score."""
@@ -21,11 +25,17 @@ def flag(value) -> bool:  # safe boolean of a possibly missing flag
     return bool(pd.notna(value) and value)  # NaN, None and False give False
 
 
+def reality_status(label: str | None, reality_year: int | None) -> str:  # counting rule by reality year, the only place it lives
+    """'none' without a label or a reality year, 'counted' when the reality year is LAST_COUNTED or earlier, 'open' (asterisk, not counted) for a later year."""
+    if label is None or reality_year is None:  # no reality to compare with
+        return "none"  # grey, never counted
+    return "counted" if reality_year <= LAST_COUNTED else "open"  # complete year counts, the year still running does not
+
+
 def is_counted(row: pd.Series) -> bool:  # whether the year enters the scoreboard
-    """True when the stored next_1y label exists and is neither projection nor after the holdout."""
-    if pd.isna(row["label_next_1y"]):  # no stored label
-        return False  # nothing to compare with
-    return not (flag(row["is_projection_next_1y"]) or flag(row["label_after_holdout_next_1y"]))  # flags of next_1y
+    """True when the stored next_1y label exists and its reality year (year + 1) is LAST_COUNTED or earlier."""
+    label = None if pd.isna(row["label_next_1y"]) else "yes"  # only presence matters for the rule
+    return reality_status(label, int(row["year"]) + 1) == "counted"  # reality year of next_1y is year + 1
 
 
 def play(row: pd.Series, answer: str | None, threshold: float) -> dict:  # record one played year
@@ -87,12 +97,6 @@ def outside_rate(scores: pd.DataFrame, cutoff: float) -> dict:  # counts and rat
 def outside_text_key(z: int, y: int, similar_gap: int) -> str:  # wording variant of the No-verdict line
     """Config key of the No-verdict reliability line: 'almost the same' only when z and y differ by at most similar_gap (game.similar_gap of the config)."""
     return "what_reliability_no_similar" if abs(z - y) <= similar_gap else "what_reliability_no_other"  # wording variant
-
-
-def first_uncounted_year(stored: pd.DataFrame) -> int | None:  # first year shown but not counted
-    """First snapshot year whose next_1y label is flagged as after the holdout, from the stored scores."""
-    rows = stored[(stored["target"] == "next_1y") & stored["label_after_holdout"]]  # flagged next_1y rows
-    return int(rows["snapshot_year"].min()) if len(rows) else None  # earliest year or none
 
 
 def names(text) -> str:  # readable list from JSON text

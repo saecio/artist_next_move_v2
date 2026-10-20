@@ -139,3 +139,21 @@ assert picks["work_id"].isin(works.loc[~works["is_rerecording"], "work_id"]).all
 need = works[(works["year"] >= 2018) & ~works["is_rerecording"]][["artist_id", "year"]].drop_duplicates()  # artist-years that need a title
 assert len(need.merge(picks, on=["artist_id", "year"])) == len(need), "every artist-year with a Work from 2018 on has a pick"  # coverage, 2024 and later included
 print(f"picks {len(picks)}: {picks['picked_by'].value_counts().to_dict()}, years {int(picks['year'].min())} to {int(picks['year'].max())}, all {len(need)} artist-years with a Work covered")  # result
+
+from app_live import when_rows  # WHEN rows of an artist-year, with the counting flags
+
+n_c, n_s, n_n = 0, 0, 0  # counted rows, asterisk rows, rows without a reality
+for aid in ids:  # every demo artist
+    for year in range(2018, 2027):  # every year with a possible row
+        w = when_rows(aid, year)  # rows of the artist-year
+        if w is None:  # no row
+            continue  # nothing to check
+        for h in (w["next_1y"], w["next_2y"]):  # both horizons
+            assert not (h["counted"] and h["star"]), "a row is never counted and starred"  # exclusive flags
+            assert (h["label"] is None) == (not h["counted"] and not h["star"]), "no label means no flag, a label means counted or starred"  # flags follow the label
+            n_c, n_s, n_n = n_c + h["counted"], n_s + h["star"], n_n + (h["label"] is None)  # tally
+        assert w["next_1y"]["counted"] == (w["next_1y"]["label"] is not None and year + 1 <= 2025), f"{aid} {year}: next-year rule by reality year"  # reality year year + 1
+        assert w["next_1y"]["star"] == (w["next_1y"]["label"] is not None and year + 1 >= 2026), f"{aid} {year}: next-year asterisk"  # reality in 2026
+        if year == 2026:  # forecast year
+            assert w["kind"] == "work" and w["next_1y"]["label"] is None and w["next_2y"]["label"] is None, f"{aid}: 2026 is a Work row without reality"  # no year-end row, no label
+print(f"counting rule by reality year: {n_c} counted horizons, {n_s} with asterisk, {n_n} without reality, 2026 rows have no reality")  # result
