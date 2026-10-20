@@ -1,5 +1,7 @@
 # Project Pipeline Overview
 
+The decision log is split by theme: [decisions.md](decisions.md) is the index, entries live in decisions_core.md, decisions_demo.md, decisions_pending.md and decisions_archive.md.
+
 Short, scannable status of the pipeline as it stands. Reasoning and counts live elsewhere: [decisions.md](decisions.md) (chronological log), [work_definition.md](work_definition.md) (what a Work is and how it is built), [abandoned_approaches.md](abandoned_approaches.md) (failed methods). Last updated: 15-10-2026 (sections "WHAT" and "Style trend forecast" added; the other sections describe the state of 10-10-2026).
 
 ## Objective

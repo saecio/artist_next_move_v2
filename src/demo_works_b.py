@@ -14,7 +14,7 @@ from when_demo import demo_artist_ids  # pool A ids
 CFG = load_demo_config()  # settings, including artists_b and pool_b
 POOL_B = CFG["pool_b"]  # pool B section
 OUT_PATH = ROOT / POOL_B["paths"]["works"]  # new file, never overwritten
-DECISIONS = ROOT / "docs/decisions.md"  # entry with the playable years
+DECISIONS = ROOT / "docs/decisions_demo.md"  # entry with the playable years
 
 
 def sha256(path) -> str:  # hash of a file

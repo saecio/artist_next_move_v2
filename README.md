@@ -2,7 +2,7 @@
 
 Predicts two things about an artist's next release, using only information available at a past date: WHEN it will happen and WHAT style it will bring. Models are always compared against simple historical baselines, and the demo ("Time Machine", Streamlit) hides the future, predicts, then reveals what actually happened.
 
-Method notes live in `docs/`: `work_definition.md` (what a Work is and how the table is built), `decisions.md` (chronological decision log), `abandoned_approaches.md` (methods that failed validation), `pipeline_overview.md`.
+Method notes live in `docs/`: `work_definition.md` (what a Work is and how the table is built), `decisions.md` (chronological decision log), `abandoned_approaches.md` (methods that failed validation), `pipeline_overview.md`. The decision log is split: `decisions.md` is an index, entries live in `decisions_core.md`, `decisions_demo.md`, `decisions_pending.md` and `decisions_archive.md`.
 
 ## Data
 
