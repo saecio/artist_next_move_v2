@@ -376,7 +376,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     data_quality: data_quality.csv  # metric, value (works_undated), written once by scripts/run_static_assets.py
     genre_share: genre_share_by_year.csv  # year, genre, share of top-genre Works (each year sums to 1), written once by scripts/run_static_assets.py
     hyp_cards: hypotheses_cards.csv  # one row per hypothesis: plain question, answer template, placeholder values, effect size, written once by scripts/run_static_assets.py
-    hyp_charts: hypotheses_charts.csv  # id, label, value: data of the mini charts of H2 to H5 (H1 and H6 are read from their bucket files)
+    hyp_labels: hypotheses_labels.csv  # id, short_label: the six short names of the Six tests chart, written once by scripts/run_static_assets.py
     route_table: results/demo/route_table.csv  # artist name to Discogs id
     release_pick: results/demo/release_pick.csv  # picked release title per artist and year
     works: [results/demo/works_demo.csv, results/demo/works_demo_b.csv]  # Works of both artist pools, read by the tab 1 timelines
@@ -410,7 +410,6 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
   views:  # view selectors: label texts (keys of static_tabs.texts), first one is the default
     tab2: [t2_view_volume, t2_view_genres]  # tab 2
     tab3: [t3_view_patterns, t3_view_tests]  # tab 3
-  grid_cols: 3  # columns of the Six tests grid
   sizes:  # pixel sizes of the static tabs (a later design pass restyles them)
     tab5_columns: [2, 1]  # relative widths of the chart card and the dot card of tab 5
     tab2_columns: [3, 2]  # relative widths of the chart card and the right blocks of tab 2
@@ -497,11 +496,13 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t3_view_tests: "Six tests"  # tab 3 view label
     t3_line_style: "Each step down means fewer new styles."  # muted line under the Style chart
     t3_line_timing: "Each step down means fewer releases."  # muted line under the Timing chart
-    t3s_headline: "Six patterns, ranked by strength. The strongest: {question}"  # Six tests headline, question of the largest effect
-    t3s_strength: "Strength of the pattern"  # label of the strength bar
-    t3s_tip_strength: "0 means no pattern, 1 means a perfect one. Each pattern is very unlikely to be chance. Rows from the same artist are not independent, so exact p-values are overstated and the strength matters more."  # tooltip of the strength label
-    t3s_tip_h3: "The pause is far from normal, so a rank test (Mann-Whitney) was used instead of a mean comparison."  # extra tooltip sentence on the H3 card
-    t3s_chip: "Not due to chance"  # chip of a card whose null hypothesis was rejected
+    t3s_headline: "{label} is the strongest signal."  # Six tests headline, short label of the largest effect
+    t3s_line: "Strength of each pattern, from 0 (none) to 1 (perfect). All six are very unlikely to be chance."  # muted line under the headline
+    t3s_tip_honesty: "Rows from the same artist are not independent, so exact p-values are overstated and the strength matters more."  # info tooltip next to the muted line
+    t3s_tt_question: "Question"  # tooltip title of the plain question
+    t3s_tt_answer: "Answer"  # tooltip title of the plain answer
+    t3s_tt_strength: "Strength"  # tooltip title of the effect size and its measure
+    t3s_tip_h3: "The pause is far from normal, so a rank test (Mann-Whitney) was used."  # sentence added to the H3 tooltip
     t3_headline_neutral: "How history relates to new styles and releases"  # tab 3 headline when the data does not support the conclusion
     t5_headline: "Both models beat the rule of thumb"  # tab 5 headline, shown only when true
     t5_headline_neutral: "Results on years the models never saw"  # tab 5 headline otherwise
@@ -535,17 +536,15 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     h2_bucket: "3-5"  # history group of the Hypothesis 2 test used in the card (notebook 02 cell 54)
     h2_genre_a: Electronic  # genre named first in the H2 answer
     h2_genre_b: "Folk, World, & Country"  # genre named second in the H2 answer
-    h2_chart_genres: 3  # top and bottom genres drawn in the H2 mini chart
     h3_gap_pause: "11+"  # year-gap bucket named in the H3 answer
     h3_gap_none: "0"  # year-gap bucket of no pause
-    h5_labels: [Undated, Dated]  # bar labels of the H5 mini chart: artists with undated releases, then the others
-    items:  # per hypothesis: plain question, answer template, effect measure, mini chart axis title
-      H1: {question: "Do artists with a long catalogue try fewer new styles?", answer: "Yes. With 3 to 5 earlier releases, {first} bring a new style. With 51 or more, {last}.", measure: "Cramer's V", axis: "Earlier releases"}  # values from h1_buckets.csv
-      H2: {question: "Does the genre change how often artists try new styles?", answer: "Yes. Among artists with a short history, {a} of electronic artists try a new style, against {b} of folk and country artists.", measure: "Cramer's V", axis: "Genre"}  # a, b from the 3-5 group of the H2 test
-      H3: {question: "Does a long pause before a release mean a new style?", answer: "A little. After a pause of 11 years or more, {a} bring a new style. With no pause, {b}.", measure: "rank-biserial", axis: "Years since the previous release"}  # a, b from the year-gap buckets
-      H4: {question: "Do artists who already tried many styles keep trying new ones?", answer: "Not by itself. It only shows when we compare artists with a similar number of releases.", measure: "Cramer's V", axis: "Styles tried before"}  # no placeholders
-      H5: {question: "Do artists with undated releases behave differently?", answer: "They bring fewer new styles ({a} against {b}), but the difference mostly disappears when we compare artists with similar catalogues.", measure: "Cramer's V", axis: "Release dates"}  # a undated, b dated
-      H6: {question: "Does a long silence mean no release next year?", answer: "Yes. One year after the last release, {first} release again the next year. After 10 years or more, {last}.", measure: "Cramer's V", axis: "Years since the last release"}  # values from h6_buckets.csv
+    items:  # per hypothesis: plain question, answer template, effect measure, short label of the chart
+      H1: {question: "Do artists with a long catalogue try fewer new styles?", answer: "Yes. With 3 to 5 earlier releases, {first} bring a new style. With 51 or more, {last}.", measure: "Cramer's V", short_label: "Catalogue size"}  # values from h1_buckets.csv
+      H2: {question: "Does the genre change how often artists try new styles?", answer: "Yes. Among artists with a short history, {a} of electronic artists try a new style, against {b} of folk and country artists.", measure: "Cramer's V", short_label: "Genre"}  # a, b from the 3-5 group of the H2 test
+      H3: {question: "Does a long pause before a release mean a new style?", answer: "A little. After a pause of 11 years or more, {a} bring a new style. With no pause, {b}.", measure: "rank-biserial", short_label: "Pause before a release"}  # a, b from the year-gap buckets
+      H4: {question: "Do artists who already tried many styles keep trying new ones?", answer: "Not by itself. It only shows when we compare artists with a similar number of releases.", measure: "Cramer's V", short_label: "Styles already tried"}  # no placeholders
+      H5: {question: "Do artists with undated releases behave differently?", answer: "They bring fewer new styles ({a} against {b}), but the difference mostly disappears when we compare artists with similar catalogues.", measure: "Cramer's V", short_label: "Undated releases"}  # a undated, b dated
+      H6: {question: "Does a long silence mean no release next year?", answer: "Yes. One year after the last release, {first} release again the next year. After 10 years or more, {last}.", measure: "Cramer's V", short_label: "Silence since the last release"}  # values from h6_buckets.csv
 design:  # visual system of the demo: the only place for colors, type scale and chart settings
   palette:  # hex values; .streamlit/config.toml must equal background, card, text, line, timing (a test checks it)
     background: "#0F1220"  # page
@@ -582,7 +581,6 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     Reggae: "#3F9E6E"  # deep green
     Rock: "#C8553D"  # brick red
     Stage & Screen: "#8A93B5"  # grey lavender
-  compact: {pad: 12, gap: 6, meter_height: 6, chip_pad_v: 2}  # Six tests cards: padding, gap between parts, strength bar height, chip padding in px
   incomplete_from_year: 2024  # first year still being filled in (docs/decisions.md, 10-10-2026 entry on the Discogs submission lag: 2024 and 2025 are the excluded recent years, 2026 is the demo year)
   strip: {height: 10, gap: 4}  # tab 5 sorted-artists strip: bar height and label gap in px
   flow:  # tab 2 flow card, sizes in px
@@ -594,6 +592,10 @@ design:  # visual system of the demo: the only place for colors, type scale and 
   chart:  # Altair settings
     theme_name: demo_dark  # registered theme name
     height_results: 330  # tab 5 chart height in px
+    strength_axis_max: 0.5  # Six tests chart axis maximum; all six effect sizes are below it (a test checks it)
+    height_strength: 300  # Six tests chart height in px
+    strength_bar: 26  # Six tests bar thickness in px
+    strength_label_limit: 260  # longest hypothesis label of the Six tests chart in px
     height_steps: 300  # tab 3 chart height in px
     label_font: 13  # value and axis label size
     axis_font: 12  # axis text size
@@ -616,10 +618,6 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     dot_caption_font: 12  # caption under the big number
     height_works: 320  # tab 2 area chart height in px
     height_genres: 330  # tab 2 genre chart height in px
-    height_mini: 90  # mini chart height of a Six tests card in px
-    mini_label_angle: -35  # x label angle of the mini charts
-    mini_label_limit: 70  # longest x label of the mini charts in px
-    mini_headroom: 1.35  # share of the top value kept free above the mini bars
     genre_opacity_off: 0.25  # opacity of the genres not selected in the legend
     area_opacity: 0.28  # fill of the area
     line_width: 2  # line over the area

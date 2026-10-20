@@ -271,36 +271,27 @@ pill(vk["tab3"]).set_value(t["t3_view_tests"]).run()  # open the Six tests view
 assert not at.exception, [e.value for e in at.exception]  # no exception
 c_raw = tab_text(2)  # raw html of tab 3
 c_txt = plain(c_raw)  # visible text of tab 3
-cards = pd.read_csv(folder / pa["hyp_cards"])  # stored cards
+cards = pd.read_csv(folder / pa["hyp_cards"]).merge(pd.read_csv(folder / pa["hyp_labels"]), on="id")  # stored cards with short labels
 order = cards.sort_values("effect_size", ascending=False).reset_index(drop=True)  # strongest first
-assert list(order["id"]) == ["H6", "H1", "H3", "H2", "H5", "H4"], "cards sorted by effect size"  # today's order
-assert [html.unescape(q) for q in re.findall(r"<div class='ui-qtext'>(.*?)</div>", c_raw)] == list(order["question"]), "six questions in order"  # on screen
-assert [html.unescape(a_) for a_ in re.findall(r"<div class='ui-answer'>(.*?)</div>", c_raw)] == [a_.format(**json.loads(v)) for a_, v in zip(order["answer"], order["values"])], "answers equal the file with the placeholders filled"  # on screen
-assert re.findall(r"ui-meter-fill' style='width:([0-9.]+)%", c_raw) == [f"{v * 100:.1f}" for v in order["effect_size"]], "strength bars equal the effect sizes"  # on screen
-assert t["t3s_headline"].format(question=order.loc[0, "question"]) in c_txt and order.loc[0, "id"] == "H6", "headline names the strongest pattern"  # headline
+assert list(order["id"]) == ["H6", "H1", "H3", "H2", "H5", "H4"], "bars sorted by effect size"  # today's order
+assert list(pd.read_csv(folder / pa["hyp_labels"])["short_label"]) == [v["short_label"] for v in sc["cards"]["items"].values()], "labels file equals the config texts"  # one source
+assert t["t3s_headline"].format(label=order.loc[0, "short_label"]) in c_txt and order.loc[0, "id"] == "H6", "headline names the short label of the strongest effect"  # headline
+assert t["t3s_line"] in c_txt and html.escape(t["t3s_tip_honesty"], quote=True) in c_raw, "muted line and honesty tooltip"  # muted line
 size = cards.set_index("id")["effect_size"]  # by id
 assert all(abs(size[i] - e) <= sc["controls"]["effect_tolerance"] for i, e in sc["controls"]["effect_sizes"].items()), "effect sizes equal the controls"  # controls
-vals = {r["id"]: json.loads(r["values"]) for _, r in cards.iterrows()}  # placeholder values
-h6 = pd.read_csv(folder / pa["h6_buckets"])  # Hypothesis 6 buckets
-assert vals["H1"] == {"first": f"{h1['new_style_rate'].iloc[0] * 100:.1f}%", "last": f"{h1['new_style_rate'].iloc[-1] * 100:.1f}%"} and vals["H6"] == {"first": f"{h6['release_next_year_rate'].iloc[0] * 100:.1f}%", "last": f"{h6['release_next_year_rate'].iloc[-1] * 100:.1f}%"}, "H1 and H6 values come from the bucket files"  # files
-assert c_raw.count("ui-chip'") == int((cards["h0_rejected"] == "yes").sum()) == c_txt.count(t["t3s_chip"]), "a chip only where the null hypothesis is rejected"  # chips
-tip = html.escape(t["t3s_tip_strength"], quote=True)  # strength tooltip
-assert c_raw.count(tip) == 6 and c_raw.count(html.escape(t["t3s_tip_h3"], quote=True)) == 1, "strength tooltip on every card, the rank test sentence on H3 only"  # tooltips
-charts = at.tabs[2].get("vega_lite_chart")  # the six mini charts
-assert len(charts) == 6, "six mini charts"  # one per card
-chart_file = pd.read_csv(folder / pa["hyp_charts"])  # H2 to H5 chart rows
-for (_, card_), chart_ in zip(order.iterrows(), charts):  # card by card
-    hid = card_["id"]  # hypothesis id
-    if hid in ("H1", "H6"):  # bucket files
-        src, col = (h1, "new_style_rate") if hid == "H1" else (h6, "release_next_year_rate")  # file and rate column
-        want = [(str(b_), round(v, 9)) for b_, v in zip(src["bucket"], src[col])]  # expected rows
-    else:  # chart file
-        part = chart_file[chart_file["id"] == hid]  # this card's rows
-        want = [(str(b_), round(v, 9)) for b_, v in zip(part["label"], part["value"])]  # expected rows
-    got_rows = [r for d in chart_.proto.datasets for r in arrow.ipc.open_stream(d.data.data).read_all().to_pylist()]  # chart data
-    assert [(str(r["label"]), round(r["value"], 9)) for r in got_rows] == want, f"mini chart of {hid} equals the files"  # exact
-    cs = json.loads(chart_.proto.spec)  # chart spec
-    assert cs["layer"][0]["mark"]["color"] == cfg["design"]["palette"]["timing" if hid == "H6" else "style"] and cs["height"] == cfg["design"]["chart"]["height_mini"], f"mini chart color and height of {hid}"  # style or timing color
+assert "ui-qtext" not in c_raw and "ui-meter" not in c_raw and "ui-answer" not in c_raw and "ui-chip'" not in c_raw and "hyp-card" not in c_raw, "no card grid, strength bars or chips"  # grid gone
+charts = at.tabs[2].get("vega_lite_chart")  # the charts of the view
+assert len(charts) == 1, "one chart"  # no mini charts
+got_rows = [r for d in charts[0].proto.datasets for r in arrow.ipc.open_stream(d.data.data).read_all().to_pylist()]  # chart data
+assert len(got_rows) == 6 and [r["short_label"] for r in got_rows] == list(order["short_label"]), "six bars in descending order of strength"  # rows
+assert [round(r["effect_size"], 9) for r in got_rows] == [round(v, 9) for v in order["effect_size"]], "bar values equal the effect sizes of the file"  # values
+cs = json.loads(charts[0].proto.spec)  # chart spec
+assert cs["height"] == cfg["design"]["chart"]["height_strength"] and cs["layer"][0]["mark"]["type"] == "bar", "chart height and bar mark"  # style
+assert cs["layer"][0]["encoding"]["x"]["scale"]["domain"] == [0, cfg["design"]["chart"]["strength_axis_max"]] and cfg["design"]["chart"]["strength_axis_max"] > cards["effect_size"].max(), "axis maximum is above every effect size"  # axis
+assert [r["color"] for r in got_rows] == [cfg["design"]["palette"]["timing" if i == "H6" else "style"] for i in order["id"]], "timing color for H6, style color for the others"  # colors
+for r, (_, o) in zip(got_rows, order.iterrows()):  # bar by bar
+    assert r["question"] == o["question"] and r["answer_text"] == o["answer"].format(**json.loads(o["values"])), f"tooltip question and answer of {o['id']} equal the file"  # tooltip text
+    assert (t["t3s_tip_h3"] in r["strength_text"]) == (o["id"] == "H3") and o["effect_measure"] in r["strength_text"] and f"{o['effect_size']:.2f}" in r["strength_text"], f"tooltip strength of {o['id']}"  # strength and rank test line
 assert "<svg" not in c_raw and not re.search(r"\bWHEN\b|\bWHAT\b", c_raw) and t["t3_headline"] not in c_txt, "Six tests view: no svg, no WHEN or WHAT, Two patterns content gone"  # clean view
 print("tab 3 six tests ok")  # result
 pill(vk["tab3"]).set_value(t["t3_view_patterns"]).run()  # back to Two patterns
@@ -308,7 +299,7 @@ back = spec_rows(2)  # the two charts again
 assert [[r["bucket"] for r in rows] for rows in back] == [list(h1["bucket"]), list(h6["bucket"])] and t["t3_headline"] in plain(tab_text(2)), "Two patterns view returns with the file bars"  # switch back
 print("tab 3 views ok")  # result
 placeholder = re.compile(r"\{[^}]*\}")  # a placeholder in braces
-bad = {k: v for k, v in t.items() if k != "t3s_tip_strength" and re.search(r"\d", placeholder.sub("", v))}  # texts with a digit outside a placeholder, except the 0 to 1 scale of the strength tooltip
+bad = {k: v for k, v in t.items() if k != "t3s_line" and re.search(r"\d", placeholder.sub("", v))}  # texts with a digit outside a placeholder, except the 0 to 1 scale of the muted line
 assert not bad, f"digits outside placeholders: {bad}"  # none, no exception was needed
-print("static_tabs texts: no digit outside a placeholder (only the 0 to 1 scale in t3s_tip_strength)")  # result
+print("static_tabs texts: no digit outside a placeholder (only the 0 to 1 scale in t3s_line)")  # result
 print("run_static_apptest OK")  # done

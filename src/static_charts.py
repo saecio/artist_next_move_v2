@@ -152,15 +152,16 @@ def genre_chart(df: pd.DataFrame, texts: dict, cfg: dict) -> alt.Chart:  # genre
     return area.properties(height=ch["height_genres"])  # chart
 
 
-def mini_chart(df: pd.DataFrame, color: str, axis_title: str, cfg: dict) -> alt.LayerChart:  # small bars of a Six tests card
-    """Bars in file order with the rate printed above each bar, one color, a small axis title."""
+def strength_chart(df: pd.DataFrame, cfg: dict) -> alt.LayerChart:  # one bar per hypothesis
+    """Horizontal bars sorted by effect size, the label on the left, the number at the end of each bar, a tooltip with the question and the answer."""
     register_theme(cfg)  # shared theme
     c, ch = cfg["design"]["palette"], cfg["design"]["chart"]  # palette and chart settings
-    d = df[["label", "value"]].copy()  # only the columns used
-    order = list(d["label"])  # file order
-    x = alt.X("label:N", sort=order, title=axis_title, axis=alt.Axis(labelAngle=ch["mini_label_angle"], labelLimit=ch["mini_label_limit"], labelFontSize=ch["axis_font"], titleFontSize=ch["axis_font"], grid=False))  # bucket axis
-    y = alt.Y("value:Q", axis=None, scale=alt.Scale(domain=[0, float(d["value"].max()) * ch["mini_headroom"]]))  # hidden y axis
-    base = alt.Chart(d).encode(x=x, y=y, tooltip=[alt.Tooltip("label:N", title=""), alt.Tooltip("value:Q", title="rate", format=".1%")])  # shared encoding
-    bars = base.mark_bar(color=color, cornerRadiusTopLeft=ch["bar_corner"], cornerRadiusTopRight=ch["bar_corner"])  # bars
-    text = base.mark_text(dy=-4, baseline="bottom", color=c["text"], fontSize=ch["axis_font"]).encode(text=alt.Text("value:Q", format=".0%"))  # rate on each bar
-    return alt.layer(bars, text).properties(height=ch["height_mini"])  # chart
+    t = cfg["static_tabs"]["texts"]  # texts
+    d = df[["short_label", "effect_size", "color", "question", "answer_text", "strength_text"]]  # only the columns used
+    y = alt.Y("short_label:N", sort=list(d["short_label"]), title=None, axis=alt.Axis(labelFontSize=ch["label_font"], labelLimit=ch["strength_label_limit"], labelColor=c["text"], grid=False, ticks=False, domain=False))  # labels, strongest first
+    x = alt.X("effect_size:Q", title=None, scale=alt.Scale(domain=[0, ch["strength_axis_max"]], nice=False), axis=alt.Axis(labelFontSize=ch["axis_font"], grid=True, format=".1f"))  # strength axis with a light grid
+    tip = [alt.Tooltip("question:N", title=t["t3s_tt_question"]), alt.Tooltip("answer_text:N", title=t["t3s_tt_answer"]), alt.Tooltip("strength_text:N", title=t["t3s_tt_strength"])]  # question, answer, strength
+    base = alt.Chart(d).encode(y=y, x=x, tooltip=tip)  # shared encoding
+    bars = base.mark_bar(size=ch["strength_bar"], cornerRadiusTopRight=ch["bar_corner"], cornerRadiusBottomRight=ch["bar_corner"]).encode(color=alt.Color("color:N", scale=None))  # bars, color from the data
+    text = base.mark_text(align="left", dx=6, color=c["text"], fontSize=ch["label_font"]).encode(text=alt.Text("effect_size:Q", format=".2f"))  # number at the end of the bar
+    return alt.layer(bars, text).properties(height=ch["height_strength"])  # chart

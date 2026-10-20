@@ -16,8 +16,8 @@ from config import CONFIG  # noqa: E402  project settings
 from style_tab import forecast_table, mark_for, style_summary, style_years, validation_figures, with_reality, year_status  # noqa: E402  tab 7 logic
 from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reliability_lines, route_for_year, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
 from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, open_year_text, star_in_row, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
-from static_charts import dots_chart, results_chart, works_chart  # noqa: E402  Altair charts of tabs 2 and 5
-from static_tabs import dots_panels, strip_html, results_data, tab1_head_html, tab1_kpis_html, tab1_panels, card_parts, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
+from static_charts import dots_chart, results_chart, strength_chart, works_chart  # noqa: E402  Altair charts of tabs 2, 3 and 5
+from static_tabs import dots_panels, strip_html, results_data, tab1_head_html, tab1_kpis_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
 from ui_components import base_css, header_html  # noqa: E402  design system
 from demo_game import (  # noqa: E402  pure game functions
     hidden_counts, new_state, next_year, scored_years, scoreboard, session_total,  # imported names
@@ -113,14 +113,8 @@ with tabs[2]:  # Data exploration
     view3 = view_selector(cfg, "tab3")  # Two patterns or Six tests
     if view3 == cfg["static_tabs"]["texts"]["t3_view_tests"]:  # Six tests view
         st.html(tab3s_head_html(cfg))  # headline from the strongest pattern
-        table = cards_table(cfg)  # cards, strongest first
-        for start in range(0, len(table), cfg["static_tabs"]["grid_cols"]):  # one grid row at a time
-            for col, (_, row) in zip(st.columns(cfg["static_tabs"]["grid_cols"]), table.iloc[start:start + cfg["static_tabs"]["grid_cols"]].iterrows()):  # cards of this row
-                parts = card_parts(cfg, row)  # question, mini chart and bottom block
-                with col, st.container(border=True, key=f"hyp-card-{row['id']}"):  # compact card
-                    st.html(parts["question"])  # plain question
-                    st.altair_chart(parts["chart"], theme=None, width="stretch")  # mini bars
-                    st.html(parts["bottom"])  # answer, strength bar, chip
+        with st.container(border=True):  # card
+            st.altair_chart(strength_chart(cards_table(cfg), cfg), theme=None, width="stretch")  # one bar per hypothesis
     else:  # Two patterns view
         st.html(tab3_head_html(cfg))  # headline, only the conclusion the data supports
         for col, panel in zip(st.columns(2), tab3_panels(cfg)):  # Style card and Timing card

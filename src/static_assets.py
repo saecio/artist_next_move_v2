@@ -34,7 +34,7 @@ def incomplete_from_year() -> int:  # first year still being filled in
 def output_paths(sc: dict) -> dict:  # absolute path of each new file
     """Map each output key to its path under the static folder."""
     folder = ROOT / sc["paths"]["dir"]  # output folder
-    return {k: folder / sc["paths"][k] for k in ("h1_buckets", "h6_buckets", "data_figures", "hypotheses", "works_per_year", "data_quality", "genre_share", "hyp_cards", "hyp_charts")}  # nine files
+    return {k: folder / sc["paths"][k] for k in ("h1_buckets", "h6_buckets", "data_figures", "hypotheses", "works_per_year", "data_quality", "genre_share", "hyp_cards", "hyp_labels")}  # nine files
 
 
 def build_h1(works: pd.DataFrame) -> pd.DataFrame:  # Hypothesis 1 buckets
@@ -181,8 +181,8 @@ def pct_text(value: float) -> str:  # a rate as percent text
     return f"{value * 100:.1f}%"  # for the answer placeholders
 
 
-def build_cards(sc: dict, works: pd.DataFrame, h1: pd.DataFrame, h6: pd.DataFrame) -> tuple:  # the card table, the mini chart table and the H1 chi-square
-    """One row per hypothesis (id, question, answer template, placeholder values, effect size and measure, h0_rejected, source), the mini chart rows of H2 to H5 and the H1 chi-square for the controls."""
+def build_cards(sc: dict, works: pd.DataFrame, h1: pd.DataFrame, h6: pd.DataFrame) -> tuple:  # the card table and the H1 chi-square
+    """One row per hypothesis (id, question, answer template, placeholder values, effect size and measure, h0_rejected, source), and the H1 chi-square for the controls."""
     cards, summary = sc["cards"], sc["hypotheses"]  # card settings and the hypotheses entries
     tr, m = artist_style_transitions(works), CONFIG["what"]["min_previous_works"]  # transitions and the modeling threshold
     n_h1 = int(h1["transitions"].sum())  # transitions behind H1
@@ -206,10 +206,12 @@ def build_cards(sc: dict, works: pd.DataFrame, h1: pd.DataFrame, h6: pd.DataFram
         "H5": {"a": pct_text(missing[True]), "b": pct_text(missing[False])}, "H6": rate_range(h6, "release_next_year_rate"),  # H5 and H6
     }
     rows = [{"id": i, "question": c["question"], "answer": c["answer"], "values": json.dumps(values[i]), "effect_size": round(effect[i], 4), "effect_measure": c["measure"], "h0_rejected": summary[i]["h0_rejected"], "source": summary[i]["source"]} for i, c in cards["items"].items()]  # one row per hypothesis
-    k = cards["h2_chart_genres"]  # genres drawn at each end
-    pick = pd.concat([genre_rates.head(k), genre_rates.tail(k)])  # top and bottom genres
-    charts = [("H2", g, v) for g, v in pick.items()] + [("H3", b, v) for b, v in gap.items()] + [("H4", b, v) for b, v in styles.items()] + [("H5", lab, missing[flag]) for lab, flag in zip(cards["h5_labels"], (True, False))]  # id, label, rate
-    return pd.DataFrame(rows), pd.DataFrame(charts, columns=["id", "label", "value"]).assign(label=lambda d: d["label"].astype(str)), chi_h1  # card table, chart table and H1 chi-square
+    return pd.DataFrame(rows), chi_h1  # card table and H1 chi-square
+
+
+def build_labels(sc: dict) -> pd.DataFrame:  # short label of each hypothesis
+    """id, short_label from the card settings, the only place of these texts."""
+    return pd.DataFrame([(i, c["short_label"]) for i, c in sc["cards"]["items"].items()], columns=["id", "short_label"])  # one row per hypothesis
 
 
 def check_card_controls(sc: dict, cards: pd.DataFrame, chi_h1: float, h1: pd.DataFrame) -> list:  # failed controls of the card file

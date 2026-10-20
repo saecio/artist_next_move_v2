@@ -10,7 +10,7 @@ from ui_components import card, card_title, chip, headline, info, kpi_card  # de
 from static_diagrams import clean_flow  # HTML and CSS flow of tab 2
 
 from config import CONFIG, ROOT  # project settings and root
-from static_charts import genre_chart, mini_chart, steps_chart, timeline_chart  # Altair charts of tabs 3, 2 and 1
+from static_charts import genre_chart, steps_chart, strength_chart, timeline_chart  # Altair charts of tabs 3, 2 and 1
 from style_tab import validation_figures  # tab 7 test years, reused for tab 8 (read only)
 
 
@@ -281,40 +281,18 @@ def tab2g_parts(cfg: dict) -> dict:  # parts of the Genres card
     return {"title": card_title(t["t2g_title"], t["t2g_tip_title"]), "chart": chart, "note": note}  # card parts
 
 
-def cards_table(cfg: dict) -> pd.DataFrame:  # cards of the Six tests view
-    """hypotheses_cards.csv sorted by effect size, strongest first, with the answer filled from its stored values."""
-    d = load_csv(static_path(cfg["static_tabs"], "hyp_cards")).sort_values("effect_size", ascending=False).reset_index(drop=True)  # strongest first
+def cards_table(cfg: dict) -> pd.DataFrame:  # rows of the Six tests chart
+    """hypotheses_cards.csv with the short labels, sorted by effect size (strongest first), the answer filled from its stored values, the strength text and the bar color."""
+    sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
+    d = load_csv(static_path(sc, "hyp_cards")).merge(load_csv(static_path(sc, "hyp_labels")), on="id")  # cards with their short labels
+    d = d.sort_values("effect_size", ascending=False).reset_index(drop=True)  # strongest first
     d["answer_text"] = [a.format(**json.loads(v)) for a, v in zip(d["answer"], d["values"])]  # placeholders filled
-    return d  # one row per card
+    d["strength_text"] = [f"{e:.2f} ({m})" + (" " + sc["texts"]["t3s_tip_h3"] if i == "H3" else "") for e, m, i in zip(d["effect_size"], d["effect_measure"], d["id"])]  # strength with its measure, H3 adds the rank test sentence
+    d["color"] = [pal["timing" if i == "H6" else "style"] for i in d["id"]]  # timing color for H6, style color for the others
+    return d  # one row per hypothesis
 
-
-def tab3s_head_html(cfg: dict) -> str:  # headline of the Six tests view
-    """Headline with the plain question of the strongest pattern."""
-    return headline(cfg["static_tabs"]["texts"]["t3s_headline"].format(question=cards_table(cfg).loc[0, "question"]))  # block
-
-
-def card_chart_rows(cfg: dict, hid: str) -> pd.DataFrame:  # mini chart rows of one card
-    """label, value: H1 and H6 from their bucket files, the others from hypotheses_charts.csv."""
-    sc = cfg["static_tabs"]  # settings
-    for s in sc["tab3_series"]:  # the two bucket files
-        if s["hypothesis"] == hid:  # H1 or H6
-            d = load_csv(static_path(sc, s["file"]))  # bucket file
-            return pd.DataFrame({"label": d[s["bucket"]].astype(str), "value": d[s["rate"]]})  # label, value
-    d = load_csv(static_path(sc, "hyp_charts"))  # H2 to H5
-    return d[d["id"] == hid][["label", "value"]].reset_index(drop=True)  # this card's rows
-
-
-def card_color(cfg: dict, hid: str) -> str:  # color of a card
-    """Timing color for H6, Style color for the others."""
-    return cfg["design"]["palette"]["timing" if hid == "H6" else "style"]  # question color
-
-
-def card_parts(cfg: dict, row: pd.Series) -> dict:  # parts of one Six tests card
-    """Question html, mini chart, and the html with the answer, the strength bar and the chip."""
-    t, color = cfg["static_tabs"]["texts"], card_color(cfg, row["id"])  # texts and card color
-    axis = cfg["static_tabs"]["cards"]["items"][row["id"]]["axis"]  # axis title of the mini chart
-    tip = t["t3s_tip_strength"] + (" " + t["t3s_tip_h3"] if row["id"] == "H3" else "")  # H3 adds the rank test sentence
-    v = float(row["effect_size"])  # strength
-    meter = f"<div class='ui-split'><span class='ui-label'>{html.escape(t['t3s_strength'])}{info(tip)}</span><span class='ui-label' style='color:{cfg['design']['palette']['text']};font-weight:700'>{v:.2f}</span></div><div class='ui-meter'><div class='ui-meter-fill' style='width:{v * 100:.1f}%;background:{color}'></div></div>"  # label, number and bar
-    chip_row = f"<div class='ui-chips'>{chip(t['t3s_chip'], color)}</div>" if row["h0_rejected"] == "yes" else ""  # only where the null hypothesis was rejected
-    return {"question": f"<div class='ui-qtext'>{html.escape(row['question'])}</div>", "chart": mini_chart(card_chart_rows(cfg, row["id"]), color, axis, cfg), "bottom": f"<div class='ui-answer'>{html.escape(row['answer_text'])}</div>{meter}{chip_row}"}  # card parts
+def tab3s_head_html(cfg: dict) -> str:  # headline and muted line of the Six tests view
+    """Headline with the short label of the strongest pattern, then the muted line with the honesty tooltip."""
+    t = cfg["static_tabs"]["texts"]  # texts
+    line = f"<div class='ui-caption'>{html.escape(t['t3s_line'])}{info(t['t3s_tip_honesty'])}</div>"  # muted line and info tooltip
+    return headline(t["t3s_headline"].format(label=cards_table(cfg).loc[0, "short_label"])) + line  # block
