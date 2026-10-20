@@ -18,7 +18,7 @@ def css(poc: dict) -> str:  # style block from the config
         f".poc-muted{{opacity:{s['muted_opacity']}}}",  # secondary text keeps the theme text color
         f".poc-pred{{border:{s['predicted_border']}px solid {c['card_border_predicted']};box-shadow:0 0 {s['predicted_shadow']}px {c['card_border_predicted']}}}",  # card of the predicted year
         f".poc-marks{{display:flex;gap:{s['card_gap']}px;margin-top:{s['card_gap']}px}}",  # row of the two marks
-        f".poc-mark{{display:inline-flex;align-items:center;justify-content:center;width:{s['mark_size']}px;height:{s['mark_size']}px;border-radius:50%;font-size:{s['card_font']}px;font-weight:700}}",  # one round mark
+        f".poc-mark{{display:inline-flex;align-items:center;justify-content:center;min-width:{s['mark_size']}px;height:{s['mark_size']}px;box-sizing:border-box;padding:0 {s['mark_pad']}px;border-radius:{s['pill_radius']}px;font-size:{s['mark_font']}px;font-weight:{s['mark_weight']};line-height:1}}",  # one solid mark, round for one glyph, a pill for a glyph and an asterisk
         f".poc-earlier{{font-size:{s['note_font']}px;opacity:{s['muted_opacity']};margin-bottom:{s['card_gap']}px}}",  # marker of hidden earlier years
         f".poc-panel{{font-size:{s['table_font']}px;margin-top:{s['card_padding']}px}}",  # prediction panel
         ".poc-panel-title{font-weight:700;margin-bottom:4px}",  # panel title
@@ -28,17 +28,18 @@ def css(poc: dict) -> str:  # style block from the config
         f".poc-chips{{display:flex;gap:{s['card_gap']}px;flex-wrap:wrap}}",  # scoreboard chips
         f".poc-chip{{background:{c['chip_bg']};color:{c['chip_fg']};border-radius:{s['card_radius']}px;padding:{s['cell_padding']}px {s['card_padding']}px;font-size:{s['chip_font']}px;font-weight:600}}",  # one chip
     ]  # close the rule list
-    for kind in ("green", "red", "amber", "grey"):  # one rule per color
-        rules.append(f".poc-mark.{kind},.poc-cell.{kind}{{background:{c[kind]['bg']};color:{c[kind]['fg']};font-weight:600}}")  # mark and result cell colors
+    for kind in ("green", "red", "grey"):  # one rule per color
+        rules.append(f".poc-cell.{kind}{{background:{c[kind]['bg']};color:{c[kind]['fg']};font-weight:600}}")  # result cell colors
+        rules.append(f".poc-mark.{kind}{{background:{c['mark_' + kind]['bg']};color:{c['mark_' + kind]['fg']}}}")  # solid mark colors
     return "<style>" + "".join(rules) + "</style>"  # the style element
 
 
 def badge_kind(done: bool, label: str | None, counted: bool, predicted: str) -> tuple:  # color and mark key of a prediction
-    """Color and mark key: grey before the reveal or without reality, amber with an asterisk when not counted, green or red otherwise."""
+    """Color and mark key: grey before the reveal or without reality, green or red otherwise, with an asterisk after the glyph when the result is shown for reference only (not counted)."""
     if not done or label is None:  # before the reveal, or no stored label
         return "grey", "mark_dot"  # grey dot
-    if not counted:  # label after the last holdout year: the real result in amber with an asterisk
-        return "amber", ("mark_ok_flagged" if predicted == label else "mark_bad_flagged")  # check or cross with an asterisk
+    if not counted:  # result shown for reference only: the real result, green or red, with an asterisk
+        return ("green", "mark_ok_flagged") if predicted == label else ("red", "mark_bad_flagged")  # check or cross followed by an asterisk
     return ("green", "mark_ok") if predicted == label else ("red", "mark_bad")  # match or mismatch
 
 
@@ -164,7 +165,7 @@ def panel_html(rows: list, note_list: list, poc: dict) -> str:  # the always vis
             body.append(f"<tr><th>{html.escape(r['label'])}</th><td colspan='4'>{html.escape(r['single'])}</td></tr>")  # no WHAT score
         else:  # full row
             body.append(f"<tr><th>{html.escape(r['label'])}</th><td>{html.escape(r['score'])}</td><td>{html.escape(r['prediction'])}</td><td>{html.escape(r['reality'])}</td><td class='poc-cell {r['kind']}'>{html.escape(r['result'])}</td></tr>")  # colored result cell
-    legend = f"<div class='poc-note'>{html.escape(t['legend_amber'])}</div>"  # fixed legend line under the table
+    legend = f"<div class='poc-note'>{html.escape(t['legend_reference'])}</div>"  # fixed legend line under the table
     notes_html = "".join(f"<div class='poc-note'>{html.escape(n)}</div>" for n in note_list)  # small notes
     return css(poc) + f"<div class='poc-panel'><div class='poc-panel-title'>{html.escape(t['panel_title'])}</div><table class='poc-table'><tr><th></th>{head}</tr>{''.join(body)}</table>{legend}{notes_html}</div>"  # panel, legend first
 
@@ -185,7 +186,6 @@ def multi_css(poc: dict) -> str:  # style rules of the mode 2 table, all scoped 
         f".poc-multi .poc-pill{{display:inline-block;padding:{s['pill_pad_v']}px {s['pill_pad_h']}px;border-radius:{s['pill_radius']}px;border:{s['pill_border']}px solid {c['accent']};font-size:{s['pill_font']}px;font-weight:600;white-space:nowrap}}",  # pill shape
         f".poc-multi .poc-pill.yes{{background:{c['accent']};color:{c['accent_fg']}}}",  # Yes and Likely: filled
         f".poc-multi .poc-pill.no{{background:transparent;color:{c['accent']}}}",  # No and Not likely: outlined
-        f".poc-multi .poc-mark{{width:{s['multi_mark_size']}px;height:{s['multi_mark_size']}px;font-size:{s['multi_mark_font']}px}}",  # larger result marks
     ]  # end of the rules
     return "<style>" + "".join(rules) + "</style>"  # the style element
 
@@ -256,8 +256,7 @@ def style_table_html(rows: pd.DataFrame, summary: dict | None, flagged: bool, st
         color, mark = marks_fn(r["in_range"], flagged)  # mark of the row
         actual = html.escape(tx["no_actual"]) if pd.isna(r["actual_works"]) else f"{r['actual_works']:,.0f}"  # actual Works, plain
         growth = html.escape(tx["no_actual"]) if pd.isna(r["actual_growth"]) else pct(r["actual_growth"])  # actual growth, same units as the expected growth
-        cell = "poc-cell amber" if flagged else ""  # flagged years show the realities in amber
-        body.append(f"<tr><th>{i}</th>{model}<td class='{cell}'>{actual}</td><td class='{cell}'>{growth}</td><td><span class='poc-mark {color}'>{html.escape(t[mark])}</span></td></tr>")  # full row
+        body.append(f"<tr><th>{i}</th>{model}<td>{actual}</td><td>{growth}</td><td><span class='poc-mark {color}'>{html.escape(t[mark])}</span></td></tr>")  # full row
     lines = []  # notes under the table
     if stage == "reveal" and summary is not None:  # counted years only
         lines = [tx["summary_hits"].format(k=summary["hits"], n=summary["n"]), tx["summary_range"].format(k=summary["in_range"], n=summary["m"])]  # both summary lines

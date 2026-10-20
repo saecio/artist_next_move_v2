@@ -15,8 +15,8 @@ tabs:  # tab titles, in display order
   - Global style forecast  # tab title
   - Limits and next steps  # tab title
 notices:  # texts shown verbatim
-  style_notice: "The style forecast is global, not per artist. It predicts what gets catalogued in Discogs."  # tab 7
-  projection_notice: "Years after 2022 are projection without ground truth."  # tabs 6 and 7
+  style_notice: "Style forecast: which music styles will see the most new releases catalogued in Discogs next year."  # tab 7
+  projection_notice: "Years after 2022 have no ground truth."  # shortened; not shown on tab 7, where the reason of each flagged year carries this meaning
   pending_notice: "Pending."  # tabs without content yet
 ui:  # interface labels
   genre_label: "Genre"  # genre selector
@@ -235,9 +235,9 @@ poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, color
     mark_dot: "●"  # grey mark before the reveal or without reality
     mark_ok: "✓"  # mark of a prediction that matches the reality
     mark_bad: "✗"  # mark of a prediction that does not match the reality
-    mark_ok_flagged: "✓*"  # prediction equals the reality, label after the last holdout year (amber)
-    mark_bad_flagged: "✗*"  # prediction differs from the reality, label after the last holdout year (amber)
-    legend_amber: "Amber with an asterisk: reality may be incomplete (cataloguing delay)."  # fixed legend line under the table
+    mark_ok_flagged: "✓*"  # prediction equals the reality, result shown for reference only (green, with an asterisk)
+    mark_bad_flagged: "✗*"  # prediction differs from the reality, result shown for reference only (red, with an asterisk)
+    legend_reference: "An asterisk marks a result shown for reference only, not included in the results."  # fixed legend line under the table
     mark_when_title: "WHEN"  # hover text of the WHEN mark
     mark_what_title: "WHAT"  # hover text of the WHAT mark
     action_lock: "Lock my answer"  # action button, step question
@@ -252,8 +252,10 @@ poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, color
   colors:  # result and mark colors, each with its own text color so they do not depend on the theme
     green: {bg: "#d1fae5", fg: "#065f46"}  # prediction matches the reality
     red: {bg: "#fee2e2", fg: "#991b1b"}  # prediction does not match the reality
-    amber: {bg: "#fef3c7", fg: "#92400e"}  # label after the last holdout year
     grey: {bg: "#e5e7eb", fg: "#374151"}  # before the reveal, or no reality
+    mark_green: {bg: "#16a34a", fg: "#ffffff"}  # solid mark: prediction matches the reality, white glyph
+    mark_red: {bg: "#dc2626", fg: "#ffffff"}  # solid mark: prediction does not match the reality, white glyph
+    mark_grey: {bg: "#6b7280", fg: "#ffffff"}  # solid mark: no reality yet, grey dot
     card_border: "rgba(128,128,128,0.6)"  # neutral border, readable on light and dark pages
     card_border_predicted: "#2563eb"  # border of the card of the predicted year
     chip_bg: "#e0e7ff"  # scoreboard chip background
@@ -269,9 +271,10 @@ poc:  # standalone proof of concept page app/poc_timeline.py: texts, keys, color
     card_radius: 6  # corner radius
     card_font: 12  # card text size
     title_lines: 2  # most lines of one title
-    mark_size: 16  # diameter of a mark
-    multi_mark_size: 22  # diameter of a result mark in the mode 2 table
-    multi_mark_font: 14  # text size of a result mark in the mode 2 table
+    mark_size: 24  # height and least width of a mark, shared by tab 6 mode 2, tab 7 and the proof of concept
+    mark_font: 15  # glyph size of a mark
+    mark_weight: 800  # glyph weight of a mark, bold
+    mark_pad: 5  # horizontal padding of a mark, room for the asterisk
     pill_font: 12  # verdict pill text size
     pill_pad_v: 2  # verdict pill vertical padding
     pill_pad_h: 12  # verdict pill horizontal padding
@@ -324,14 +327,15 @@ route:  # tab 6 mode 2: several artists in one year, read-only table
 
 style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
   top_n: 10  # styles in the table, also the k of the hits
+  headline: "Validated on 2018 to 2022: on average 6.0 of the real top 10 styles appear in the forecast top 10."  # one neutral line, always visible
   years:  # every target year of the selector, none is hidden
     counted: [2018, 2019, 2020, 2021, 2022]  # final test years, counted in the summary
-    flagged: [2023, 2024]  # shown with the reality in amber, no summary
+    flagged: [2023, 2024]  # shown for reference only with the asterisk marks, no summary
     none: [2025, 2026]  # no forecast
   reasons:  # reason shown for a flagged year
-    2023: "Year 2023 is excluded from the test: anomalous and close to the loading lag. Forecast and reality are shown, not counted."
-    2024: "Year 2024: the reality is display only and incomplete because of cataloguing delay. It enters no training, tuning or metric."
-  none_text: "No forecast for this year: the counts of 2024 and later are incomplete because of cataloguing delay, and a model fed with them would read it as a fall in growth."  # years without forecast
+    2023: "Year 2023 is shown for reference only and is not included in the results: its Discogs counts show unusual jumps in some styles and cannot be confirmed as complete."
+    2024: "Year 2024 is shown for reference only and is not included in the results: Discogs was still adding its releases."
+  none_text: "No forecast for this year: Discogs was still adding releases of 2024 and later, so their counts are incomplete and would read as a fall in growth."  # years without forecast
   notice: "The Random Forest is not separable from repeating last year: on the test years {validation}, top 10 hits {rf} against {rl} for repeat_last (95% intervals overlap). The recommendation stays repeat_last. The ranges of the predicted top 10 under-cover: {obs} observed against {nom} nominal on the development years."  # notice on top
   figures: {validation: "2018 to 2022", rf: "6.00 [5.20, 7.00]", rl: "5.40 [4.00, 6.80]", obs: "0.62 to 0.64", nom: "0.80"}  # figures of the notice, from the entries "Style trend forecast, adoption and pass rule results" and the Limitations bullet on the 5-year test
   noise_note: "Only five test years: hits are noisy."  # in How to read this
@@ -359,6 +363,7 @@ style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
     predict_button: "Predict"  # step 1 button
     reveal_button: "Show reality"  # step 2 button
     how_label: "How to read this"  # expander
+    validation_label: "Validation and limits"  # closed expander with the full validation text, on the page from the start
     placeholder: "?"  # placeholder cell
     no_actual: "n/a"  # a style without an actual count
 

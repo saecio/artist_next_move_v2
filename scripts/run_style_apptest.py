@@ -96,8 +96,12 @@ def check_default() -> None:  # test 1
     at = new_app()  # app
     sel = at.selectbox(key=k["year"])  # year selector
     assert list(sel.options) == [str(y) for y in range(2018, 2027)], f"every year must be listed: {list(sel.options)}"  # nothing hidden
-    notice = st_cfg["notice"].format(**st_cfg["figures"])  # expected notice
-    assert notice in [w.value for w in at.warning], "the notice must be on screen"  # notice
+    notice = st_cfg["notice"].format(**st_cfg["figures"])  # expected full text
+    assert not any(notice in w.value for w in at.warning), "the full text is no longer a permanent warning"  # no warning
+    assert st_cfg["headline"] in [c.value for c in at.caption], "the neutral headline line is visible"  # headline
+    ex = next(e for e in at.expander if e.label == tx["validation_label"])  # the validation expander, there before Predict
+    assert not ex.proto.expanded and notice in [c.value for c in ex.caption] and st_cfg["noise_note"] in [c.value for c in ex.caption], "closed expander with the full text and the noise note"  # contents
+    assert cfg["notices"]["style_notice"] in [w.value for w in at.warning], "the style notice is shown"  # replaced notice
     for fig in st_cfg["figures"].values():  # every figure comes from the yaml
         assert fig in notice  # figure present
     print(f"1 default: years {list(sel.options)}, notice with figures {list(st_cfg['figures'].values())}, no exception")  # result
@@ -150,23 +154,25 @@ def check_order_and_reality() -> None:  # tests 3 and 4
 
 
 def check_flagged_and_none() -> None:  # tests 5 and 6
-    """2023 and 2024 are amber with no summary; 2025 and 2026 show the text and no table."""
+    """2023 and 2024 have asterisk marks in green or red and no summary; 2025 and 2026 show the text and no table."""
     for year in (2023, 2024):  # flagged years
         at = go(set_year(new_app(), year), "reveal")  # full table
         assert st_cfg["reasons"][year] in [i.value for i in at.info], f"{year}: the reason must be shown"  # reason
         cols = set(marks(at))  # mark colors
-        assert cols and cols <= {"amber", "grey"}, f"{year}: marks must be amber or grey: {cols}"  # amber rule
+        assert cols and cols <= {"green", "red"} and "amber" not in table(at), f"{year}: marks must be green or red, no amber left: {cols}"  # colors
+        every = re.findall(r"<span class='poc-mark (\w+)'>(.*?)</span>", table(at))  # every mark with its glyph
+        assert len(every) == N and all(g in ("✓*", "✗*") and (c == "green") == (g == "✓*") for c, g in every), f"{year}: every flagged mark has the asterisk and the matching color"  # asterisk and color
         text = html.unescape(table(at))  # table text
         assert tx["summary_hits"].split("{")[0] not in text and tx["summary_range"].split("{")[0] not in text, f"{year}: no summary for a flagged year"  # no summary
         assert "✓*" in text or "✗*" in text, f"{year}: marks carry the asterisk"  # asterisk
-        assert table(at).count("class='poc-cell amber'") == 2 * N, f"{year}: the two actual cells of every row are amber"  # amber realities
+        assert "class='poc-cell" not in table(at), f"{year}: the actual cells use the normal cell style"  # no cell fill
         g24 = [x[6] for x in rows(at)]  # actual growth cells
         assert all("%" in c for c in g24), f"{year}: actual growth is shown (computed from actual Works and the base)"  # shown
         r = rows(at)  # rows
         assert len(r) == N and [int(x[0]) for x in r] == list(range(1, N + 1)), f"{year}: {N} ranked rows"  # rows
         if year == 2024:  # stored forecast exists for 2024
             assert [x[1] for x in r] == ref_rows(2024)["style"].tolist(), "2024 order equals predictions.csv"  # order
-        print(f"5 {year}: reason shown, {len(r)} rows, marks {sorted(cols)}, asterisk present, no summary")  # result
+        print(f"5 {year}: reason shown, {len(r)} rows, marks {sorted(cols)} all with the asterisk, no amber, no summary")  # result
     for year in (2025, 2026):  # years without forecast
         at = set_year(new_app(), year)  # year
         assert st_cfg["none_text"] in [w.value for w in at.warning], f"{year}: the no-forecast text must be shown"  # text

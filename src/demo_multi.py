@@ -51,7 +51,7 @@ def text_or_none(x):  # a missing label as None
 
 
 def row_marks(row: pd.Series) -> dict:  # marks of one row
-    """(color, mark key) of the WHEN and WHAT results of a row; grey when there is no reality, amber with an asterisk when it is not counted."""
+    """(color, mark key) of the WHEN and WHAT results of a row; grey when there is no reality, green or red with an asterisk when it is not counted."""
     when = badge_kind(True, text_or_none(row["when_label"]), row["when_counted"], row["when_verdict"])  # WHEN mark
     what = ("grey", "mark_dot") if not row["what_available"] else badge_kind(True, text_or_none(row["what_label"]), row["what_safe"], row["what_verdict"])  # WHAT mark
     return {"when": when, "what": what}  # both marks

@@ -50,7 +50,7 @@ def with_reality(table: pd.DataFrame, year: int) -> pd.DataFrame:  # actual Work
 
 
 def mark_for(in_range, flagged: bool) -> tuple:  # color and mark key of a row
-    """Grey dot without reality; green check or red cross when counted; amber with an asterisk when the year is flagged."""
+    """Grey dot without reality; green check or red cross, followed by an asterisk when the year is flagged."""
     if in_range is None:  # no actual count
         return "grey", "mark_dot"  # grey dot
     return badge_kind(True, "yes" if in_range else "no", not flagged, "yes")  # same rule as mode 2

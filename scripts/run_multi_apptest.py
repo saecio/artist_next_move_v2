@@ -116,7 +116,7 @@ def check_boygenius() -> None:  # test 4
 
 
 def check_years() -> None:  # test 5
-    """2019 has a row without Work; 2024 is amber and uncounted; 2026 has no reality."""
+    """2019 has a row without Work; 2024 has asterisk marks and is uncounted; 2026 has no reality."""
     at = new_app()  # app
     at.selectbox(key=k["year"]).select(2019).run()  # 2019
     go(at, "reveal")  # the state reset, press again
@@ -126,13 +126,14 @@ def check_years() -> None:  # test 5
     go(at, "reveal")  # the state reset, press again
     h24 = table_html(at)  # table in 2024
     marks = re.findall(r"<span class='poc-mark (\w+)'>", h24)  # mark colors
-    assert marks and set(marks) <= {"amber", "grey"}, f"2024 marks must be amber or grey: {set(marks)}"  # amber rule
+    glyphs = re.findall(r"<span class='poc-mark (\w+)'>(.*?)</span>", h24)  # every mark with its glyph
+    assert glyphs and "amber" not in h24 and all((c == "grey" and g == "●") or (c in ("green", "red") and g in ("✓*", "✗*") and (c == "green") == (g == "✓*")) for c, g in glyphs), f"2024 marks must be green or red with the asterisk, or the grey dot: {glyphs}"  # no amber, asterisk and color match
     assert tx["summary_when"].format(k=0, n=0) in html.unescape(h24), "2024 rows are not counted"  # not counted
     at.selectbox(key=k["year"]).select(2026).run()  # 2026
     go(at, "reveal")  # the state reset, press again
     h26 = table_html(at)  # table in 2026
     assert tx["no_reality"] in h26 and set(re.findall(r"<span class='poc-mark (\w+)'>", h26)) <= {"grey"}, "2026 has no reality, grey marks only"  # last data year
-    print(f"5 years: 2019 gap row, 2024 marks {sorted(set(marks))} and 0 counted, 2026 no reality with grey marks, no exception")  # result
+    print(f"5 years: 2019 gap row, 2024 marks {sorted(set(glyphs))} and 0 counted, 2026 no reality with grey marks, no exception")  # result
 
 
 def check_manual_and_cap() -> None:  # test 6
@@ -195,15 +196,15 @@ def check_stages() -> None:  # test 8
     assert html.escape(tx["what_missing"].format(n=CONFIG["what"]["min_previous_works"])) in rows1["boygenius"], "the WHAT missing text shows after Predict"  # missing text
     how = next(e for e in at.expander if e.label == tx["how_label"])  # the expander after Predict
     caps = [c.value for c in how.caption]  # its lines
-    assert len(caps) == 3 and cfg["poc"]["texts"]["legend_amber"] in caps and sum("in 10" in c for c in caps) == 2, "the two reliability lines and the legend are in the expander"  # contents
+    assert len(caps) == 3 and cfg["poc"]["texts"]["legend_reference"] in caps and sum("in 10" in c for c in caps) == 2, "the two reliability lines and the legend are in the expander"  # contents
     assert "class='poc-note'" not in h1 and "poc-pill" in h1, "no note under the table after Predict, verdicts are pills"  # notes location
     assert ph in rows1["Kaytranada"], "realities stay placeholders after Predict"  # placeholder reality
     at = go(at, "reveal")  # Show reality
     h2 = table_html(at)  # table
     assert not any(b.key in (k["predict"], k["reveal"]) for b in at.button), "no step button after the reveal"  # buttons gone
     assert "poc-mark" in h2 and tx["summary_when"].split("{")[0] in html.unescape(h2) and tx["summary_what"].split("{")[0] in html.unescape(h2), "marks and both summary lines after Show reality"  # full
-    assert h2.count("class='poc-note'") == 2 and cfg["poc"]["texts"]["legend_amber"] not in html.unescape(h2), "only the two summary lines under the table, the legend is in the expander"  # notes location
-    assert cfg["poc"]["texts"]["legend_amber"] in [c.value for e in at.expander if e.label == tx["how_label"] for c in e.caption], "the legend stays in the expander after Show reality"  # legend
+    assert h2.count("class='poc-note'") == 2 and cfg["poc"]["texts"]["legend_reference"] not in html.unescape(h2), "only the two summary lines under the table, the legend is in the expander"  # notes location
+    assert cfg["poc"]["texts"]["legend_reference"] in [c.value for e in at.expander if e.label == tx["how_label"] for c in e.caption], "the legend stays in the expander after Show reality"  # legend
     print(f"8 stages: {h0.count(chr(39) + 'poc-ph' + chr(39))} placeholder cells -> model pills, expander with {len(caps)} lines, realities still '{ph}' -> marks and 2 summary lines under the table")  # result
 
 

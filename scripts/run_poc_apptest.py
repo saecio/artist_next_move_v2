@@ -124,7 +124,7 @@ for who in ("Kendrick Lamar", "Beyonce", "Peso Pluma", "boygenius"):  # pool B a
     if who == "boygenius":  # no WHAT score in any year
         assert cfg["poc"]["texts"]["no_what_score"] in table_of(at), "boygenius WHAT row must say there is no WHAT score"  # poc text of the missing score
         print(f"   boygenius {playable[0]}: WHAT row shows: {cfg['poc']['texts']['no_what_score']}")  # printed proof
-legend = cfg["poc"]["texts"]["legend_amber"]  # fixed legend text
+legend = cfg["poc"]["texts"]["legend_reference"]  # fixed legend text
 at, aid = new_app("Taylor Swift", False)  # flagged-year check
 while at.session_state[keys["state"]][aid]["year"] != 2024:  # walk to 2024
     press(at, aid, False)  # reveal
@@ -133,6 +133,7 @@ press(at, aid, False)  # reveal
 panel = table_of(at)  # panel HTML
 cells = re.findall(r"<td class='poc-cell (\w+)'>(.*?)</td>", panel)  # result cells
 print("flagged year 2024 result cells:", cells, "| legend present:", legend in panel)  # printed proof
-assert all(c == "amber" and m in ("✓*", "✗*") for c, m in cells), "flagged results must be amber with an asterisk"  # amber rule
+assert all(c in ("green", "red") and m in ("✓*", "✗*") and (c == "green") == (m == "✓*") for c, m in cells), "flagged results must be green or red with the asterisk"  # color and asterisk
+assert "amber" not in panel  # no amber left
 assert legend in panel and "⏳" not in panel  # legend present, hourglass gone
 print(f"\ntotal time {time.time() - t_all:.2f} s")  # total

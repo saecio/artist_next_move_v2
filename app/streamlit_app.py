@@ -49,7 +49,7 @@ def render_multi(cfg: dict) -> None:  # tab 6 mode 2: widgets only, the rows and
     if rows.empty:  # nothing selected
         return  # nothing to draw
     st.html(multi_table_html(rows, multi_summary(rows), g, rt, cfg["poc"], row_marks, CONFIG["what"]["min_previous_works"], state["stage"]))  # the table for this stage
-    lines = how_lines(state["stage"], reliability_lines(top, load_tables()["what_below"], g), cfg["poc"]["texts"]["legend_amber"])  # reliability lines and legend, from Predict on
+    lines = how_lines(state["stage"], reliability_lines(top, load_tables()["what_below"], g), cfg["poc"]["texts"]["legend_reference"])  # reliability lines and legend, from Predict on
     if lines:  # not in the placeholder stage
         with st.expander(tx["how_label"], expanded=False):  # collapsed by default
             for line in lines:  # one line each
@@ -201,7 +201,10 @@ with tabs[6]:  # Global style forecast
     stt = cfg["style_tab"]  # tab 7 settings
     sk, sx = stt["keys"], stt["texts"]  # widget keys and texts
     st.warning(notes["style_notice"])  # forecast is global
-    st.warning(stt["notice"].format(**stt["figures"]))  # not separable from repeat_last, test figures, under-coverage
+    st.caption(stt["headline"])  # one neutral visible line
+    with st.expander(sx["validation_label"], expanded=False):  # closed, on the page from the start
+        st.caption(stt["notice"].format(**stt["figures"]))  # comparison with repeat_last, recommendation, under-coverage, validation years
+        st.caption(stt["noise_note"])  # few years, hits are noisy
     year7 = st.selectbox(sx["year_label"], style_years(cfg), key=sk["year"])  # every target year, none hidden
     status = year_status(year7, cfg)  # kind and status line
     (st.info if status["kind"] != "none" else st.warning)(status["text"])  # reason of a flagged year or the no-forecast text
@@ -218,5 +221,5 @@ with tabs[6]:  # Global style forecast
         st.html(style_table_html(table7, style_summary(year7, stt["top_n"], cfg), status["kind"] == "flagged", stt, cfg["poc"], mark_for, state7["stage"], stt["top_n"]))  # the table for this stage
         if state7["stage"] != "placeholder":  # reading notes from Predict on
             with st.expander(sx["how_label"], expanded=False):  # collapsed by default
-                for line in (cfg["poc"]["texts"]["legend_amber"], stt["growth_note"], stt["range_note"], stt["noise_note"]):  # legend, range and noise notes
+                for line in (cfg["poc"]["texts"]["legend_reference"], stt["growth_note"], stt["range_note"]):  # legend, range and noise notes
                     st.caption(line)  # small text

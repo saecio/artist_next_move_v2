@@ -180,7 +180,7 @@ a = rrows[rrows["what_available"] & rrows["what_label"].notna() & rrows["what_sa
 assert (s["what_right"], s["what_n"]) == (int((a["what_verdict"] == a["what_label"]).sum()), len(a))  # WHAT count
 r24 = multi_rows(rcfg, route_ids(rcfg), 2024, cfg["threshold"], top["score_cutoff"], 8)  # 2024: labels after the holdout
 assert multi_summary(r24)["when_n"] == 0 and multi_summary(r24)["what_n"] == 0  # not counted
-assert {row_marks(r)["when"][0] for _, r in r24[r24["has_row"]].iterrows()} <= {"amber", "grey"}  # amber or grey only
+assert all(row_marks(r)["when"][1] in ("mark_ok_flagged", "mark_bad_flagged", "mark_dot") for _, r in r24[r24["has_row"]].iterrows())  # asterisk marks or the grey dot only, in 2024
 print(f"2018 rows {len(rrows)} sorted by WHEN score, summary {s}, 2024 summary {multi_summary(r24)}, caps respected")  # result
 from demo_multi import advance_stage, multi_signature  # two-step state machine
 sig = multi_signature(2018, [1, 2])  # signature of a selection
