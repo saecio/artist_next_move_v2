@@ -1,16 +1,16 @@
 """Static tabs 1 to 5 and 8: cached file loaders and the HTML of each tab. Texts and settings come from the static_tabs config."""
 
 import html  # escape of artist names
-import json  # result files of the Timing model
+import json  # result files of the Timing model and the stored card values
 
 import pandas as pd  # tables
 import streamlit as st  # cache decorator
 
-from ui_components import card, card_title, chip, headline, kpi_card  # design system helpers
+from ui_components import card, card_title, chip, headline, info, kpi_card  # design system helpers
 from static_diagrams import clean_flow  # HTML and CSS flow of tab 2
 
 from config import CONFIG, ROOT  # project settings and root
-from static_charts import steps_chart, timeline_chart  # Altair charts of tabs 3 and 1
+from static_charts import genre_chart, mini_chart, steps_chart, timeline_chart  # Altair charts of tabs 3, 2 and 1
 from style_tab import validation_figures  # tab 7 test years, reused for tab 8 (read only)
 
 
@@ -237,24 +237,84 @@ def tab3_head_html(cfg: dict) -> str:  # headline of tab 3
     return headline(t["t3_headline"] if falling else t["t3_headline_neutral"])  # block
 
 
-def h0_chip_html(cfg: dict, hid: str, color: str) -> str:  # H0 chip of one hypothesis
-    """Chip from hypotheses_summary.csv with the tooltip."""
-    t = cfg["static_tabs"]["texts"]  # texts
-    h = load_csv(static_path(cfg["static_tabs"], "hypotheses")).set_index("id").loc[hid]  # the hypothesis row
-    return f"<div class='ui-chips'>{chip(t['t3_col_h0'] if h['h0_rejected'] == 'yes' else t['t3_h0_kept'], color, t['t3_h0_tip'])}</div>"  # chip row
-
-
-def tab3_panels(cfg: dict) -> list:  # the two cards of tab 3
-    """Per card: title, chart and H0 chip html."""
+def tab3_panels(cfg: dict) -> list:  # the two cards of the Two patterns view
+    """Per card: title, chart and the muted one-liner under the chart."""
     t = cfg["static_tabs"]["texts"]  # texts
     out = []  # one dict per card
     for s, df, color in series_data(cfg):  # in config order
-        out.append({"title": t[s["title"]], "chart": steps_chart(df, s["bucket"], s["rate"], s["count"], color, cfg), "chip": h0_chip_html(cfg, s["hypothesis"], color)})  # card parts
+        out.append({"title": t[s["title"]], "chart": steps_chart(df, s["bucket"], s["rate"], s["count"], color, cfg), "line": f"<div class='ui-caption'>{html.escape(t[s['line']])}</div>"})  # card parts
     return out  # two cards
 
 
-def tab3_chips_html(cfg: dict) -> str:  # slim row for H2 to H5
-    """One chip per remaining hypothesis: question and result."""
-    sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
-    h = load_csv(static_path(sc, "hypotheses")).set_index("id")  # hypotheses table
-    return "<div class='ui-chips'>" + "".join(chip(f"{h.loc[i, 'question']} {h.loc[i, 'result']}", pal["line"]) for i in sc["chip_hypotheses"]) + "</div>"  # chip row
+def view_selector(cfg: dict, tab: str) -> str:  # pill selector of a tab
+    """Segmented control with the view labels of the tab (first one is the default); returns the selected label, the default when the pill is cleared."""
+    sc = cfg["static_tabs"]  # settings
+    labels = [sc["texts"][k] for k in sc["views"][tab]]  # view labels in config order
+    return st.segmented_control(tab, labels, default=labels[0], key=sc["view_keys"][tab], label_visibility="collapsed") or labels[0]  # selected label
+
+
+def genre_share_data(cfg: dict) -> pd.DataFrame:  # chart table of the Genres view
+    """Genre share by year, from genre_share_by_year.csv."""
+    return load_csv(static_path(cfg["static_tabs"], "genre_share"))  # year, genre, share
+
+
+def genre_story(cfg: dict) -> dict:  # numbers of the Genres headline
+    """The genre with the largest absolute share increase from the story start year to the last year of the file, with its two shares in whole percent."""
+    d = genre_share_data(cfg)  # year, genre, share
+    y0, y1 = cfg["design"]["genre_story_start_year"], int(d["year"].max())  # first and last year
+    wide = d.pivot(index="genre", columns="year", values="share")  # genre x year
+    genre = (wide[y1] - wide[y0]).idxmax()  # largest increase
+    return {"genre": genre, "a": f"{wide.loc[genre, y0] * 100:.0f}", "b": f"{wide.loc[genre, y1] * 100:.0f}", "y0": y0, "y1": y1}  # headline values
+
+
+def tab2g_head_html(cfg: dict) -> str:  # headline of the Genres view
+    """Headline from the data and the fixed subtitle."""
+    t = cfg["static_tabs"]["texts"]  # texts
+    return headline(t["t2g_headline"].format(**genre_story(cfg)), t["t2g_sub"])  # block
+
+
+def tab2g_parts(cfg: dict) -> dict:  # parts of the Genres card
+    """Card title html, the chart and the muted note about the years not shown."""
+    t = cfg["static_tabs"]["texts"]  # texts
+    chart = genre_chart(genre_share_data(cfg), {"year": t["t2g_tip_year"], "genre": t["t2g_tip_genre"], "share": t["t2g_tip_share"]}, cfg)  # stacked areas
+    note = f"<div class='ui-caption'>{html.escape(t['t2g_note'].format(year=cfg['design']['incomplete_from_year'] - 1))}</div>"  # last shown year
+    return {"title": card_title(t["t2g_title"], t["t2g_tip_title"]), "chart": chart, "note": note}  # card parts
+
+
+def cards_table(cfg: dict) -> pd.DataFrame:  # cards of the Six tests view
+    """hypotheses_cards.csv sorted by effect size, strongest first, with the answer filled from its stored values."""
+    d = load_csv(static_path(cfg["static_tabs"], "hyp_cards")).sort_values("effect_size", ascending=False).reset_index(drop=True)  # strongest first
+    d["answer_text"] = [a.format(**json.loads(v)) for a, v in zip(d["answer"], d["values"])]  # placeholders filled
+    return d  # one row per card
+
+
+def tab3s_head_html(cfg: dict) -> str:  # headline of the Six tests view
+    """Headline with the plain question of the strongest pattern."""
+    return headline(cfg["static_tabs"]["texts"]["t3s_headline"].format(question=cards_table(cfg).loc[0, "question"]))  # block
+
+
+def card_chart_rows(cfg: dict, hid: str) -> pd.DataFrame:  # mini chart rows of one card
+    """label, value: H1 and H6 from their bucket files, the others from hypotheses_charts.csv."""
+    sc = cfg["static_tabs"]  # settings
+    for s in sc["tab3_series"]:  # the two bucket files
+        if s["hypothesis"] == hid:  # H1 or H6
+            d = load_csv(static_path(sc, s["file"]))  # bucket file
+            return pd.DataFrame({"label": d[s["bucket"]].astype(str), "value": d[s["rate"]]})  # label, value
+    d = load_csv(static_path(sc, "hyp_charts"))  # H2 to H5
+    return d[d["id"] == hid][["label", "value"]].reset_index(drop=True)  # this card's rows
+
+
+def card_color(cfg: dict, hid: str) -> str:  # color of a card
+    """Timing color for H6, Style color for the others."""
+    return cfg["design"]["palette"]["timing" if hid == "H6" else "style"]  # question color
+
+
+def card_parts(cfg: dict, row: pd.Series) -> dict:  # parts of one Six tests card
+    """Question html, mini chart, and the html with the answer, the strength bar and the chip."""
+    t, color = cfg["static_tabs"]["texts"], card_color(cfg, row["id"])  # texts and card color
+    axis = cfg["static_tabs"]["cards"]["items"][row["id"]]["axis"]  # axis title of the mini chart
+    tip = t["t3s_tip_strength"] + (" " + t["t3s_tip_h3"] if row["id"] == "H3" else "")  # H3 adds the rank test sentence
+    v = float(row["effect_size"])  # strength
+    meter = f"<div class='ui-split'><span class='ui-label'>{html.escape(t['t3s_strength'])}{info(tip)}</span><span class='ui-label' style='color:{cfg['design']['palette']['text']};font-weight:700'>{v:.2f}</span></div><div class='ui-meter'><div class='ui-meter-fill' style='width:{v * 100:.1f}%;background:{color}'></div></div>"  # label, number and bar
+    chip_row = f"<div class='ui-chips'>{chip(t['t3s_chip'], color)}</div>" if row["h0_rejected"] == "yes" else ""  # only where the null hypothesis was rejected
+    return {"question": f"<div class='ui-qtext'>{html.escape(row['question'])}</div>", "chart": mini_chart(card_chart_rows(cfg, row["id"]), color, axis, cfg), "bottom": f"<div class='ui-answer'>{html.escape(row['answer_text'])}</div>{meter}{chip_row}"}  # card parts

@@ -374,6 +374,9 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     what_top10: results/holdout_what/top10_lift.csv  # Style top group hit rate, holdout
     works_per_year: works_per_year.csv  # year, works (dated cleaned Works per year), written once by scripts/run_static_assets.py
     data_quality: data_quality.csv  # metric, value (works_undated), written once by scripts/run_static_assets.py
+    genre_share: genre_share_by_year.csv  # year, genre, share of top-genre Works (each year sums to 1), written once by scripts/run_static_assets.py
+    hyp_cards: hypotheses_cards.csv  # one row per hypothesis: plain question, answer template, placeholder values, effect size, written once by scripts/run_static_assets.py
+    hyp_charts: hypotheses_charts.csv  # id, label, value: data of the mini charts of H2 to H5 (H1 and H6 are read from their bucket files)
     route_table: results/demo/route_table.csv  # artist name to Discogs id
     release_pick: results/demo/release_pick.csv  # picked release title per artist and year
     works: [results/demo/works_demo.csv, results/demo/works_demo_b.csv]  # Works of both artist pools, read by the tab 1 timelines
@@ -398,7 +401,16 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     works: 5949217  # cleaned Works
     artists: 1034756  # artists with at least one Work
     undated: 510364  # Works without a year (docs/decisions.md, missing-year entry)
+    h1_chi2: 109737  # chi-square of Hypothesis 1, rounded (notebook 02 cell 51)
+    genres: 11  # genres of the genre share file (notebook 02 cell 24)
+    effect_sizes: {H1: 0.18, H2: 0.155, H3: 0.169, H4: 0.041, H5: 0.067, H6: 0.313}  # effect size per hypothesis (notebook 02 interpretation cells)
+    effect_tolerance: 0.005  # largest allowed difference between a computed and an expected effect size
   models_compared: [Logistic Regression, Naive Bayes, Random Forest, HistGradientBoosting, XGBoost]  # models of the comparison, in the order of docs/decisions.md (entries on the Step 5 sequence)
+  view_keys: {tab2: tab2_view, tab3: tab3_view}  # widget keys of the two view selectors
+  views:  # view selectors: label texts (keys of static_tabs.texts), first one is the default
+    tab2: [t2_view_volume, t2_view_genres]  # tab 2
+    tab3: [t3_view_patterns, t3_view_tests]  # tab 3
+  grid_cols: 3  # columns of the Six tests grid
   sizes:  # pixel sizes of the static tabs (a later design pass restyles them)
     tab5_columns: [2, 1]  # relative widths of the chart card and the dot card of tab 5
     tab2_columns: [3, 2]  # relative widths of the chart card and the right blocks of tab 2
@@ -452,7 +464,6 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t2_tip_standalone: "Releases without a Master. They count only for artists with enough of them."  # tooltip of input 2
     t2_tip_out: "The unit of the project: one release family per row."  # tooltip of the output
     t2_artists: "Artists"  # label of the second big number
-    t3_col_h0: "H0 rejected"  # tab 3 table header
     t4_train: "Train, up to {last}"  # timeline segment
     t4_gap: "Gap of {n} years"  # timeline segment
     t4_test: "Test, {first} to {last}"  # timeline segment
@@ -472,9 +483,26 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t3_headline: "More history means fewer new styles. A longer silence means fewer releases."  # tab 3 headline, shown only when both series decrease in the data
     t3_card_style: "New style by number of earlier releases"  # Style card title
     t3_card_timing: "Release next year by years since the last one"  # Timing card title
+    t2_view_volume: "Volume"  # tab 2 view label
+    t2_view_genres: "Genres"  # tab 2 view label
+    t2g_headline: "Music keeps changing: {genre} went from {a}% of releases in {y0} to {b}% in {y1}."  # Genres view headline, genre and numbers from genre_share_by_year.csv
+    t2g_sub: "That is why we always test on later years, never on a random split."  # Genres view subtitle
+    t2g_title: "Share of releases by genre"  # title of the genre chart card
+    t2g_tip_title: "Each year is split between all genres. Click a genre in the legend to highlight it."  # tooltip of the genre chart title
+    t2g_note: "Years after {year} are not shown: still being filled in"  # muted note under the genre chart
+    t2g_tip_year: "year"  # tooltip title in the genre chart: year
+    t2g_tip_genre: "genre"  # tooltip title in the genre chart: genre
+    t2g_tip_share: "share of releases"  # tooltip title in the genre chart: share
+    t3_view_patterns: "Two patterns"  # tab 3 view label
+    t3_view_tests: "Six tests"  # tab 3 view label
+    t3_line_style: "Each step down means fewer new styles."  # muted line under the Style chart
+    t3_line_timing: "Each step down means fewer releases."  # muted line under the Timing chart
+    t3s_headline: "Six patterns, ranked by strength. The strongest: {question}"  # Six tests headline, question of the largest effect
+    t3s_strength: "Strength of the pattern"  # label of the strength bar
+    t3s_tip_strength: "0 means no pattern, 1 means a perfect one. Each pattern is very unlikely to be chance. Rows from the same artist are not independent, so exact p-values are overstated and the strength matters more."  # tooltip of the strength label
+    t3s_tip_h3: "The pause is far from normal, so a rank test (Mann-Whitney) was used instead of a mean comparison."  # extra tooltip sentence on the H3 card
+    t3s_chip: "Not due to chance"  # chip of a card whose null hypothesis was rejected
     t3_headline_neutral: "How history relates to new styles and releases"  # tab 3 headline when the data does not support the conclusion
-    t3_h0_kept: "H0 not rejected"  # chip when the file says no
-    t3_h0_tip: "The difference is not due to chance."  # tooltip of the H0 chip
     t5_headline: "Both models beat the rule of thumb"  # tab 5 headline, shown only when true
     t5_headline_neutral: "Results on years the models never saw"  # tab 5 headline otherwise
     t5_sub: "Test years {first} to {last}, never touched while building the models."  # tab 5 subtitle
@@ -501,9 +529,23 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t5_dot_no: "Does not"  # circle state used by the chart
     t5_dot_tip: "Exact share that bring a new style"  # tooltip title of a circle
   tab3_series:  # the two charts of tab 3, in order
-    - {key: style, file: h1_buckets, bucket: bucket, rate: new_style_rate, count: transitions, hypothesis: H1, title: t3_card_style}  # Style card
-    - {key: timing, file: h6_buckets, bucket: bucket, rate: release_next_year_rate, count: artist_years, hypothesis: H6, title: t3_card_timing}  # Timing card
-  chip_hypotheses: [H2, H3, H4, H5]  # hypotheses shown as small chips under the cards
+    - {key: style, file: h1_buckets, bucket: bucket, rate: new_style_rate, count: transitions, hypothesis: H1, title: t3_card_style, line: t3_line_style}  # Style card
+    - {key: timing, file: h6_buckets, bucket: bucket, rate: release_next_year_rate, count: artist_years, hypothesis: H6, title: t3_card_timing, line: t3_line_timing}  # Timing card
+  cards:  # plain-language cards of the Six tests view (tab 3); texts as given for the demo, numbers filled from the data
+    h2_bucket: "3-5"  # history group of the Hypothesis 2 test used in the card (notebook 02 cell 54)
+    h2_genre_a: Electronic  # genre named first in the H2 answer
+    h2_genre_b: "Folk, World, & Country"  # genre named second in the H2 answer
+    h2_chart_genres: 3  # top and bottom genres drawn in the H2 mini chart
+    h3_gap_pause: "11+"  # year-gap bucket named in the H3 answer
+    h3_gap_none: "0"  # year-gap bucket of no pause
+    h5_labels: [Undated, Dated]  # bar labels of the H5 mini chart: artists with undated releases, then the others
+    items:  # per hypothesis: plain question, answer template, effect measure, mini chart axis title
+      H1: {question: "Do artists with a long catalogue try fewer new styles?", answer: "Yes. With 3 to 5 earlier releases, {first} bring a new style. With 51 or more, {last}.", measure: "Cramer's V", axis: "Earlier releases"}  # values from h1_buckets.csv
+      H2: {question: "Does the genre change how often artists try new styles?", answer: "Yes. Among artists with a short history, {a} of electronic artists try a new style, against {b} of folk and country artists.", measure: "Cramer's V", axis: "Genre"}  # a, b from the 3-5 group of the H2 test
+      H3: {question: "Does a long pause before a release mean a new style?", answer: "A little. After a pause of 11 years or more, {a} bring a new style. With no pause, {b}.", measure: "rank-biserial", axis: "Years since the previous release"}  # a, b from the year-gap buckets
+      H4: {question: "Do artists who already tried many styles keep trying new ones?", answer: "Not by itself. It only shows when we compare artists with a similar number of releases.", measure: "Cramer's V", axis: "Styles tried before"}  # no placeholders
+      H5: {question: "Do artists with undated releases behave differently?", answer: "They bring fewer new styles ({a} against {b}), but the difference mostly disappears when we compare artists with similar catalogues.", measure: "Cramer's V", axis: "Release dates"}  # a undated, b dated
+      H6: {question: "Does a long silence mean no release next year?", answer: "Yes. One year after the last release, {first} release again the next year. After 10 years or more, {last}.", measure: "Cramer's V", axis: "Years since the last release"}  # values from h6_buckets.csv
 design:  # visual system of the demo: the only place for colors, type scale and chart settings
   palette:  # hex values; .streamlit/config.toml must equal background, card, text, line, timing (a test checks it)
     background: "#0F1220"  # page
@@ -527,6 +569,20 @@ design:  # visual system of the demo: the only place for colors, type scale and 
   chip: {pad_v: 4, pad_h: 12, font: 13}  # chip sizes in px
   header: {title_font: 20, tagline_font: 14, gap: 14, top_pad: 56}  # header sizes in px, top_pad is the space above the header (page padding)
   button: {weight: 700, hover_brightness: 1.12}  # primary button label weight and hover brightness (text color is the palette background)
+  genre_story_start_year: 1990  # first year of the Genres headline comparison
+  genre_palette:  # one color per genre of the genre chart (dark theme), distinct from the timing and style colors
+    Blues: "#4458D8"  # indigo
+    Electronic: "#8E7CF3"  # violet
+    "Folk, World, & Country": "#C9A66B"  # sand
+    Funk / Soul: "#E2735B"  # coral
+    Hip Hop: "#D96FD0"  # orchid
+    Jazz: "#7AA2E3"  # light blue
+    Latin: "#E8C34A"  # gold
+    Pop: "#7BCB6F"  # green
+    Reggae: "#3F9E6E"  # deep green
+    Rock: "#C8553D"  # brick red
+    Stage & Screen: "#8A93B5"  # grey lavender
+  compact: {pad: 12, gap: 6, meter_height: 6, chip_pad_v: 2}  # Six tests cards: padding, gap between parts, strength bar height, chip padding in px
   incomplete_from_year: 2024  # first year still being filled in (docs/decisions.md, 10-10-2026 entry on the Discogs submission lag: 2024 and 2025 are the excluded recent years, 2026 is the demo year)
   strip: {height: 10, gap: 4}  # tab 5 sorted-artists strip: bar height and label gap in px
   flow:  # tab 2 flow card, sizes in px
@@ -559,6 +615,12 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     dot_big_font: 24  # big number under a grid
     dot_caption_font: 12  # caption under the big number
     height_works: 320  # tab 2 area chart height in px
+    height_genres: 330  # tab 2 genre chart height in px
+    height_mini: 90  # mini chart height of a Six tests card in px
+    mini_label_angle: -35  # x label angle of the mini charts
+    mini_label_limit: 70  # longest x label of the mini charts in px
+    mini_headroom: 1.35  # share of the top value kept free above the mini bars
+    genre_opacity_off: 0.25  # opacity of the genres not selected in the legend
     area_opacity: 0.28  # fill of the area
     line_width: 2  # line over the area
     band_opacity: 0.12  # shaded incomplete years

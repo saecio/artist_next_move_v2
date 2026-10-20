@@ -23,6 +23,17 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f".ui-info{{display:inline-block;position:relative;margin-left:6px;width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;border:{b['border']}px solid {c['muted']};color:{c['muted']};font-size:{ty['caption']}px;cursor:help;font-style:normal}}",  # small i
         f".ui-info:hover::after{{content:attr(data-tip);position:absolute;left:0;top:22px;z-index:10;width:260px;background:{c['background']};color:{c['text']};border:{b['border']}px solid {c['line']};border-radius:{b['radius'] // 2}px;padding:{b['gap']}px;font-size:{ty['caption']}px;line-height:1.4;text-align:left}}",  # tooltip bubble
         f".ui-stack{{display:flex;flex-direction:column;gap:{b['gap']}px}}",  # blocks one under the other
+        f".ui-qtext{{font-size:{ty['label']}px;font-weight:700;color:{c['text']};line-height:1.3;min-height:{round(ty['label'] * 1.3 * 2)}px}}",  # bold question of a Six tests card, two lines
+        f".ui-answer{{font-size:{ty['label']}px;color:{c['text']};line-height:1.35}}",  # answer of a Six tests card
+        f".ui-split{{display:flex;justify-content:space-between;align-items:center;margin-top:{d['compact']['gap']}px}}",  # label left, value right
+        f".ui-meter{{height:{d['compact']['meter_height']}px;border-radius:{d['compact']['meter_height']}px;background:{c['chance']};overflow:hidden;margin-top:4px}}",  # strength bar track
+        f".ui-meter-fill{{height:100%}}",  # strength bar fill, width and color inline
+        f"[class*='st-key-hyp-card'],[class*='st-key-hyp-card'] [data-testid='stVerticalBlock']{{gap:{d['compact']['gap']}px}}",  # compact Six tests cards: gap between parts
+        f"[class*='st-key-hyp-card']{{padding:{d['compact']['pad']}px}}",  # compact Six tests cards: padding
+        f"[class*='st-key-hyp-card'] .ui-chips{{margin-top:{d['compact']['gap']}px}}",  # chip row inside a compact card
+        f"[class*='st-key-hyp-card'] .ui-chip{{padding:{d['compact']['chip_pad_v']}px {ch['pad_h']}px}}",  # smaller chip inside a compact card
+        f"[data-testid='stBaseButton-segmented_controlActive']{{background:{c['timing']};border-color:{c['timing']};color:{c['background']}}}",  # selected view pill
+        f"[data-testid='stBaseButton-segmented_controlActive'] p{{color:{c['background']};font-weight:{bt['weight']}}}",  # selected view pill label
         f".ui-row{{display:flex;gap:{b['gap']}px;align-items:stretch}}",  # cards side by side
         f".ui-row>.ui-card{{flex:1}}",  # equal cards in a row
         f".ui-strip{{display:flex;height:{d['strip']['height']}px;border-radius:{d['strip']['height']}px;overflow:hidden;background:{c['chance']}}}",  # sorted artists strip, muted rest

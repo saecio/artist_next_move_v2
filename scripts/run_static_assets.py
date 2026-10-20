@@ -2,6 +2,8 @@
 
 When the first four files already exist, only works_per_year.csv is created and the two source counts are appended to data_figures.csv.
 
+The data chapters files (genre_share_by_year.csv, hypotheses_cards.csv, hypotheses_charts.csv) are created when data_quality.csv exists.
+
 Usage:
     venv/bin/python3 scripts/run_static_assets.py
 """
@@ -15,13 +17,27 @@ sys.path.append(str(ROOT / "src"))  # src/ importable
 import pandas as pd  # cleaned Works table
 
 from config import CONFIG  # project settings
-from static_assets import build_figures, build_quality, check_quality_controls, build_h1, build_h6, build_source_counts, build_summary, build_works_per_year, check_controls, check_new_controls, output_paths, static_config, write_new  # asset logic
+from static_assets import build_cards, build_genre_share, check_card_controls, check_genre_controls, build_figures, build_quality, check_quality_controls, build_h1, build_h6, build_source_counts, build_summary, build_works_per_year, check_controls, check_new_controls, incomplete_from_year, output_paths, static_config, write_new  # asset logic
 
 sc = static_config()  # static_tabs settings
 paths = output_paths(sc)  # the five output files
 base_keys = ("h1_buckets", "h6_buckets", "data_figures", "hypotheses")  # files of the first build
-if paths["data_quality"].exists():  # never overwrite
-    sys.exit(f"refusing to run, this file exists: {paths['data_quality']}")  # stop with a message
+new_keys = ("genre_share", "hyp_cards", "hyp_charts")  # files of the data chapters build
+if any(paths[k].exists() for k in new_keys):  # never overwrite
+    sys.exit(f"refusing to run, this file exists: {[str(paths[k]) for k in new_keys if paths[k].exists()]}")  # stop with a message
+if paths["data_quality"].exists():  # the earlier files are built, only the data chapters files are new
+    works = pd.read_parquet(ROOT / CONFIG["paths"]["works"], columns=["artist_id", "work_id", "year", "styles", "genres"])  # cleaned Works, columns the functions need
+    h1, h6 = pd.read_csv(paths["h1_buckets"]), pd.read_csv(paths["h6_buckets"])  # stored buckets, not rebuilt
+    last_year = incomplete_from_year() - 1  # last complete year
+    share = build_genre_share(works, last_year)  # genre share by year
+    cards, charts, chi_h1 = build_cards(sc, works, h1, h6)  # card table, mini chart table and H1 chi-square
+    failed = check_genre_controls(sc, share, last_year) + check_card_controls(sc, cards, chi_h1, h1)  # printed controls
+    if failed:  # a control does not hold: nothing is written
+        sys.exit(f"controls failed: {failed}; no file written")  # report instead of forcing
+    for key, table in (("genre_share", share), ("hyp_cards", cards), ("hyp_charts", charts)):  # files to create
+        write_new(paths[key], table)  # exclusive creation
+        print(f"written {paths[key].relative_to(ROOT)}")  # confirmation
+    sys.exit(0)  # done, nothing else to build
 if paths["works_per_year"].exists():  # the first five files are built, only the quality file is new
     quality = build_quality(pd.read_parquet(ROOT / CONFIG["paths"]["works"], columns=["year"]))  # undated Works
     failed = check_quality_controls(sc, quality, pd.read_csv(paths["data_figures"]), pd.read_csv(paths["works_per_year"]))  # printed controls

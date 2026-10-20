@@ -23,6 +23,7 @@ def register_theme(cfg: dict) -> None:  # one shared dark theme
             "view": {"stroke": None},  # no chart border
             "axis": {"gridColor": c["line"], "gridOpacity": ch["grid_opacity"], "domainColor": c["line"], "tickColor": c["line"], "labelColor": c["muted"], "titleColor": c["muted"], "labelFontSize": ch["axis_font"], "titleFontSize": ch["axis_font"]},  # axes
             "title": {"color": c["text"], "fontSize": ch["title_font"]},  # titles
+            "legend": {"labelColor": c["text"], "titleColor": c["muted"], "labelFontSize": ch["axis_font"], "titleFontSize": ch["axis_font"]},  # legends
             "range": {"category": [c["timing"], c["style"], c["rule"], c["chance"], c["highlight"]]},  # no default blue anywhere
         }}
 
@@ -134,3 +135,32 @@ def timeline_chart(df: pd.DataFrame, cutoff: int, future: int, color: str, texts
     future_line = alt.Chart(pd.DataFrame({"x0": [cutoff], "x1": [end - 0.5], "lane": [0.5]})).mark_rule(color=color, strokeDash=[5, 5], strokeWidth=ch["whisker_width"]).encode(x=alt.X("x0:Q", scale=dom, axis=None), x2="x1:Q", y=y)  # dashed line into the unknown
     mark = alt.Chart(pd.DataFrame({"x": [end], "text": ["?"], "lane": [0.5]})).mark_text(color=color, fontSize=ch["story_glyph_font"], fontWeight="bold").encode(x=alt.X("x:Q", scale=dom, axis=None), y=y, text="text:N")  # large question mark
     return alt.layer(line, here, here_label, future_line, dots, mark).properties(height=ch["height_story"])  # chart
+
+
+def genre_chart(df: pd.DataFrame, texts: dict, cfg: dict) -> alt.Chart:  # genre share by year
+    """Normalized stacked area of the genre shares, one palette color per genre, a legend on the right that highlights a genre on click, and a tooltip."""
+    register_theme(cfg)  # shared theme
+    d, ch = cfg["design"], cfg["design"]["chart"]  # design and chart settings
+    names = list(d["genre_palette"])  # genre names in palette order, which is the stack order
+    data = df[["year", "genre", "share"]]  # only the columns used
+    pick = alt.selection_point(fields=["genre"], bind="legend")  # click a legend entry to highlight a genre
+    x = alt.X("year:Q", axis=alt.Axis(format="d", labelAngle=0, labelFontSize=ch["axis_font"], title=None, grid=False), scale=alt.Scale(domain=[int(data["year"].min()), int(data["year"].max())], nice=False))  # years
+    y = alt.Y("share:Q", stack="normalize", axis=alt.Axis(format="%", title=None, labelFontSize=ch["axis_font"]), scale=alt.Scale(domain=[0, 1]))  # shares, each year adds up to 100%
+    color = alt.Color("genre:N", scale=alt.Scale(domain=names, range=[d["genre_palette"][n] for n in names]), legend=alt.Legend(orient="right", title=None, symbolType="square"))  # palette colors, legend on the right
+    tip = [alt.Tooltip("year:Q", title=texts["year"], format="d"), alt.Tooltip("genre:N", title=texts["genre"]), alt.Tooltip("share:Q", title=texts["share"], format=".1%")]  # year, genre and share
+    area = alt.Chart(data).mark_area(interpolate="monotone").encode(x=x, y=y, color=color, order=alt.Order("genre:N", sort="ascending"), opacity=alt.condition(pick, alt.value(1), alt.value(ch["genre_opacity_off"])), tooltip=tip).add_params(pick)  # stacked areas
+    return area.properties(height=ch["height_genres"])  # chart
+
+
+def mini_chart(df: pd.DataFrame, color: str, axis_title: str, cfg: dict) -> alt.LayerChart:  # small bars of a Six tests card
+    """Bars in file order with the rate printed above each bar, one color, a small axis title."""
+    register_theme(cfg)  # shared theme
+    c, ch = cfg["design"]["palette"], cfg["design"]["chart"]  # palette and chart settings
+    d = df[["label", "value"]].copy()  # only the columns used
+    order = list(d["label"])  # file order
+    x = alt.X("label:N", sort=order, title=axis_title, axis=alt.Axis(labelAngle=ch["mini_label_angle"], labelLimit=ch["mini_label_limit"], labelFontSize=ch["axis_font"], titleFontSize=ch["axis_font"], grid=False))  # bucket axis
+    y = alt.Y("value:Q", axis=None, scale=alt.Scale(domain=[0, float(d["value"].max()) * ch["mini_headroom"]]))  # hidden y axis
+    base = alt.Chart(d).encode(x=x, y=y, tooltip=[alt.Tooltip("label:N", title=""), alt.Tooltip("value:Q", title="rate", format=".1%")])  # shared encoding
+    bars = base.mark_bar(color=color, cornerRadiusTopLeft=ch["bar_corner"], cornerRadiusTopRight=ch["bar_corner"])  # bars
+    text = base.mark_text(dy=-4, baseline="bottom", color=c["text"], fontSize=ch["axis_font"]).encode(text=alt.Text("value:Q", format=".0%"))  # rate on each bar
+    return alt.layer(bars, text).properties(height=ch["height_mini"])  # chart

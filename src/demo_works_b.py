@@ -34,7 +34,7 @@ def independent_counts(ids: list) -> pd.DataFrame:  # expected rows from the raw
 
 
 def playable_from_decisions(ids: list) -> dict:  # playable years of the registered list
-    """Playable years per id from the entry 'Demo pool B: final list' of docs/decisions.md."""
+    """Playable years per id from the entry 'Demo pool B: final list' of docs/decisions_demo.md."""
     text = DECISIONS.read_text(encoding="utf-8")  # decisions file
     entry = text.split("## Demo pool B: final list (19-10-2026)", 1)[1].split("\n## ", 1)[0]  # the entry
     found = {int(i): int(n) for i, n in re.findall(r"\((\d+), [^,()]+(?: / [^,()]+)?, (\d+) playable years\)", entry)}  # id -> playable years

@@ -13,6 +13,7 @@ from pathlib import Path  # project root
 ROOT = Path(__file__).resolve().parent.parent  # project root, independent of the working directory
 sys.path.append(str(ROOT / "src"))  # src/ importable
 
+import numpy as np  # sums check
 import pandas as pd  # files
 import pyarrow as arrow  # reads the chart data sent to the browser
 from streamlit.testing.v1 import AppTest  # headless app runner
@@ -121,12 +122,8 @@ for rows, table, rate_col, ctrl in ((charts3[0], h1, "new_style_rate", sc["contr
     assert [r["bucket"] for r in rows] == list(table["bucket"]), "buckets equal the file"  # same order
     assert [round(r["rate_pct"], 2) for r in rows] == [round(v * 100, 2) for v in table[rate_col]] == ctrl, "rates equal the file and the controls"  # file and controls
     assert [r["rate_pct"] for r in rows] == sorted((r["rate_pct"] for r in rows), reverse=True), "bars descend"  # descending
-chips = ["H1", "H6"]  # hypotheses behind the two H0 chips
-h0 = hyp.set_index("id")  # by id
-assert raws[2].count("ui-chip'") == 2 + len(sc["chip_hypotheses"]), "two H0 chips and four hypothesis chips"  # chip count
-assert all(h0.loc[i, "h0_rejected"] == "yes" for i in chips) and texts[2].count(t["t3_col_h0"]) == 2, "H0 chips come from the file"  # file driven
-for i in sc["chip_hypotheses"]:  # H2 to H5
-    assert f"{h0.loc[i, 'question']} {h0.loc[i, 'result']}" in texts[2], f"chip {i}"  # question and result from the file
+assert raws[2].count("ui-chip'") == 0, "Two patterns view: no chips under the charts"  # H0 chips and hypothesis chips are gone
+assert t["t3_line_style"] in texts[2] and t["t3_line_timing"] in texts[2], "Two patterns view: muted one-liners under the charts"  # config texts
 assert t["t3_headline"] in texts[2] and "<table" not in raws[2], "tab 3 headline shown, old table gone"  # headline true for the data
 print("tab 3 ok")  # result
 
@@ -235,8 +232,83 @@ for f in sorted(list((ROOT / "app").glob("*.py")) + list((ROOT / "src").glob("*.
     if f.name not in notebook_only:  # the app does not import these two
         assert not hexre.search(f.read_text()), f"no color literal in {f.name}"  # colors only in the config
 print("no color literal in the design files")  # result
+
+# views of tab 2 and tab 3, selected with the pills (widget interaction)
+vk = sc["view_keys"]  # pill keys
+pill = lambda key: at.segmented_control(key=key)  # a pill by key
+assert pill(vk["tab2"]).options == [t[k] for k in sc["views"]["tab2"]] and pill(vk["tab3"]).options == [t[k] for k in sc["views"]["tab3"]], "two pills on tab 2 and on tab 3"  # options from the config
+assert pill(vk["tab2"]).value == t["t2_view_volume"] and pill(vk["tab3"]).value == t["t3_view_patterns"], "defaults are Volume and Two patterns"  # first view of each
+assert t["t2_headline"] in texts[1] and len(spec_rows(1)) == 1, "Volume view is the current tab 2"  # unchanged default
+print("pills ok")  # result
+
+pill(vk["tab2"]).set_value(t["t2_view_genres"]).run()  # open the Genres view
+assert not at.exception, [e.value for e in at.exception]  # no exception
+gen = pd.read_csv(folder / pa["genre_share"])  # stored genre shares
+g_raw = tab_text(1)  # raw html of tab 2
+g_txt = plain(g_raw)  # visible text of tab 2
+g_rows = spec_rows(1)  # chart data of tab 2
+assert len(g_rows) == 1 and sorted((int(r["year"]), r["genre"], round(r["share"], 10)) for r in g_rows[0]) == sorted((int(a_), g_, round(s_, 10)) for a_, g_, s_ in zip(gen["year"], gen["genre"], gen["share"])), "Genres chart data equals genre_share_by_year.csv"  # exact file values
+assert np.allclose(gen.groupby("year")["share"].sum(), 1.0), "shares sum to 1 per year"  # control
+y0, y1 = cfg["design"]["genre_story_start_year"], int(gen["year"].max())  # story years
+wide = gen.pivot(index="genre", columns="year", values="share")  # genre x year
+best = (wide[y1] - wide[y0]).idxmax()  # genre with the largest absolute increase
+line = t["t2g_headline"].format(genre=best, a=f"{wide.loc[best, y0] * 100:.0f}", b=f"{wide.loc[best, y1] * 100:.0f}", y0=y0, y1=y1)  # expected headline
+assert line in g_txt and t["t2g_sub"] in g_txt, "Genres headline names the genre of largest increase, numbers equal the file"  # headline and subtitle
+assert t["t2g_note"].format(year=cfg["design"]["incomplete_from_year"] - 1) in g_txt and t["t2g_title"] in g_txt, "years note and card title"  # note and title
+assert t["t2_headline"] not in g_txt and "<svg" not in g_raw and not re.search(r"\bWHEN\b|\bWHAT\b", g_raw), "Genres view: Volume content gone, no svg, no WHEN or WHAT"  # clean view
+spec = json.loads(at.tabs[1].get("vega_lite_chart")[0].proto.spec)  # chart spec
+enc = spec["encoding"]  # encodings
+assert spec["params"][0]["bind"] == "legend" and enc["color"]["legend"]["orient"] == "right", "legend on the right, clickable"  # legend selection
+assert dict(zip(enc["color"]["scale"]["domain"], enc["color"]["scale"]["range"])) == cfg["design"]["genre_palette"] and set(gen["genre"]) == set(cfg["design"]["genre_palette"]), "one palette color per genre"  # config palette
+assert [x["title"] for x in enc["tooltip"]] == [t["t2g_tip_year"], t["t2g_tip_genre"], t["t2g_tip_share"]], "tooltip: year, genre, share"  # tooltip titles
+assert spec["height"] == cfg["design"]["chart"]["height_genres"], "chart height from the config"  # height
+print("tab 2 genres ok")  # result
+pill(vk["tab2"]).set_value(t["t2_view_volume"]).run()  # back to Volume
+assert t["t2_headline"] in plain(tab_text(1)) and len(spec_rows(1)) == 1, "Volume view returns unchanged"  # switch back
+print("tab 2 views ok")  # result
+
+pill(vk["tab3"]).set_value(t["t3_view_tests"]).run()  # open the Six tests view
+assert not at.exception, [e.value for e in at.exception]  # no exception
+c_raw = tab_text(2)  # raw html of tab 3
+c_txt = plain(c_raw)  # visible text of tab 3
+cards = pd.read_csv(folder / pa["hyp_cards"])  # stored cards
+order = cards.sort_values("effect_size", ascending=False).reset_index(drop=True)  # strongest first
+assert list(order["id"]) == ["H6", "H1", "H3", "H2", "H5", "H4"], "cards sorted by effect size"  # today's order
+assert [html.unescape(q) for q in re.findall(r"<div class='ui-qtext'>(.*?)</div>", c_raw)] == list(order["question"]), "six questions in order"  # on screen
+assert [html.unescape(a_) for a_ in re.findall(r"<div class='ui-answer'>(.*?)</div>", c_raw)] == [a_.format(**json.loads(v)) for a_, v in zip(order["answer"], order["values"])], "answers equal the file with the placeholders filled"  # on screen
+assert re.findall(r"ui-meter-fill' style='width:([0-9.]+)%", c_raw) == [f"{v * 100:.1f}" for v in order["effect_size"]], "strength bars equal the effect sizes"  # on screen
+assert t["t3s_headline"].format(question=order.loc[0, "question"]) in c_txt and order.loc[0, "id"] == "H6", "headline names the strongest pattern"  # headline
+size = cards.set_index("id")["effect_size"]  # by id
+assert all(abs(size[i] - e) <= sc["controls"]["effect_tolerance"] for i, e in sc["controls"]["effect_sizes"].items()), "effect sizes equal the controls"  # controls
+vals = {r["id"]: json.loads(r["values"]) for _, r in cards.iterrows()}  # placeholder values
+h6 = pd.read_csv(folder / pa["h6_buckets"])  # Hypothesis 6 buckets
+assert vals["H1"] == {"first": f"{h1['new_style_rate'].iloc[0] * 100:.1f}%", "last": f"{h1['new_style_rate'].iloc[-1] * 100:.1f}%"} and vals["H6"] == {"first": f"{h6['release_next_year_rate'].iloc[0] * 100:.1f}%", "last": f"{h6['release_next_year_rate'].iloc[-1] * 100:.1f}%"}, "H1 and H6 values come from the bucket files"  # files
+assert c_raw.count("ui-chip'") == int((cards["h0_rejected"] == "yes").sum()) == c_txt.count(t["t3s_chip"]), "a chip only where the null hypothesis is rejected"  # chips
+tip = html.escape(t["t3s_tip_strength"], quote=True)  # strength tooltip
+assert c_raw.count(tip) == 6 and c_raw.count(html.escape(t["t3s_tip_h3"], quote=True)) == 1, "strength tooltip on every card, the rank test sentence on H3 only"  # tooltips
+charts = at.tabs[2].get("vega_lite_chart")  # the six mini charts
+assert len(charts) == 6, "six mini charts"  # one per card
+chart_file = pd.read_csv(folder / pa["hyp_charts"])  # H2 to H5 chart rows
+for (_, card_), chart_ in zip(order.iterrows(), charts):  # card by card
+    hid = card_["id"]  # hypothesis id
+    if hid in ("H1", "H6"):  # bucket files
+        src, col = (h1, "new_style_rate") if hid == "H1" else (h6, "release_next_year_rate")  # file and rate column
+        want = [(str(b_), round(v, 9)) for b_, v in zip(src["bucket"], src[col])]  # expected rows
+    else:  # chart file
+        part = chart_file[chart_file["id"] == hid]  # this card's rows
+        want = [(str(b_), round(v, 9)) for b_, v in zip(part["label"], part["value"])]  # expected rows
+    got_rows = [r for d in chart_.proto.datasets for r in arrow.ipc.open_stream(d.data.data).read_all().to_pylist()]  # chart data
+    assert [(str(r["label"]), round(r["value"], 9)) for r in got_rows] == want, f"mini chart of {hid} equals the files"  # exact
+    cs = json.loads(chart_.proto.spec)  # chart spec
+    assert cs["layer"][0]["mark"]["color"] == cfg["design"]["palette"]["timing" if hid == "H6" else "style"] and cs["height"] == cfg["design"]["chart"]["height_mini"], f"mini chart color and height of {hid}"  # style or timing color
+assert "<svg" not in c_raw and not re.search(r"\bWHEN\b|\bWHAT\b", c_raw) and t["t3_headline"] not in c_txt, "Six tests view: no svg, no WHEN or WHAT, Two patterns content gone"  # clean view
+print("tab 3 six tests ok")  # result
+pill(vk["tab3"]).set_value(t["t3_view_patterns"]).run()  # back to Two patterns
+back = spec_rows(2)  # the two charts again
+assert [[r["bucket"] for r in rows] for rows in back] == [list(h1["bucket"]), list(h6["bucket"])] and t["t3_headline"] in plain(tab_text(2)), "Two patterns view returns with the file bars"  # switch back
+print("tab 3 views ok")  # result
 placeholder = re.compile(r"\{[^}]*\}")  # a placeholder in braces
-bad = {k: v for k, v in t.items() if re.search(r"\d", placeholder.sub("", v).replace("H0", ""))}  # texts with a digit outside a placeholder, the term H0 is allowed (t3_col_h0, t3_note)
+bad = {k: v for k, v in t.items() if k != "t3s_tip_strength" and re.search(r"\d", placeholder.sub("", v))}  # texts with a digit outside a placeholder, except the 0 to 1 scale of the strength tooltip
 assert not bad, f"digits outside placeholders: {bad}"  # none, no exception was needed
-print("static_tabs texts: no digit outside a placeholder (only the term H0 allowed, in t3_col_h0)")  # result
+print("static_tabs texts: no digit outside a placeholder (only the 0 to 1 scale in t3s_tip_strength)")  # result
 print("run_static_apptest OK")  # done
