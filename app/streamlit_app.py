@@ -16,6 +16,9 @@ from config import CONFIG  # noqa: E402  project settings
 from style_tab import forecast_table, mark_for, style_summary, style_years, validation_figures, with_reality, year_status  # noqa: E402  tab 7 logic
 from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reliability_lines, route_for_year, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
 from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, open_year_text, star_in_row, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
+from static_charts import dots_chart, results_chart, works_chart  # noqa: E402  Altair charts of tabs 2 and 5
+from static_tabs import dots_panels, results_data, tab1_html, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab3_chips_html, tab3_head_html, tab3_panels, tab4_html, tab5_chips_html, tab5_head_html, tab8_html, works_per_year  # noqa: E402  static tabs
+from ui_components import base_css, header_html  # noqa: E402  design system
 from demo_game import (  # noqa: E402  pure game functions
     hidden_counts, new_state, next_year, scored_years, scoreboard, session_total,  # imported names
 )  # close the import
@@ -70,12 +73,48 @@ def render_multi(cfg: dict) -> None:  # tab 6 mode 2: widgets only, the rows and
 
 cfg = load_demo_config()  # all texts, paths and artists
 notes, ui = cfg["notices"], cfg["ui"]  # shortcuts to text blocks
+st.html(base_css(cfg))  # one-time design system styles, shared by every tab
+st.html(header_html(cfg))  # project name and tagline above the tabs
 tabs = st.tabs(cfg["tabs"])  # one tab per title, in config order
 
-for i in (0, 1, 2, 3, 4, 7):  # tabs without content yet
+with tabs[0]:  # Problem and question
+    st.html(tab1_html(cfg))  # headline, schema and numbers
+
+with tabs[1]:  # Data and cleaning
+    st.html(tab2_head_html(cfg))  # headline and dump date
+    sct = cfg["static_tabs"]  # static tabs settings
+    left, right = st.columns(sct["sizes"]["tab2_columns"])  # chart card and right blocks
+    with left, st.container(border=True):  # chart card
+        st.html(tab2_chart_title_html(cfg))  # title with tooltip
+        st.altair_chart(works_chart(works_per_year(cfg), cfg["design"]["incomplete_from_year"], {"incomplete": sct["texts"]["t2_incomplete"], "peak": sct["texts"]["t2_peak"]}, cfg), theme=None, width="stretch")  # Works per year
+    right.html(tab2_right_html(cfg))  # numbers and cleaning schema
+
+for i, build in ((3, tab4_html), (7, tab8_html)):  # static tabs with one HTML block
     with tabs[i]:  # open the tab
         st.header(cfg["tabs"][i])  # tab title
-        st.info(notes["pending_notice"])  # pending text
+        st.html(build(cfg))  # the tab content
+
+with tabs[2]:  # Data exploration
+    st.html(tab3_head_html(cfg))  # headline, only the conclusion the data supports
+    for col, panel in zip(st.columns(2), tab3_panels(cfg)):  # Style card and Timing card
+        with col, st.container(border=True):  # card
+            st.html(f"<div class='ui-card-title'>{panel['title']}</div>")  # card title
+            st.altair_chart(panel["chart"], theme=None, width="stretch")  # five bars
+            st.html(panel["chip"])  # H0 chip
+    st.html(tab3_chips_html(cfg))  # H2 to H5 in one slim row
+
+with tabs[4]:  # Results
+    results = results_data(cfg)  # one row per bar
+    st.html(tab5_head_html(cfg, results))  # headline and subtitle
+    left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_columns"])  # chart card and dot card
+    with left, st.container(border=True):  # chart card
+        st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
+        st.altair_chart(results_chart(results, cfg), theme=None, width="stretch")  # Timing and Style panels
+    dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
+    dtx = cfg["static_tabs"]["texts"]  # texts of the dot card
+    right.html(f"<div class='ui-card-title'>{dot_line}</div>")  # one headline line
+    with right, st.container(border=True):  # dot card
+        st.altair_chart(dots_chart(dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"yes": dtx["t5_dot_yes"], "no": dtx["t5_dot_no"], "tip": dtx["t5_dot_tip"], "caption": dtx["t5_dot_caption"]}, cfg), theme=None, width="stretch")  # two grids
 
 with tabs[5]:  # Time Machine demo
     st.header(cfg["tabs"][5])  # tab title

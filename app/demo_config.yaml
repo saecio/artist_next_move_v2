@@ -14,9 +14,11 @@ tabs:  # tab titles, in display order
   - Time Machine demo  # tab title
   - Global style forecast  # tab title
   - Limits and next steps  # tab title
+header:  # fixed header above the tabs
+  title: "Artist Next Move"  # project name
+  tagline: "Predicts when an artist will release again, and whether the next release will bring a new style."  # one line under or beside the name
 notices:  # texts shown verbatim
   style_notice: "Which music styles will have the most new releases in Discogs next year?"  # tab 7
-  pending_notice: "Pending."  # tabs without content yet
 ui:  # interface labels
   genre_label: "Genre"  # genre selector
   all_genres: "All genres"  # genre selector, no filter option
@@ -357,3 +359,190 @@ style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
     placeholder: "?"  # placeholder cell
     no_actual: "—"  # a style without a reality count
 
+
+static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a text is a placeholder filled from a file or from config.yaml
+  dump_date: "01-09-2026"  # date of the Discogs data dump (not stored in the data), shown on tab 2
+  paths:  # files read by the static tabs, relative to the project root
+    dir: results/demo/static  # folder of the four small data files below, written once by scripts/run_static_assets.py
+    h1_buckets: h1_buckets.csv  # bucket, transitions, new_style_rate
+    h6_buckets: h6_buckets.csv  # bucket, artist_years, release_next_year_rate
+    data_figures: data_figures.csv  # metric, value
+    hypotheses: hypotheses_summary.csv  # id, question, result, test, h0_rejected, source
+    when_model: results/holdout_ci95/xgboost_final_next_1y.json  # Timing model, holdout, next_1y
+    when_baseline: results/holdout_ci95/baseline_next_1y.json  # Timing simple rule, holdout, next_1y
+    what_headline: results/holdout_what/headline.csv  # Style model and simple rule, holdout
+    what_top10: results/holdout_what/top10_lift.csv  # Style top group hit rate, holdout
+    works_per_year: works_per_year.csv  # year, works (dated cleaned Works per year), written once by scripts/run_static_assets.py
+    when_tests: results/holdout_ci95/xgboost_final_next_1y.json  # test_rows: number of test snapshots (same value in the other holdout_ci95 files)
+  rows:  # row names inside the stored files
+    what_model: stage 0  # Style model row of headline.csv and top10_lift.csv
+    what_rule: baseline (c)  # Style simple rule row of headline.csv
+    metric_master: works_master  # data_figures.csv metric: Works that come from a Master
+    metric_standalone: works_standalone  # data_figures.csv metric: Works that come from a standalone release
+    source_master: master  # work_source value of a Master Work
+    source_standalone: synthetic  # work_source value of a standalone release Work
+  controls:  # values the asset script must reproduce (notebook 02 cell 50 and the Hypothesis 6 cells, cleaned Works table)
+    h1_transitions: 3254604  # sum of the Hypothesis 1 buckets
+    h1_rates: [26.88, 20.64, 15.72, 11.18, 6.20]  # Hypothesis 1 rates, percent, two decimals
+    h6_artist_years: 2085428  # sum of the Hypothesis 6 buckets
+    h6_rates: [54.82, 33.66, 23.36, 17.61, 12.46]  # Hypothesis 6 rates, percent, two decimals
+    works: 5949217  # cleaned Works
+    artists: 1034756  # artists with at least one Work
+  models_compared: [Logistic Regression, Naive Bayes, Random Forest, HistGradientBoosting, XGBoost]  # models of the comparison, in the order of docs/decisions.md (entries on the Step 5 sequence)
+  sizes:  # pixel sizes of the static tabs (a later design pass restyles them)
+    tab5_columns: [2, 1]  # relative widths of the chart card and the dot card of tab 5
+    tab2_columns: [3, 2]  # relative widths of the chart card and the right blocks of tab 2
+    dots_side: 10  # circles per side of a grid, the grid shows side x side artists
+    big_font: 40  # big numbers of tab 2
+    bar_height: 22  # bar of tab 3
+    bar_label_width: 70  # bucket label column of tab 3
+    segment_height: 44  # segment of the tab 4 timeline
+    train_flex: 3  # relative width of the train segment of the tab 4 timeline
+    block_pad: 10  # padding of a text block
+  hypotheses:  # one entry per hypothesis, in order; the file hypotheses_summary.csv is built from here and from the two bucket files
+    H1: {question: "More releases before, fewer new styles?", result: "Falls from {first} to {last} as an artist's history grows", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 51"}  # rate range from h1_buckets.csv
+    H2: {question: "Does genre matter?", result: "Yes, but less and less as history grows", test: Chi-square per history group, h0_rejected: "yes", source: "notebook 02 cell 54"}  # qualitative
+    H3: {question: "Does a long gap bring a new style?", result: "More often, but a small effect", test: Mann-Whitney U, h0_rejected: "yes", source: "notebook 02 cell 58"}  # qualitative
+    H4: {question: "More styles already used, more new styles?", result: "Only inside each history group", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 61"}  # qualitative
+    H5: {question: "Do years without a date matter?", result: "The gap is mostly catalogue length", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 64"}  # qualitative
+    H6: {question: "Does the gap since the last release predict a release next year?", result: "Falls from {first} to {last} as the gap grows", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 69"}  # rate range from h6_buckets.csv
+  texts:  # on-screen texts, placeholders in braces
+    t1_headline: "Can we see a release coming?"  # tab 1 headline
+    t1_kpi_artists: "artists"  # label under the first number of the strip
+    t1_kpi_works: "works"  # label under the second number of the strip
+    t1_kpi_models: "models compared"  # label under the third number of the strip
+    t1_kpi_tests: "predictions tested on unseen years"  # label under the fourth number of the strip
+    t1_tip_artists: "People or groups with at least one Work in the cleaned data."  # tooltip of the artists number
+    t1_tip_works: "A Work is one release family: a Master, or a standalone release of an artist with enough of them."  # tooltip of the works number
+    t1_tip_models: "Compared on past years before the final test: {names}."  # tooltip of the models number, names from models_compared
+    t1_tip_tests: "Each prediction is one artist at one past date. Test years {first} to {last}, never touched while building the models."  # tooltip of the predictions number
+    t1_node_source: "Discogs data dump"  # schema node 1
+    t1_node_clean: "Clean artist histories"  # schema node 2
+    t1_node_past: "An artist's history at a past date"  # schema node 3
+    t1_node_check: "Checked against what really happened"  # schema end node
+    t1_tip_source: "A public copy of the Discogs collector database."  # tooltip of node 1
+    t1_tip_clean: "Releases grouped into one history per artist."  # tooltip of node 2
+    t1_tip_past: "Only what was known at that date is used, nothing from the future."  # tooltip of node 3
+    t1_tip_timing: "The model scores how likely the artist is to release something in the next year."  # tooltip of the Timing branch
+    t1_tip_style: "A style is a Discogs style tag. New means the artist never used it before."  # tooltip of the Style branch
+    t1_tip_check: "Predictions are compared with the real releases of years the models never saw."  # tooltip of the end node
+    t1_use: "Helps a label or platform anticipate when an artist will release again and whether the next release will bring a new style."  # tab 1 use
+    t2_source: "Discogs data dump of {date}"  # tab 2 source line
+    t2_headline: "A collector database, cleaned into artist histories"  # tab 2 headline
+    t2_chart_title: "Works per year"  # title of the area chart card
+    t2_tip_chart: "Only Works with a known year are counted."  # tooltip of the chart title
+    t2_incomplete: "Recent years are still being filled in"  # label of the shaded band
+    t2_tip_sub: "Discogs publishes a full copy of its database every month."  # tooltip of the subtitle
+    t2_peak: "Peak {year}: {works}"  # label of the peak point, both values computed from the data
+    t2_tip_works: "A Work is one release family: a Master, or a standalone release of an artist with enough of them."  # tooltip of the Works number
+    t2_tip_artists: "People or groups with at least one Work."  # tooltip of the Artists number
+    t2_in_master: "Masters"  # cleaning schema input 1
+    t2_in_standalone: "Standalone releases of artists with at least {n} of them"  # cleaning schema input 2
+    t2_out: "Works"  # cleaning schema output
+    t2_tip_master: "A Master groups all versions of one release."  # tooltip of input 1
+    t2_tip_standalone: "Releases without a Master. They count only for artists with enough of them."  # tooltip of input 2
+    t2_tip_out: "The unit of the project: one release family per row."  # tooltip of the output
+    t2_works: "Works"  # label of the first big number
+    t2_artists: "Artists"  # label of the second big number
+    t3_col_h0: "H0 rejected"  # tab 3 table header
+    t4_train: "Train, up to {last}"  # timeline segment
+    t4_gap: "Gap of {n} years"  # timeline segment
+    t4_test: "Test, {first} to {last}"  # timeline segment
+    t4_test_note: "Test years are never touched while building the models."  # under the timeline
+    t4_line: "{label}: {question} Model: {model}."  # one line per question
+    t4_model_timing: "gradient boosting trees"  # Timing model in plain words
+    t4_model_style: "gradient boosting trees"  # Style model in plain words
+    t4_rule: "Both are compared with a simple rule based on the artist's history."  # last line
+    t5_col_chance: "By chance"  # results column
+    t5_col_model: "Our model"  # results column
+    t8_data_title: "Data"  # block title
+    t8_data: "Discogs is a collector database, so it does not list every release ever made."  # block text
+    t8_style_title: "Style forecast"  # block title
+    t8_style: "Tested on {n} years ({first} to {last}); not clearly better than repeating last year's ranking."  # block text
+    t8_next_title: "Next step"  # block title
+    t8_next: "Try sequence models over an artist's release history, and clustering of styles. The {first} to {last} test years are used up, so a new test needs a new period."  # block text
+    t3_headline: "More history means fewer new styles. A longer silence means fewer releases."  # tab 3 headline, shown only when both series decrease in the data
+    t3_card_style: "New style by number of earlier releases"  # Style card title
+    t3_card_timing: "Release next year by years since the last one"  # Timing card title
+    t3_headline_neutral: "How history relates to new styles and releases"  # tab 3 headline when the data does not support the conclusion
+    t3_h0_kept: "H0 not rejected"  # chip when the file says no
+    t3_h0_tip: "The difference is not due to chance."  # tooltip of the H0 chip
+    t5_headline: "Both models beat the simple rule"  # tab 5 headline, shown only when true
+    t5_headline_neutral: "Results on years the models never saw"  # tab 5 headline otherwise
+    t5_sub: "Test years {first} to {last}, never touched while building the models."  # tab 5 subtitle
+    t5_info: "PR-AUC: how well the model finds the artists who do release or do bring a new style. Higher is better. Chance equals the share of yes cases."  # tooltip next to the subtitle
+    t5_col_rule: "History only"  # bar label of the baseline (History only baseline)
+    t5_tip_chance: "Always guessing the average share of yes cases."  # tooltip of the By chance label
+    t5_tip_rule_timing: "Ranks artists only by how often they released per year of activity so far."  # History only, Timing
+    t5_tip_rule_style: "Uses only the artist's number of earlier releases and their output this year."  # History only, Style
+    t5_tip_model: "Gradient boosting trees trained on each artist's history up to a past date."  # tooltip of the Our model label
+    t5_dot_left: "{n} artists picked at random"  # title of the left grid
+    t5_dot_right: "The {n} the model ranks highest"  # title of the right grid
+    t5_dot_big: "{k} of {n}"  # big number under a grid
+    t5_dot_caption: "bring a new style"  # caption under the big number
+    t5_dot_head: "Pick {n} artists at random: {b} bring a new style. Pick the {n} the model ranks highest: {k} do."  # line above the dot card
+    t5_dot_yes: "Brings a new style"  # circle state used by the chart
+    t5_dot_no: "Does not"  # circle state used by the chart
+    t5_dot_tip: "Exact share that bring a new style"  # tooltip title of a circle
+  tab3_series:  # the two charts of tab 3, in order
+    - {key: style, file: h1_buckets, bucket: bucket, rate: new_style_rate, count: transitions, hypothesis: H1, title: t3_card_style}  # Style card
+    - {key: timing, file: h6_buckets, bucket: bucket, rate: release_next_year_rate, count: artist_years, hypothesis: H6, title: t3_card_timing}  # Timing card
+  chip_hypotheses: [H2, H3, H4, H5]  # hypotheses shown as small chips under the cards
+design:  # visual system of the demo: the only place for colors, type scale and chart settings
+  palette:  # hex values; .streamlit/config.toml must equal background, card, text, line, timing (a test checks it)
+    background: "#0F1220"  # page
+    card: "#181C2E"  # cards
+    text: "#F2F2F5"  # main text
+    muted: "#9AA0B8"  # secondary text
+    line: "#2A2F47"  # borders and grid
+    timing: "#3DD6D0"  # the Timing question, on every tab and chart
+    style: "#FF4D8D"  # the Style question, on every tab and chart
+    chance: "#3A4060"  # By chance bar
+    rule: "#7C86A8"  # History only bar
+    highlight: "#FFB547"  # accent for emphasis
+  shadow: "0 4px 18px rgba(0,0,0,0.35)"  # soft card shadow
+  type:  # type scale in px
+    headline: 28  # page headline
+    subtitle: 15  # line under the headline
+    big: 44  # big number
+    label: 13  # label
+    caption: 12  # caption
+  box: {radius: 12, border: 1, pad: 18, gap: 12}  # card radius, border width, padding and gap in px
+  chip: {pad_v: 4, pad_h: 12, font: 13}  # chip sizes in px
+  header: {title_font: 20, tagline_font: 14, gap: 14, top_pad: 56}  # header sizes in px, top_pad is the space above the header (page padding)
+  button: {weight: 700, hover_brightness: 1.12}  # primary button label weight and hover brightness (text color is the palette background)
+  incomplete_from_year: 2024  # first year still being filled in (docs/decisions.md, 10-10-2026 entry on the Discogs submission lag: 2024 and 2025 are the excluded recent years, 2026 is the demo year)
+  diagram:  # schema sizes in SVG units (the drawing scales with the width through its viewBox)
+    width: 1200  # view box width
+    height: 250  # view box height of the tab 1 schema
+    node_h: 84  # node height
+    col_w: [180, 180, 200, 300, 170]  # node width per column: source, clean, past date, the two branches, check
+    radius: 14  # node corner radius
+    font: 14  # label size
+    chars: [17, 17, 19, 36, 17]  # label wrap width in characters per column
+    icon: 26  # icon size
+    stroke: 1.6  # line width of nodes, icons and arrows
+    clean_height: 230  # view box height of the tab 2 cleaning schema
+    clean_width: 520  # view box width of the tab 2 cleaning schema
+    clean_chars: 30  # label wrap width of the tab 2 schema
+  chart:  # Altair settings
+    theme_name: demo_dark  # registered theme name
+    height_results: 330  # tab 5 chart height in px
+    height_steps: 300  # tab 3 chart height in px
+    label_font: 13  # value and axis label size
+    axis_font: 12  # axis text size
+    title_font: 15  # panel title size
+    grid_opacity: 0.5  # gridline opacity
+    bar_corner: 4  # bar corner radius in px
+    whisker_width: 2  # whisker line width in px
+    y_headroom: 1.15  # share of the top value kept free above the bars
+    dot_cell: 15  # width and height of one circle cell in px
+    dot_fill: 0.7  # circle diameter as a share of its cell
+    dot_wrap: 18  # characters per line of a grid title
+    dot_big_font: 24  # big number under a grid
+    dot_caption_font: 12  # caption under the big number
+    height_works: 320  # tab 2 area chart height in px
+    area_opacity: 0.28  # fill of the area
+    line_width: 2  # line over the area
+    band_opacity: 0.12  # shaded incomplete years
+    peak_size: 90  # peak point size
