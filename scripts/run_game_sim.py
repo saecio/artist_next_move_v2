@@ -106,7 +106,7 @@ for aid in (1124645, 7592689, 4778):  # three artists
         if x["year"] in (2020, 2023, 2024, 2026) or pd.isna(row["stage0_score"]):  # years of interest
             print(f"{aid} {x['year']}: WHAT score {'none' if pd.isna(row['stage0_score']) else round(row['stage0_score'], 3)}, WHAT label {row['what_label']}, flagged {row['what_label_after_holdout']}, WHEN counted {x['counted']}, delta n {delta}")  # one line per year
 top = load_tables()["what_top10"]  # WHAT cutoff and holdout figures read from the file
-print(f"\nWHAT cutoff {top['score_cutoff']:.4f}, reliability x and y {reliability(top)}, from the holdout file")  # numbers behind the reliability line
+print(f"\nWHAT cutoff {top['score_cutoff']:.4f}, reliability x and y {reliability(top, cfg["reliability_scale"])}, from the holdout file")  # numbers behind the reliability line
 for aid, yr in ((1124645, 2020), (1124645, 2023), (7592689, 2023), (7592689, 2019), (1103159, 2021), (7592689, 2021), (1967268, 2023)):  # requested cases
     r = artist_timeline(aid).set_index("year").loc[yr]  # timeline row
     h = walk(aid, False)  # full walk
@@ -121,17 +121,17 @@ with open(ROOT / "results/holdout_what/top10_lift.csv", encoding="utf-8") as f: 
 with open(ROOT / "results/holdout_what/row_scores.csv", encoding="utf-8") as f:  # holdout scores
     pairs = [(float(r["stage0_score"]), float(r["label"])) for r in csv.DictReader(f)]  # score and label of every row
 low = [lab for s, lab in pairs if s < cut]  # labels of the rows below the cutoff
-z_independent = round(sum(low) / len(low) * 10)  # rounded positive rate out of 10
+z_independent = round(sum(low) / len(low) * cfg["reliability_scale"])  # rounded positive rate out of the scale
 print(f"\nrows below the cutoff {len(low)} of {len(pairs)}, positives {int(sum(low))}, rate {sum(low) / len(low):.4f}, z {z_independent}")  # counts behind the No-verdict line
 below = load_tables()["what_below"]  # the same numbers from the app layer
 print(f"app layer: rows {below['rows']}, positives {below['positives']}, rate {below['rate']:.4f}, z {below['z']}")  # app-layer values
 assert (below["rows"], below["positives"], below["z"]) == (len(low), int(sum(low)), z_independent)  # z equals the independent recomputation
-y = reliability(top)[1]  # rounded positive rate of any artist
+y = reliability(top, cfg["reliability_scale"])[1]  # rounded positive rate of any artist
 key = outside_text_key(below["z"], y, cfg["similar_gap"])  # wording variant
 print(f"z {below['z']}, y {y}, variant applied: {key}")  # which variant applies to the real values
 assert outside_text_key(3, 3, cfg["similar_gap"]) == "what_reliability_no_similar" and outside_text_key(3, 4, cfg["similar_gap"]) == "what_reliability_no_similar" and outside_text_key(3, 5, cfg["similar_gap"]) == "what_reliability_no_other"  # both variants work
-print(cfg[key].format(z=below["z"], y=y))  # the No-verdict line
-print(cfg["what_reliability"].format(x=reliability(top)[0], y=y))  # the Yes-verdict line
+print(cfg[key].format(z=below["z"], y=y, scale=cfg["reliability_scale"]))  # the No-verdict line
+print(cfg["what_reliability"].format(x=reliability(top, cfg["reliability_scale"])[0], y=y, scale=cfg["reliability_scale"]))  # the Yes-verdict line
 print("WHAT scoreboard checks passed")  # all asserts held
 print("\n== pool A regression against the earlier runs")  # section title
 pins = {7592689: (6, 3), 1124645: (7, 7), 4778: (7, 6)}  # counted years and model right under the rule by reality year (the earlier runs had 5/3, 6/6 and 6/6: 2024 now counts)

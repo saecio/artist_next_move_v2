@@ -152,8 +152,9 @@ def multi_summary(rows: pd.DataFrame) -> dict:  # model right in k of N
 
 def reliability_lines(top: dict, below: dict, g: dict) -> list:  # the two reliability lines
     """The Yes and No reliability lines of mode 1, built from the holdout figures."""
-    x, y = reliability(top)  # rounded rates out of 10
-    return [g["what_reliability"].format(x=x, y=y), g[outside_text_key(below["z"], y, g["similar_gap"])].format(z=below["z"], y=y)]  # Yes line, No line
+    scale = g["reliability_scale"]  # the rates are out of this many artists
+    x, y = reliability(top, scale)  # rounded rates out of the scale
+    return [g["what_reliability"].format(x=x, y=y, scale=scale), g[outside_text_key(below["z"], y, g["similar_gap"])].format(z=below["z"], y=y, scale=scale)]  # Yes line, No line
 
 
 STAGES = ["placeholder", "predict", "reveal"]  # display stages in order

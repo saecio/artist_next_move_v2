@@ -57,7 +57,7 @@ def load_tables() -> dict:  # load the cached tables
         "what_features": both(folder / live["what_features"], "what_features"),  # WHAT feature rows, both pools
         "when_stored": both(ROOT / live["when_scores"], "when_scores"),  # stored WHEN scores, both pools
         "what_top10": top.loc[["score_cutoff", "precision_top", "holdout_positive_rate"]].astype(float).to_dict(),  # WHAT cutoff and holdout figures of the top 10% group
-        "what_below": outside_rate(what, float(top["score_cutoff"])),  # holdout rows below the cutoff: counts, rate and z
+        "what_below": outside_rate(what, float(top["score_cutoff"]), load_demo_config()["game"]["reliability_scale"]),  # holdout rows below the cutoff: counts, rate and z
         "what_labels": both(folder / live["what_labels"], "what_labels"),  # stored WHAT labels and after-holdout flags, both pools
         "what_stored": what[what["artist_id"].isin(ids)],  # stored WHAT scores, demo artists
         "works": both(ROOT / live["works"], "works"),  # Works of the demo artists, both pools

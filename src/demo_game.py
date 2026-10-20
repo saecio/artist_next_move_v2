@@ -82,16 +82,16 @@ def card_status(total: int, cards: list, year: int, visible_until: int) -> str: 
     return "card" if cards else "hidden"  # drawn Works, or only re-recordings that are hidden
 
 
-def reliability(top: dict) -> tuple:  # x and y of the reliability line
-    """Whole numbers out of 10 for the top group and for any artist, from the holdout precision and positive rate."""
-    return round(top["precision_top"] * 10), round(top["holdout_positive_rate"] * 10)  # nearest integers
+def reliability(top: dict, scale: int) -> tuple:  # x and y of the reliability line
+    """Whole numbers out of `scale` for the top group and for any artist, from the holdout precision and positive rate."""
+    return round(top["precision_top"] * scale), round(top["holdout_positive_rate"] * scale)  # nearest integers
 
 
-def outside_rate(scores: pd.DataFrame, cutoff: float) -> dict:  # counts and rate below the cutoff
-    """Rows below the cutoff, their positives, their positive rate and the rate rounded out of 10."""
+def outside_rate(scores: pd.DataFrame, cutoff: float, scale: int) -> dict:  # counts and rate below the cutoff
+    """Rows below the cutoff, their positives, their positive rate and the rate rounded out of `scale`."""
     below = scores[scores["stage0_score"] < cutoff]  # holdout rows below the cutoff
     rate = float(below["label"].mean())  # share of positives among them
-    return {"rows": len(below), "positives": int(below["label"].sum()), "rate": rate, "z": round(rate * 10)}  # counts, rate and z
+    return {"rows": len(below), "positives": int(below["label"].sum()), "rate": rate, "z": round(rate * scale)}  # counts, rate and z
 
 
 def outside_text_key(z: int, y: int, similar_gap: int) -> str:  # wording variant of the No-verdict line

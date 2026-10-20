@@ -19,7 +19,9 @@ from streamlit.testing.v1 import AppTest  # headless app runner
 
 from app_data import load_demo_config  # demo settings
 from app_live import style_live  # live scoring, only for the timing
-from style_tab import mean_in_range, stored_in_range, style_summary  # figures behind the validation text
+from config import CONFIG  # project settings, first style column
+from style_forecast import build_panel  # panel builder that defines the base
+from style_tab import mean_in_range, stored_in_range, style_summary, validation_figures  # figures behind the validation text
 
 cfg = load_demo_config()  # settings
 st_cfg = cfg["style_tab"]  # tab 7 settings
@@ -84,7 +86,7 @@ def rows(at: AppTest) -> list:  # rows as cell texts
 
 def marks(at: AppTest) -> list:  # mark colors
     """Mark color classes in the table."""
-    return re.findall(r"<span class='poc-mark (\w+)'>", table(at))  # colors
+    return re.findall(r"<span class='poc-mark (\w+)'[^>]*>", table(at))  # colors
 
 
 def ref_rows(year: int) -> pd.DataFrame:  # stored top N of the year
@@ -97,18 +99,18 @@ def check_default() -> None:  # test 1
     at = new_app()  # app
     sel = at.selectbox(key=k["year"])  # year selector
     assert list(sel.options) == [str(y) for y in range(2018, 2027)], f"every year must be listed: {list(sel.options)}"  # nothing hidden
-    text = st_cfg["validation_text"]  # expected full text
+    figs = validation_figures(cfg)  # figures computed from the data
+    text = st_cfg["validation_text"].format(**figs)  # expected full text
     assert not any(text in w.value for w in at.warning), "the full text is no longer a permanent warning"  # no warning
-    assert st_cfg["headline"] in [c.value for c in at.caption], "the neutral headline line is visible"  # headline
+    assert st_cfg["headline"].format(**figs) in [c.value for c in at.caption], "the neutral headline line is visible"  # headline
     ex = next(e for e in at.expander if e.label == tx["validation_label"])  # the validation expander, there before Predict
     assert not ex.proto.expanded and [c.value for c in ex.caption] == [text], "closed expander with the validation text only"  # contents
     assert cfg["notices"]["style_notice"] in [w.value for w in at.warning], "the style notice is shown"  # replaced notice
     years = st_cfg["years"]["counted"]  # counted test years
     mean_range = mean_in_range(cfg)  # mean in-range count from the stored actuals and predictions
     assert [stored_in_range(y, st_cfg["top_n"]) for y in years] == [style_summary(y, st_cfg["top_n"], cfg)["in_range"] for y in years], "the stored counts must equal the live summary"  # cross-check
-    assert f"about {round(mean_range)} of the 10 top styles" in text, f"the in-range wording must follow the data: mean {mean_range}"  # in-range figure
     mean_hits = sum(style_summary(y, st_cfg["top_n"], cfg)["hits"] for y in years) / len(years)  # mean top 10 hits
-    assert f"{round(mean_hits)} of the 10 styles" in text and "{:.1f}".format(mean_hits) in st_cfg["headline"], "the hits wording must follow the data"  # hits figure
+    assert "{:.1f}".format(mean_hits) == figs["k"] and f"gets {figs['k']} of the top" in text, "the hits wording must follow the data"  # hits figure
     print(f"1 default: years {list(sel.options)}, validation text in the closed expander, mean in range {mean_range} (about {round(mean_range)}), mean hits {mean_hits}, no exception")  # result
 
 
@@ -124,7 +126,7 @@ def check_stages() -> None:  # test 2
     assert len(r1) == N and r1[0][1] == first, "the forecast shows after Predict"  # forecast
     assert "poc-mark" not in table(at) and not any(b.key == k["predict"] for b in at.button) and at.button(key=k["reveal"]), "no mark yet, Show reality offered"  # buttons and marks
     how = next(e for e in at.expander if e.label == tx["how_label"])  # the expander after Predict
-    assert st_cfg["growth_note"] in [c.value for c in how.caption], "the expander explains the order by expected growth"  # growth note
+    assert st_cfg["growth_note"].format(n=st_cfg["base_years"]) in [c.value for c in how.caption], "the expander explains the order by expected growth"  # growth note
     at = go(at, "reveal")  # Show reality
     assert marks(at) and not any(b.key in (k["predict"], k["reveal"]) for b in at.button), "marks after Show reality, no step button"  # full
     print(f"2 stages: {7 * N} placeholders -> forecast of {len(r1)} styles without marks -> actuals and marks")  # result
@@ -162,10 +164,10 @@ def check_flagged_and_none() -> None:  # tests 5 and 6
     """2023 and 2024 have asterisk marks in green or red and no summary; 2025 and 2026 show the text and no table."""
     for year in (2023, 2024):  # flagged years
         at = go(set_year(new_app(), year), "reveal")  # full table
-        assert st_cfg["reasons"][year] in [i.value for i in at.info], f"{year}: the reason must be shown"  # reason
+        assert st_cfg["reasons"][year].format(year=year) in [i.value for i in at.info], f"{year}: the reason must be shown"  # reason
         cols = set(marks(at))  # mark colors
         assert cols and cols <= {"green", "red"} and "amber" not in table(at), f"{year}: marks must be green or red, no amber left: {cols}"  # colors
-        every = re.findall(r"<span class='poc-mark (\w+)'>(.*?)</span>", table(at))  # every mark with its glyph
+        every = re.findall(r"<span class='poc-mark (\w+)'[^>]*>(.*?)</span>", table(at))  # every mark with its glyph
         assert len(every) == N and all(g in ("✓*", "✗*") and (c == "green") == (g == "✓*") for c, g in every), f"{year}: every flagged mark has the asterisk and the matching color"  # asterisk and color
         text = html.unescape(table(at))  # table text
         assert tx["summary_hits"].split("{")[0] not in text and tx["summary_range"].split("{")[0] not in text, f"{year}: no summary for a flagged year"  # no summary
@@ -211,6 +213,21 @@ def check_tab6_table() -> None:  # test 8
     print(f"8 tab 6 table after using tab 7: header {len(head)} columns without Release, year-end tag under the artist, titles in the reality cells")  # result
 
 
+def check_base_years() -> None:  # config and model code must agree on the base length
+    """The base of src/style_forecast.py equals the mean of the last style_tab.base_years counts, on a toy series with distinct values."""
+    first = CONFIG["years"]["style_first_column"]  # first calendar column of the style table
+    last = first + 8  # a few origins after the five warm-up columns
+    counts = {y: 150 + 17 * (y - first) ** 2 + 5 * (y - first) for y in range(first, last + 1)}  # distinct count per year, all above the eligibility floor
+    kept = pd.DataFrame([{"year": y, "styles": ["Toy"], "genres": ["Rock"]} for y, n in counts.items() for _ in range(n)])  # one Work row per count
+    panel = build_panel(kept, last)  # panel with the base of every origin year
+    n = st_cfg["base_years"]  # years in the base according to the config
+    assert len(panel) > 0, "the toy series must produce panel rows"  # series is eligible
+    for _, r in panel.iterrows():  # every origin year
+        want = np.mean([counts[int(r["origin"]) - i] for i in range(n)])  # mean of the last n counts
+        assert abs(r["base"] - want) < 1e-9, f"origin {int(r['origin'])}: base {r['base']} differs from the mean of the last {n} years {want}; style_tab.base_years and src/style_forecast.py disagree"  # drift guard
+    print(f"9 base years: the panel base equals the mean of the last {n} counts on {len(panel)} toy origins")  # result
+
+
 def timing() -> None:  # live scoring per year
     """Time of the live scoring of every forecast year, first call after the models are loaded."""
     style_live(2018)  # warm the caches
@@ -222,7 +239,7 @@ def timing() -> None:  # live scoring per year
     print("live scoring per year:", ", ".join(parts))  # result
 
 
-for fn in (check_default, check_stages, check_order_and_reality, check_flagged_and_none, check_reset_and_tab6, check_tab6_table, timing):  # all checks
+for fn in (check_default, check_stages, check_order_and_reality, check_flagged_and_none, check_reset_and_tab6, check_tab6_table, check_base_years, timing):  # all checks
     t = time.time()  # clock
     fn()  # run the check
     print(f"   {fn.__name__} {time.time() - t:.2f} s")  # timing

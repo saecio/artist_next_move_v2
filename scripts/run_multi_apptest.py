@@ -103,7 +103,7 @@ def check_default() -> None:  # test 1
     at = new_app("placeholder")  # app, nothing pressed
     assert at.radio(key=g["keys"]["mode"]).value == g["default_mode"], "mode 2 must open first"  # mode
     assert at.selectbox(key=k["year"]).value == rt["year"], "the default year"  # year
-    assert rt["selection_note"] in [c.value for c in at.caption], "the selection note must be on screen"  # disclosure line
+    assert rt["selection_note"].format(year=rt["year"]) in [c.value for c in at.caption], "the selection note must be on screen"  # disclosure line
     shown = [a for a, _ in rows_of(at)]  # artists in the table
     assert sorted(shown) == sorted(names[i] for i in rt["artists"]), "the table must hold the prepared artists"  # prepared list
     assert shown == [names[i] for i in rt["artists"]], "placeholder stage keeps the selection order"  # no score-based order yet
@@ -135,7 +135,7 @@ def check_order_and_summary() -> None:  # tests 2 and 3
         right += int(row["what_verdict"] == ("yes" if r["label"] == 1 else "no"))  # verdict against the stored label
     s = multi_summary(rows)  # summary from the logic
     assert (s["when_right"], s["when_n"], s["when2_right"], s["when2_n"]) == (k1, n1, k2, n2), "the WHEN summary differs from the recount"  # WHEN counts
-    assert tx["summary_when"].format(k=k1, n=n1, k2=k2, n2=n2) in text, "the WHEN summary line differs from the recount"  # summary line
+    assert tx["summary_when"].format(m=g["second_horizon"], k=k1, n=n1, k2=k2, n2=n2) in text, "the WHEN summary line differs from the recount"  # summary line
     assert (s["what_right"], s["what_n"]) == (right, n_what), "the WHAT summary differs from the recount"  # WHAT count
     print(f"2 order equals the stored-file order ({len(want)} rows); 3 summary equals the recount: next year {k1} of {n1}, within 2 years {k2} of {n2}, WHAT {right} of {n_what}")  # result
 
@@ -145,7 +145,7 @@ def check_boygenius() -> None:  # test 4
     at = new_app()  # app
     row = dict(rows_of(at))["boygenius"]  # its 2019 row
     want = f"title='{cfg['poc']['texts']['what_na_tip']}'"  # expected tooltip of the grey dash of a Work row
-    want19 = f"title='{cfg['poc']['texts']['what_na_tip_needs_three']}'"  # expected tooltip of the year-end row
+    want19 = f"title='{cfg['poc']['texts']['what_na_tip_needs_three'].format(n=CONFIG['what']['min_previous_works'])}'"  # expected tooltip of the year-end row
     assert "colspan='2'" in row and want19 in row and cfg["poc"]["texts"]["what_na"] in row, "the year-end WHAT cells must be one colspan grey dash"  # colspan dash
     at.selectbox(key=k["year"]).select(2018).run()  # 2018
     go(at, "reveal")  # the state reset, press again
@@ -166,7 +166,7 @@ def check_years() -> None:  # test 5
     assert not at.exception  # no exception
     boy = artist_cells(at)["boygenius"]  # boygenius artist cell in 2019
     assert tag_text(2019) in boy, "boygenius has no Work in 2019, its year-end row is shown"  # year-end row
-    open_txt = cfg["poc"]["texts"]["legend_open_year"]  # asterisk legend and tooltip
+    open_txt = cfg["poc"]["texts"]["legend_open_year"].format(year=CONFIG["years"]["last_complete"] + 1)  # asterisk legend and tooltip
     at.selectbox(key=k["year"]).select(2024).run()  # 2024: next-year reality 2025 counts, 2-year and WHAT realities in 2026 carry the asterisk
     go(at, "reveal")  # the state reset, press again
     h24 = table_html(at)  # table in 2024
@@ -177,14 +177,14 @@ def check_years() -> None:  # test 5
     k1, n1 = int(((ref["v1"] == (ref["label"] == 1))[c1]).sum()), int(c1.sum())  # independent next-year count
     sel = ref["show2"] & c2  # 2-year rows counted where the pill is shown
     k2, n2 = int(((ref["v2"] == (ref["label_2"] == 1))[sel]).sum()), int(sel.sum())  # independent 2-year count
-    assert n1 > 0 and tx["summary_when"].format(k=k1, n=n1, k2=k2, n2=n2) in html.unescape(h24), "2024 next-year rows (reality 2025) count without asterisk"  # counted
+    assert n1 > 0 and tx["summary_when"].format(m=g["second_horizon"], k=k1, n=n1, k2=k2, n2=n2) in html.unescape(h24), "2024 next-year rows (reality 2025) count without asterisk"  # counted
     stars24 = [g for _, g in glyphs if g.endswith("*")]  # asterisk marks of 2024
     assert stars24 and html.unescape(h24).count(open_txt) >= len(stars24) + 1, "each asterisk mark carries the tooltip and the legend is under the table"  # tooltip and legend
     at.selectbox(key=k["year"]).select(2025).run()  # 2025: every reality is in 2026
     go(at, "reveal")  # the state reset, press again
     h25 = table_html(at)  # table in 2025
     g25 = re.findall(r"<span class='poc-mark (\w+)'[^>]*>(.*?)</span>", h25)  # marks
-    assert tx["summary_when"].format(k=0, n=0, k2=0, n2=0) in html.unescape(h25) and tx["summary_what"].format(k=0, n=0) in html.unescape(h25), "2025 rows (reality 2026) are not counted"  # nothing counted
+    assert tx["summary_when"].format(m=g["second_horizon"], k=0, n=0, k2=0, n2=0) in html.unescape(h25) and tx["summary_what"].format(k=0, n=0) in html.unescape(h25), "2025 rows (reality 2026) are not counted"  # nothing counted
     assert any(g.endswith("*") for _, g in g25) and open_txt in html.unescape(h25), "2025 results (reality 2026) carry the asterisk and the legend is under the table"  # marks and legend
     print(f"5 years: 2019 year-end row, 2024 next year {k1} of {n1} counted without asterisk and {len(stars24)} asterisk marks, 2025 nothing counted with the legend")  # result
 
@@ -201,7 +201,7 @@ def check_forecast() -> None:  # test 5b
     assert len(rows) == len(want) == 10 and rows["is_forecast"].all() and not rows["is_year_end"].any(), "ten Work rows, no year-end row in 2026"  # rows
     assert rows["when_label"].isna().all() and not rows["when_counted"].any() and not rows["when_star"].any() and not rows["when2_star"].any() and not rows["what_counted"].any() and not rows["what_star"].any(), "no reality, nothing counted, no asterisk in 2026"  # flags
     assert rows["when_verdict"].eq("yes").sum() == 8 and rows["when_verdict"].eq("no").sum() == 2, "the 2026 list mixes 8 Yes and 2 No verdicts"  # mix
-    assert tx["selection_note_by_year"][2026] in [c.value for c in at.caption], "the 2026 selection note is on screen"  # note
+    assert tx["selection_note_by_year"][2026].format(year=2026) in [c.value for c in at.caption], "the 2026 selection note is on screen"  # note
     title = tx["forecast_title"].format(year=2027)  # forecast title
     assert any(title in i.value and tx["forecast_note"].format(year=2027) in i.value for i in at.info), "the forecast title and line are on screen"  # title
     at.button(key=k["predict"]).click().run()  # Predict
@@ -271,18 +271,18 @@ def check_stages() -> None:  # test 8
     rows1 = dict(rows_of(at))  # rows
     assert "Yes" in h1 or "No" in h1, "model verdicts must show after Predict"  # model columns
     assert "poc-mark" not in h1 and tx["summary_when"].split("{")[0] not in html.unescape(h1), "no mark and no summary before Show reality"  # no reality yet
-    assert f"title='{cfg['poc']['texts']['what_na_tip_needs_three']}'" in rows1["boygenius"], "the year-end grey dash shows after Predict"  # year-end cell, no score
+    assert f"title='{cfg['poc']['texts']['what_na_tip_needs_three'].format(n=CONFIG['what']['min_previous_works'])}'" in rows1["boygenius"], "the year-end grey dash shows after Predict"  # year-end cell, no score
     how = next(e for e in at.expander if e.label == tx["how_label"])  # the expander after Predict
     caps = [c.value for c in how.caption]  # its lines
-    assert len(caps) == 6 and tx["year_end_what_note"] in caps and tx["independent_note"] in caps and cfg["poc"]["texts"]["legend_open_year"] in caps and tx["legend_cascade"] in caps and sum("in 10" in c for c in caps) == 2, "the two reliability lines, the legend, the cascade sentence and the independence sentence and the year-end style sentence are in the expander"  # contents
+    assert len(caps) == 4 and tx["year_end_what_note"] in caps and tx["legend_cascade"].format(n=g["second_horizon"]) in caps and sum(f"in {g['reliability_scale']}" in c for c in caps) == 2, "the two reliability lines, the legend, the cascade sentence and the independence sentence and the year-end style sentence are in the expander"  # contents
     assert "class='poc-note'" not in h1 and "poc-pill" in h1, "no note under the table after Predict, verdicts are pills"  # notes location
     assert ph in rows1["SZA"], "realities stay placeholders after Predict"  # placeholder reality
     at = go(at, "reveal")  # Show reality
     h2 = table_html(at)  # table
     assert not any(b.key in (k["predict"], k["reveal"]) for b in at.button), "no step button after the reveal"  # buttons gone
     assert "poc-mark" in h2 and tx["summary_when"].split("{")[0] in html.unescape(h2) and tx["summary_what"].split("{")[0] in html.unescape(h2), "marks and both summary lines after Show reality"  # full
-    assert h2.count("class='poc-note'") == 2 and cfg["poc"]["texts"]["legend_open_year"] not in html.unescape(h2), "2019 has no asterisk result: only the two summary lines under the table, the legend is in the expander"  # notes location
-    assert cfg["poc"]["texts"]["legend_open_year"] in [c.value for e in at.expander if e.label == tx["how_label"] for c in e.caption], "the legend stays in the expander after Show reality"  # legend
+    assert h2.count("class='poc-note'") == 3 and cfg["poc"]["texts"]["symbols_legend"] in html.unescape(h2) and cfg["poc"]["texts"]["legend_open_year"].format(year=CONFIG["years"]["last_complete"] + 1) not in html.unescape(h2), "2019 has no asterisk result: only the two summary lines under the table, the legend is in the expander"  # notes location
+    assert cfg["poc"]["texts"]["legend_open_year"].format(year=CONFIG["years"]["last_complete"] + 1) not in [c.value for e in at.expander if e.label == tx["how_label"] for c in e.caption], "the legend stays in the expander after Show reality"  # legend
     print(f"8 stages: {h0.count(chr(39) + 'poc-ph' + chr(39))} placeholder cells -> model pills, expander with {len(caps)} lines, realities still '{ph}' -> marks and 2 summary lines under the table")  # result
 
 
@@ -312,7 +312,7 @@ def check_year_end_what() -> None:  # test 14
             last = re.findall(r"<span class='poc-mark [^']*'[^>]*>([^<]*)</span>", row)[-1]  # text of the WHAT mark
             assert last in (cfg["poc"]["texts"]["mark_ok"], cfg["poc"]["texts"]["mark_bad"]), f"{name}: the year-end WHAT mark is green or red with no asterisk, got {last}"  # no asterisk
         if name in ("SZA", "Olivia Rodrigo", "boygenius") and rows.loc[name, "is_year_end"]:  # year-end row without a score
-            assert f"title='{cfg['poc']['texts']['what_na_tip_needs_three']}'" in row, f"{name}: the tooltip says it needs 3 earlier releases"  # tooltip
+            assert f"title='{cfg['poc']['texts']['what_na_tip_needs_three'].format(n=CONFIG['what']['min_previous_works'])}'" in row, f"{name}: the tooltip says it needs 3 earlier releases"  # tooltip
     y = pd.read_csv(ROOT / "results/demo/what_scores_year_end.csv")  # independent read
     r0 = y[y["what_label"].isna()].iloc[0]  # a year-end row with a score but no resolved label
     one = multi_rows(cfg, [int(r0["artist_id"])], int(r0["year"]), g["threshold"], top, rt["max_artists"]).iloc[0]  # its row
@@ -330,7 +330,7 @@ def check_year_end() -> None:  # test 11
     cells_by_artist = artist_cells(at)  # artist cells after Predict
     for _, r in ref.iterrows():  # every artist with a row
         row = rows1[r["name"]]  # its row
-        assert row.count(html.escape(tx["pill_two"])) == int(r["show2"]) and row.count(html.escape(tx["pill_next"])) == 1, f"{r['name']}: the 2-year pill must show only when the next year or the 2-year verdict is No"  # cascade rule
+        assert row.count(html.escape(tx["pill_two"].format(n=g["second_horizon"]))) == int(r["show2"]) and row.count(html.escape(tx["pill_next"])) == 1, f"{r['name']}: the 2-year pill must show only when the next year or the 2-year verdict is No"  # cascade rule
         cell = cells_by_artist[r["name"]]  # artist cell of the row
         assert (tag_text(rt["year"]) in cell) == bool(r["is_year_end"]) and ("poc-sub" in cell) == bool(r["is_year_end"]) and (not r["is_year_end"] or (cfg["poc"]["texts"]["likely"] in row or cfg["poc"]["texts"]["not_likely"] in row) == (ye_state(r["artist_id"], rt["year"]) != "needs_three")), f"{r['name']}: the year-end tag belongs to year-end rows only and a year-end row has a WHAT pill exactly when it has a stored score"  # tag under the artist and WHAT pill
     at = go(at, "reveal")  # Show reality
@@ -346,7 +346,7 @@ def check_year_end() -> None:  # test 11
             assert want_cell in html.unescape(row), f"{r['name']}: the WHAT reality carries the title and the year of the release: {want_cell}"  # year of the release
         n_marks = len(re.findall(r"<span class='poc-mark ", row))  # marks of the row
         assert n_marks == 1 + int(r["show2"]) + 1, f"{r['name']}: one mark per pill shown plus the WHAT mark, got {n_marks}"  # marks count
-        assert row.count(html.escape(tx["pill_two"])) == 2 * int(r["show2"]), f"{r['name']}: the 2-year reality follows the 2-year pill"  # same structure in the reality cell
+        assert row.count(html.escape(tx["pill_two"].format(n=g["second_horizon"]))) == 2 * int(r["show2"]), f"{r['name']}: the 2-year reality follows the 2-year pill"  # same structure in the reality cell
     table = pd.read_csv(ROOT / "results/demo/route_table_year_end.csv")  # extended route table
     t = table[(table["year"] == rt["year"]) & table["artist_id"].isin(rt["artists"])]  # the prepared artists in the route year
     show2 = (t["verdict_1y"] == "no") | (t["verdict_2y"] == "no")  # rows with the second pill
@@ -354,7 +354,7 @@ def check_year_end() -> None:  # test 11
     k2, n2 = int((t["right_2y"][show2] == True).sum()), int(t["right_2y"][show2].notna().sum())  # 2-year figures where shown
     assert (k1, n1, k2, n2) == (5, 10, 2, 4), f"the route table figures for 2019 changed: {(k1, n1, k2, n2)}"  # expected figures
     kw, nw = int((t["what_right"] == True).sum()), int(t["what_right"].notna().sum())  # WHAT figures of the route table
-    assert tx["summary_when"].format(k=k1, n=n1, k2=k2, n2=n2) in html.unescape(table_html(at)), "the WHEN summary line must equal the route table figures"  # WHEN line
+    assert tx["summary_when"].format(m=g["second_horizon"], k=k1, n=n1, k2=k2, n2=n2) in html.unescape(table_html(at)), "the WHEN summary line must equal the route table figures"  # WHEN line
     assert tx["summary_what"].format(k=kw, n=nw) in html.unescape(table_html(at)), "the WHAT summary line must equal the route table figures"  # WHAT line
     assert not [c for c in at.caption if "earlier releases" in c.value], "no hidden-artists line when every selected artist has a row"  # no line
     at.selectbox(key=k["year"]).select(2018).run()  # 2018: two prepared-list artists would be hidden, check the line with the independent rule
@@ -383,9 +383,9 @@ def check_titles() -> None:  # test 13
     first = re.findall(r"<th[^>]*>(.*?)</th>", rows_head[0])  # first header row: artist, two group headers, result
     second = re.findall(r"<th>(.*?)</th>", rows_head[1])  # second header row: prediction and reality twice
     assert first == [html.escape(tx[c]) for c in ("col_artist", "col_timing", "col_style", "col_result")] and second == [html.escape(tx[c]) for c in ("col_prediction", "col_reality") * 2], f"the two header rows are not the expected ones: {first} {second}"  # new wording
-    assert (tx["col_timing"], tx["col_style"]) == ("New work next year?", "New style in next release?"), "header words"  # requested wording
-    assert f"title='{html.escape(tx['col_style_tip'], quote=True)}'" in table_html(at) and tx["col_style_tip"] == "Next release, whenever it comes. Independent of the first forecast.", "the style header has its tooltip"  # header tooltip
-    assert "Release" not in " ".join(first + second) and "col_release" not in tx, "the Release column must be gone"  # no Release column
+    assert (tx["col_timing"], tx["col_style"]) == ("Release next year?", "New style next release?"), "header words"  # requested wording
+    assert f"title='{html.escape(tx['col_style_tip'], quote=True)}'" in table_html(at) and tx["col_style_tip"] == "About the next release, whenever it comes. Separate from the first question.", "the style header has its tooltip"  # header tooltip
+    assert "Release" not in first + second and "col_release" not in tx, "the Release column must be gone"  # no Release column
     limit, shown_title, shown_cut = rt["title_max_chars"], 0, 0  # title limit and counters
     rows = dict(rows_of(at))  # rows by artist
     for _, r in ref.iterrows():  # every artist with a row
@@ -476,7 +476,7 @@ def check_structure() -> None:  # test 10
     assert not exp.proto.expanded, "the controls expander must be collapsed by default"  # collapsed
     assert {s.key for s in exp.selectbox} == {k["year"], k["genre"]} and {m.key for m in exp.multiselect} == {k["artists"]}, "year, genre and artists are inside the expander"  # contents
     assert at.button(key=k["predict"]).proto.type == "primary", "Predict is a primary button"  # button type
-    assert rt["selection_note"] in [c.value for c in at.caption if c not in exp.caption], "the selection note stays visible above the table"  # note outside
+    assert rt["selection_note"].format(year=rt["year"]) in [c.value for c in at.caption if c not in exp.caption], "the selection note stays visible above the table"  # note outside
     at = go(at, "predict")  # Predict
     assert at.button(key=k["reveal"]).proto.type == "primary", "Show reality is a primary button"  # button type
     full = next(h.value for h in at.get("html") if "poc-table" in h.value)  # table element with its style block

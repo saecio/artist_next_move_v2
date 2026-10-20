@@ -13,9 +13,9 @@ from app_data import (  # noqa: E402  data access functions
 )  # close the import
 from app_live import artist_timeline, load_tables  # noqa: E402  live data layer
 from config import CONFIG  # noqa: E402  project settings
-from style_tab import forecast_table, mark_for, style_summary, style_years, with_reality, year_status  # noqa: E402  tab 7 logic
+from style_tab import forecast_table, mark_for, style_summary, style_years, validation_figures, with_reality, year_status  # noqa: E402  tab 7 logic
 from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reliability_lines, route_for_year, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
-from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, star_in_row, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
+from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, open_year_text, star_in_row, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
 from demo_game import (  # noqa: E402  pure game functions
     hidden_counts, new_state, next_year, scored_years, scoreboard, session_total,  # imported names
 )  # close the import
@@ -33,14 +33,14 @@ def render_multi(cfg: dict) -> None:  # tab 6 mode 2: widgets only, the rows and
         first = {} if k["year"] in st.session_state else {"index": years.index(rt["year"])}  # the prepared year only at the first draw, a widget with a session value must not get index
         def on_year() -> None:  # year change: the prepared list of the year, or back to the default list
             st.session_state[k["artists"]] = route_for_year(cfg, st.session_state[k["year"]], st.session_state.get(k["artists"], route_ids(cfg)))  # selection for the new year
-        year = c1.selectbox(tx["year_label"], years, key=k["year"], on_change=on_year, **first)  # year selector
+        year = c1.selectbox(ui["year_label"], years, key=k["year"], on_change=on_year, **first)  # year selector
         genres = sorted(dict.fromkeys(a["genre"] for a in all_artists(cfg)))  # genres of both pools
-        genre = c2.selectbox(tx["genre_label"], [ui["all_genres"]] + genres, key=k["genre"])  # genre filter
+        genre = c2.selectbox(ui["genre_label"], [ui["all_genres"]] + genres, key=k["genre"])  # genre filter
         names = {int(a["discogs_id"]): a["name"] for a in all_artists(cfg)}  # id -> name
         chosen = st.session_state.get(k["artists"], route_ids(cfg))  # current selection, the prepared one at first
         ids = st.multiselect(tx["pick_label"], picker_options(cfg, None if genre == ui["all_genres"] else genre, chosen), default=route_ids(cfg) if k["artists"] not in st.session_state else None, format_func=names.get, max_selections=rt["max_artists"], key=k["artists"])  # artist picker, capped
         st.caption(tx["cap_note"].format(n=rt["max_artists"]))  # the cap
-    st.caption(tx["selection_note_by_year"].get(year, rt["selection_note"]))  # one line: prepared selection, disclosure (the year's own line when it has one)
+    st.caption(tx["selection_note_by_year"].get(year, rt["selection_note"]).format(year=year if year in tx["selection_note_by_year"] else rt["year"]))  # one line: prepared selection, disclosure (the year's own line when it has one)
     top = load_tables()["what_top10"]  # WHAT cutoff and holdout figures
     state = advance_stage(st.session_state.get(k["stage"]), multi_signature(year, ids), None)  # reset when the year or the artists changed
     st.session_state[k["stage"]] = state  # keep the state, mode 1 keys are not touched
@@ -61,7 +61,7 @@ def render_multi(cfg: dict) -> None:  # tab 6 mode 2: widgets only, the rows and
     st.html(multi_table_html(rows, multi_summary(rows), g, rt, cfg["poc"], row_marks, year, state["stage"]))  # the table for this stage
     for line in hidden_lines(cfg, ids, year):  # the hidden-artists lines under the table
         st.caption(line)  # one caption each
-    lines = how_lines(state["stage"], reliability_lines(top, load_tables()["what_below"], g), cfg["poc"]["texts"]["legend_open_year"], tx["legend_cascade"], tx["independent_note"], tx["year_end_what_note"])  # reliability lines, legend and cascade sentence, from Predict on
+    lines = how_lines(state["stage"], reliability_lines(top, load_tables()["what_below"], g), tx["legend_cascade"].format(n=g["second_horizon"]), tx["year_end_what_note"])  # reliability lines, legend and cascade sentence, from Predict on
     if lines:  # not in the placeholder stage
         with st.expander(tx["how_label"], expanded=False):  # collapsed by default
             for line in lines:  # one line each
@@ -124,7 +124,7 @@ with tabs[5]:  # Time Machine demo
             with bar[3]:  # action button of the current step
                 if step == "ask":  # the user predicts first
                     rc, bc = st.columns([1, 1.4], vertical_alignment="center")  # answer and lock side by side
-                    pick = rc.radio(g["question"].format(year=year), list(yn), format_func=yn.get, index=None, horizontal=True, label_visibility="collapsed", key=keys["answer"].format(id=aid, year=year))  # yes / no
+                    pick = rc.radio(poc["texts"]["q_timing"], list(yn), format_func=yn.get, index=None, horizontal=True, label_visibility="collapsed", key=keys["answer"].format(id=aid, year=year))  # yes / no
                     if bc.button(g["lock_label"], key=keys["lock"].format(id=aid), disabled=pick is None):  # lock
                         state["answer"], state["step"] = pick, "model"  # keep the answer
                         st.rerun()  # redraw with the prediction
@@ -134,7 +134,7 @@ with tabs[5]:  # Time Machine demo
                         state["step"] = "reveal"  # reality step
                         st.rerun()  # redraw with the reality
                 else:  # reality shown, or the forecast year (no reveal step), next year
-                    if st.button(g["next_label"], key=keys["next"].format(id=aid), disabled=nxt is None):  # next year
+                    if st.button(g["next_label"].format(year=year if nxt is None else nxt), key=keys["next"].format(id=aid), disabled=nxt is None):  # next year
                         state.update(year=nxt, step="ask", answer=None)  # move on, history kept
                         st.rerun()  # redraw
                     if nxt is None:  # end of the data
@@ -142,7 +142,6 @@ with tabs[5]:  # Time Machine demo
             if bar[4].button(g["restart_label"], key=keys["restart"].format(id=aid)):  # restart this artist
                 games[aid] = new_state(years, state["pred"])  # fresh state, same checkbox
                 st.rerun()  # redraw
-            st.markdown(f"**{g['question'].format(year=year)}**")  # question of the current year
             if mr["is_forecast"]:  # the next year has not happened
                 st.info(forecast_html(year, rt))  # "Forecast for {year + 1}" and the no-reality line
             works = load_tables()["works"]  # Works of the demo artists
@@ -150,6 +149,8 @@ with tabs[5]:  # Time Machine demo
             window = window_years(year, CONFIG["years"]["demo_works_first_year"], max(last, year + 1), poc["years_before"], poc["years_after"])  # years of the window
             until = min(year + 1, last) if step == "reveal" else year  # last year drawn
             st.html(timeline_html(works[works["artist_id"] == aid], hidden_counts(works, aid), window, until, year + 1, card_marks(mr, played is not None, row_marks), g, poc, ye))  # one-row timeline, marks on the predicted year
+            if played is not None:  # the marks are visible after the reveal
+                st.caption(poc["texts"]["symbols_legend"])  # meaning of the check, the cross and the dot
             lc, tc, sc = st.columns([1, 1.2, 1.2])  # left: the year and the Work, then the Timing and the Style blocks
             with lc:  # the year and its representative Work
                 st.html(work_panel_html(row, year, poc["texts"]["gap_card"] if mr["is_year_end"] else None, poc))  # year heading and Work title
@@ -158,7 +159,7 @@ with tabs[5]:  # Time Machine demo
             extra = [g["what_years_warning"].format(n=CONFIG["what"]["min_previous_works"])]  # WHAT coverage
             open_year = played is not None and star_in_row(mr)  # a result with an asterisk is on screen
             with st.expander(rt["how_label"], expanded=False):  # all long explanations, closed by default
-                for line in how_lines("predict", reliability_lines(top, load_tables()["what_below"], g), poc["texts"]["legend_open_year"], rt["legend_cascade"], rt["independent_note"], rt["year_end_what_note"]) + extra:  # reliability, legend, cascade sentence and notes
+                for line in how_lines("predict", reliability_lines(top, load_tables()["what_below"], g), rt["legend_cascade"].format(n=g["second_horizon"]), rt["year_end_what_note"]) + extra:  # reliability, legend, cascade sentence and notes
                     st.caption(line)  # small text
         board, total = scoreboard(state["history"]), session_total([s["history"] for s in games.values()])  # artist and session boards
         chips = [g["board_model"].format(right=board["model_right"], n=board["n"]) if board["n"] else g["board_none"]]  # model chip
@@ -170,16 +171,17 @@ with tabs[5]:  # Time Machine demo
                 chips.append(g["board_total_user"].format(right=total["user_right"], n=total["user_n"]))  # session user chip
         chips_slot.html(chips_html(chips, poc))  # scoreboard chips, one wrapping line under the bar
         if state["year"] is not None and open_year:  # asterisk legend near the scoreboard
-            st.caption(poc["texts"]["legend_open_year"])  # same sentence as the tooltip
+            st.caption(open_year_text(poc["texts"]))  # same sentence as the tooltip
 
 with tabs[6]:  # Global style forecast
     st.header(cfg["tabs"][6])  # tab title
     stt = cfg["style_tab"]  # tab 7 settings
     sk, sx = stt["keys"], stt["texts"]  # widget keys and texts
     st.warning(notes["style_notice"])  # forecast is global
-    st.caption(stt["headline"])  # one neutral visible line
+    figures = validation_figures(cfg)  # years and hits of the tested years, from the data
+    st.caption(stt["headline"].format(**figures))  # one neutral visible line
     with st.expander(sx["validation_label"], expanded=False):  # closed, on the page from the start
-        st.caption(stt["validation_text"])  # one text: tested years, hits, repeat_last, ranges, few years
+        st.caption(stt["validation_text"].format(**figures))  # one text: tested years, hits, repeat_last, ranges, few years
     year7 = st.selectbox(sx["year_label"], style_years(cfg), key=sk["year"])  # every target year, none hidden
     status = year_status(year7, cfg)  # kind and status line
     (st.info if status["kind"] != "none" else st.warning)(status["text"])  # reason of a flagged year or the no-forecast text
@@ -193,8 +195,8 @@ with tabs[6]:  # Global style forecast
             st.session_state[sk["stage"]] = advance_stage(state7, multi_signature(year7, []), "reveal")  # show the reality
             st.rerun()  # redraw
         table7 = with_reality(forecast_table(year7, stt["top_n"]), year7)  # forecast top N with reality, shown by stage
-        st.html(style_table_html(table7, style_summary(year7, stt["top_n"], cfg), status["kind"] == "flagged", stt, cfg["poc"], mark_for, state7["stage"], stt["top_n"]))  # the table for this stage
+        st.html(style_table_html(table7, style_summary(year7, stt["top_n"], cfg), status["kind"] == "flagged", stt, cfg["poc"], mark_for, state7["stage"], stt["top_n"], status["text"]))  # the table for this stage
         if state7["stage"] != "placeholder":  # reading notes from Predict on
             with st.expander(sx["how_label"], expanded=False):  # collapsed by default
-                for line in (cfg["poc"]["texts"]["legend_reference"], stt["growth_note"], stt["range_note"]):  # legend, range and noise notes
+                for line in (stt["growth_note"].format(n=stt["base_years"]), stt["range_note"]):  # order and range notes
                     st.caption(line)  # small text

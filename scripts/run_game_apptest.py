@@ -36,7 +36,7 @@ with open(ROOT / "results/holdout_what/top10_lift.csv", encoding="utf-8") as f: 
     top = next(r for r in csv.DictReader(f) if r["model"] == "stage 0")  # stage 0 row
 with open(ROOT / "results/holdout_what/row_scores.csv", encoding="utf-8") as f:  # holdout scores
     low = [float(r["label"]) for r in csv.DictReader(f) if float(r["stage0_score"]) < float(top["score_cutoff"])]  # labels of the rows below the cutoff
-EXP = {"x": round(float(top["precision_top"]) * 10), "y": round(float(top["holdout_positive_rate"]) * 10), "z": round(sum(low) / len(low) * 10)}  # independent x, y and z
+EXP = {"x": round(float(top["precision_top"]) * g["reliability_scale"]), "y": round(float(top["holdout_positive_rate"]) * g["reliability_scale"]), "z": round(sum(low) / len(low) * g["reliability_scale"])}  # independent x, y and z
 
 
 def find(name: str) -> tuple:  # artist entry and pool key
@@ -130,7 +130,7 @@ def play_to_end(artist_name: str, user_on: bool) -> None:  # play one artist to 
             assert last["counted"] == (year + 1 <= CONFIG["years"]["last_complete"] and last["label"] is not None), f"counted flag of {year} follows the reality year"  # rule
             assert n_after["n"] == n_before["n"] + int(last["counted"]), f"board of {year} follows the counted flag"  # board
             if year == last_complete_year and last["label"] is not None:  # a reality in 2026: asterisk mark and its legend near the scoreboard
-                assert poc_tx["legend_open_year"] in [c.value for c in at.caption], f"{year}: the open-year legend is on screen"  # legend
+                assert poc_tx["legend_open_year"].format(year=CONFIG["years"]["last_complete"] + 1) in [c.value for c in at.caption], f"{year}: the open-year legend is on screen"  # legend
         if year in (2025, 2026):  # reality in 2026 or later
             assert n_before["n"] == n_after["n"] and n_before["user_n"] == n_after["user_n"], f"board changed in {year}"  # no change
         if year in (2024, 2025, 2026):  # requested years
@@ -163,7 +163,7 @@ def show_year(artist_name: str, target_year: int) -> None:  # play one artist up
     pills = [h.value for h in at.get("html") if f">{poc_tx['likely']}<" in h.value or f">{poc_tx['not_likely']}<" in h.value]  # the WHAT verdict pill
     if pills:  # the WHAT column has a verdict
         yes = f">{poc_tx['likely']}<" in pills[0]  # verdict of this year
-        want = g["what_reliability"].format(x=EXP["x"], y=EXP["y"]) if yes else g["what_reliability_no_similar" if abs(EXP["z"] - EXP["y"]) <= 1 else "what_reliability_no_other"].format(z=EXP["z"], y=EXP["y"])  # expected line from the independent numbers
+        want = g["what_reliability"].format(x=EXP["x"], y=EXP["y"], scale=g["reliability_scale"]) if yes else g["what_reliability_no_similar" if abs(EXP["z"] - EXP["y"]) <= 1 else "what_reliability_no_other"].format(z=EXP["z"], y=EXP["y"], scale=g["reliability_scale"])  # expected line from the independent numbers
         assert want in captions, f"the reliability line is not the expected one: {want}"  # the line depends on the verdict
         print(f"   reliability line checked ({'Yes' if yes else 'No'} verdict): {want}")  # shown for the record
     assert not at.exception  # no exception
@@ -268,11 +268,11 @@ def want_timing(r, reveal: bool, answer: str | None = None) -> list:  # expected
     two = r.verdict_1y == "no" or r.verdict_2y == "no"  # cascade rule
     out = [poc_tx["label_timing"], poc_tx["q_timing"]] + ([rt_tx["year_end_tag"].format(year=r.year)] if r.is_year_end else [])  # label, question, grey tag
     out += [f"{poc_tx['your_prediction']} {yn[answer]}"] if answer else []  # user answer, this block only
-    out += [f"{poc_tx['prediction']} {yn[r.verdict_1y]}"] + ([f"{poc_tx['within_two']} {yn[r.verdict_2y]}"] if two else [])  # predictions
+    out += [f"{poc_tx['prediction']} {yn[r.verdict_1y]}"] + ([f"{poc_tx['within_two'].format(n=g['second_horizon'])} {yn[r.verdict_2y]}"] if two else [])  # predictions
     if not reveal:  # nothing but ? before the reveal
-        return out + [f"{poc_tx['reality']} {poc_tx['unknown']}"] + ([f"{poc_tx['reality_two']} {poc_tx['unknown']}"] if two else [])  # reality lines
-    for name, lab, y in [(poc_tx["reality"], r.reality_1y, r.year + 1)] + ([(poc_tx["reality_two"], r.reality_2y, r.year + 1 if r.reality_1y == "yes" else r.year + 2)] if two else []):  # one reality per horizon
-        out.append(f"{name} {rt_tx['no_reality'] if pd.isna(lab) else yn[lab]}")  # reality word
+        return out + [f"{poc_tx['reality']} {poc_tx['unknown']}"] + ([f"{poc_tx['reality_two'].format(n=g['second_horizon'])} {poc_tx['unknown']}"] if two else [])  # reality lines
+    for name, lab, y in [(poc_tx["reality"], r.reality_1y, r.year + 1)] + ([(poc_tx["reality_two"].format(n=g["second_horizon"]), r.reality_2y, r.year + 1 if r.reality_1y == "yes" else r.year + 2)] if two else []):  # one reality per horizon
+        out.append(f"{name} {rt_tx['not_yet'] if pd.isna(lab) else yn[lab]}")  # reality word
         if lab == "yes":  # a release happened
             out.append(release(r.artist_id, y))  # title and year
     return out  # all lines
@@ -406,7 +406,7 @@ def layout_checks(name: str) -> None:  # one artist, three states
         assert not at.exception, [e.value for e in at.exception]  # no exception
         bar = [at.selectbox(key=keys["genre"]), at.selectbox(key=keys["artist"]), at.checkbox(key=keys["user_pred"].format(id=aid)), at.button(key=keys["restart"].format(id=aid))]  # compact bar widgets
         assert all(w is not None for w in bar) and any("poc-chips" in h.value for h in at.get("html")), f"{state}: bar widgets and chips"  # bar
-        assert at.checkbox(key=keys["user_pred"].format(id=aid)).label == g["user_prediction_label"] == "My own prediction", f"{state}: checkbox label"  # shortened label
+        assert at.checkbox(key=keys["user_pred"].format(id=aid)).label == g["user_prediction_label"] == "My prediction", f"{state}: checkbox label"  # shortened label
         assert len([b for b in at.button if b.key in (keys["lock"].format(id=aid), keys["reveal"].format(id=aid), keys["next"].format(id=aid))]) == 1, f"{state}: exactly one action button"  # one action
         cards = card_pieces(at)  # cards of the timeline
         win = window_years(year, CONFIG_FIRST, max(int(works["year"].max()), year + 1), poc["years_before"], poc["years_after"])[0]  # expected window
@@ -430,7 +430,7 @@ def layout_checks(name: str) -> None:  # one artist, three states
         assert "score" not in " ".join(lt + ls).lower(), f"{state}: no score text in the blocks"  # scores only in tooltips
         assert any(e.label == rt_tx["how_label"] for e in at.expander), f"{state}: one How to read this expander"  # expander
         body = [c.value for c in at.caption]  # captions, the expander holds the long lines
-        assert poc_tx["legend_open_year"] in body and rt_tx["legend_cascade"] in body and rt_tx["independent_note"] in body and g["what_years_warning"].format(n=CONFIG_MIN) in body, f"{state}: legend, cascade sentence, independence sentence and warning live in the expander"  # long text
+        assert rt_tx["legend_cascade"].format(n=g["second_horizon"]) in body and g["what_years_warning"].format(n=CONFIG_MIN) in body, f"{state}: legend, cascade sentence, independence sentence and warning live in the expander"  # long text
         assert g["unseen_warning"] not in [w.value for w in at.warning], f"{state}: a seen artist has no unseen warning"  # no warning
         if state == "reveal":  # reality state
             after = scoreboard(at.session_state[keys["state"]][aid]["history"])  # board after

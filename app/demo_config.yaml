@@ -8,22 +8,20 @@ predictions_columns: [style, target_year, method, expected_growth, expected_work
 tabs:  # tab titles, in display order
   - Problem and question  # tab title
   - Data and cleaning  # tab title
-  - EDA  # tab title
+  - Data exploration  # tab title
   - Method  # tab title
   - Results  # tab title
   - Time Machine demo  # tab title
   - Global style forecast  # tab title
   - Limits and next steps  # tab title
 notices:  # texts shown verbatim
-  style_notice: "Style forecast: which music styles will see the most new releases catalogued in Discogs next year."  # tab 7
-  projection_notice: "Years after 2022 have no ground truth."  # shortened; not shown on tab 7, where the reason of each flagged year carries this meaning
+  style_notice: "Which music styles will have the most new releases in Discogs next year?"  # tab 7
   pending_notice: "Pending."  # tabs without content yet
 ui:  # interface labels
   genre_label: "Genre"  # genre selector
   all_genres: "All genres"  # genre selector, no filter option
   artist_label: "Artist"  # artist selector
   year_label: "Year"  # year selector
-  empty_rows: "No rows for this artist in this year."  # shown when the filter returns nothing
   projection_column: "is_projection"  # boolean column added to the forecast table
 artists:  # demo artists: display name, Discogs id, genre
   - {name: "Taylor Swift", discogs_id: 1124645, genre: "Pop"}  # Pop
@@ -150,6 +148,8 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   mode_label: "View"  # mode selector label
   mode_options: {one: "One artist", many: "Several artists"}  # mode selector texts
   threshold: 0.5  # the model says yes when the live next_1y score is at least this value
+  second_horizon: 2  # years of the second horizon, used by the within-years texts
+  reliability_scale: 10  # the reliability lines say x in this many artists, the figures are rounded to it
   keys:  # session_state and widget keys, {id} and {year} are replaced
     state: game  # session_state key holding one state per artist
     mode: game_mode  # mode selector
@@ -161,32 +161,31 @@ game:  # tab 6 flow, thresholds, widget keys and texts
     reveal: "game_reveal_{id}"  # reveal button
     next: "game_next_{id}"  # next year button
     restart: "game_restart_{id}"  # restart button
-  user_prediction_label: "My own prediction"  # checkbox text
-  question: "We are in year {year}, will this artist release a new Work next year?"  # question on screen
+  user_prediction_label: "My prediction"  # checkbox text
   answer_yes: "Yes"  # yes option and verdict word
   answer_no: "No"  # no option and verdict word
   lock_label: "Lock my answer"  # lock button
-  reveal_label: "Reveal reality"  # reveal button
-  next_label: "Next year"  # next year button
+  reveal_label: "Show reality"  # reveal button
+  next_label: "Go to {year}"  # next year button, {year} is the next playable year
   restart_label: "Restart"  # restart button
-  what_reliability: "In past tests, about {x} in 10 artists in this group did bring a new style, against about {y} in 10 for any artist."  # reliability line of a Yes verdict, x and y come from the holdout file
-  what_reliability_no_similar: "In past tests, about {z} in 10 artists outside this group also brought a new style, almost the same as for any artist ({y} in 10)."  # No verdict, z and y equal or one unit apart
-  what_reliability_no_other: "In past tests, about {z} in 10 artists outside this group brought a new style, compared with {y} in 10 for any artist."  # No verdict, z and y more than one unit apart
+  what_reliability: "When the model says Likely, about {x} in {scale} artists did add a new style, against {y} in {scale} overall."  # reliability line of a Yes verdict, x and y come from the holdout file, {scale} from reliability_scale
+  what_reliability_no_similar: "When the model says Not likely, about {z} in {scale} still added a new style, about the same as overall ({y} in {scale})."  # No verdict, z and y equal or one unit apart
+  what_reliability_no_other: "When the model says Not likely, about {z} in {scale} still added a new style, against {y} in {scale} overall."  # No verdict, z and y more than one unit apart
   what_reality_yes: "Reality: Yes, new style: {styles}"  # step B, stored label is yes, {styles} are the new styles of the next active year
   what_reality_no: "Reality: No new style"  # step B, stored label is no
-  what_no_reality: "No WHAT reality for this year: no later Work with style tags in the data."  # step B, score but no stored label
+  what_no_reality: "No later release with styles in the data yet."  # step B, score but no stored label
   hidden_line: "{n} re-recording(s) hidden"  # line under a year with hidden re-recordings
   more_line: "+{n} more"  # line under the drawn cards when the year has more Works than the cap
-  last_year_text: "Last year of the data reached: no next year to play."  # next button disabled
-  empty_text: "No year with a WHEN score for this artist."  # artist without scores
-  unseen_warning: "The model has not seen this artist in training (0 training rows)."  # artist_train_rows is 0
-  what_years_warning: "The style of the next release is shown for every artist-year from 2018 to the last data year with at least {n} earlier Works."  # WHAT coverage
-  board_model: "Model vs reality: {right} of {n}"  # artist board
-  board_user: "User vs reality: {right} of {n}"  # artist board, user years only
-  board_agree: "User vs model: agree in {right} of {n}"  # artist board, user years only
-  board_total: "Session total, model vs reality: {right} of {n}"  # all artists
-  board_total_user: "Session total, user vs reality: {right} of {n}"  # all artists, user years only
-  board_none: "No counted year yet."  # no counted year
+  last_year_text: "This is the last year in the data."  # next button disabled
+  empty_text: "No predictions available for this artist."  # artist without scores
+  unseen_warning: "The model has not seen this artist before."  # artist_train_rows is 0
+  what_years_warning: "Style predictions need at least {n} earlier releases."  # WHAT coverage, {n} from the config
+  board_model: "Model right: {right} of {n}"  # artist board
+  board_user: "You right: {right} of {n}"  # artist board, user years only
+  board_agree: "You and the model agree: {right} of {n}"  # artist board, user years only
+  board_total: "All artists, model right: {right} of {n}"  # all artists
+  board_total_user: "All artists, you right: {right} of {n}"  # all artists, user years only
+  board_none: "Nothing scored yet."  # no counted year
 
 poc:  # tab 6 mode 1 timeline and panel: texts, colors and sizes shared by tab 6 and tab 7
   titles_per_card: 3  # most Work titles drawn on a card, the rest is a "+N more" line
@@ -195,18 +194,18 @@ poc:  # tab 6 mode 1 timeline and panel: texts, colors and sizes shared by tab 6
   texts:  # texts of the page, the flow texts come from the game: section
     label_timing: "Timing"  # small grey label of the first block
     label_style: "Style"  # small grey label of the second block
-    q_timing: "Will this artist drop a new work next year?"  # question of the Timing block
+    q_timing: "Will the artist release something next year?"  # question of the Timing block, the only place it is shown
     q_style: "Will the next release bring a new style?"  # question of the Style block
-    style_scope: "Next release, whenever it comes. Independent of the answer above. Compared with everything released up to {year}."  # grey line of the Style block, {year} is the shown year
+    style_scope: "Next release, whenever it comes. Separate from the question above. New means not used up to {year}."  # grey line of the Style block, {year} is the shown year
     your_prediction: "Your prediction:"  # line of the user answer, Timing block only
     prediction: "Prediction:"  # line of the model prediction
-    within_two: "Within 2 years:"  # line of the 2-year prediction, shown by the cascade rule
+    within_two: "Within {n} years:"  # line of the second-horizon prediction, shown by the cascade rule, {n} from game.second_horizon
     reality: "Reality:"  # line of the reality
-    reality_two: "Reality, within 2 years:"  # line of the 2-year reality
-    score_tip: "Score: {score:.3f}"  # hover text of a prediction word, never a percentage
+    reality_two: "Reality, within {n} years:"  # line of the second-horizon reality
+    score_tip: "Model score {score:.2f}, not a probability"  # hover text of a prediction word
     release_line: "{title} ({year})"  # release under a reality line, {year} is the year of the release
     release_year_only: "Release in {year}"  # same line when the file has no title
-    used_before: "(all used before)"  # after the styles of the release of a No reality
+    used_before: "(none new)"  # after the styles of the release of a No reality
     more_styles: "+{n}"  # after the first styles when there are more
     max_styles: 3  # most style names shown in a line
     unknown: "?"  # cell not known before the reveal
@@ -218,17 +217,17 @@ poc:  # tab 6 mode 1 timeline and panel: texts, colors and sizes shared by tab 6
     mark_bad: "✗"  # mark of a prediction that does not match the reality
     mark_ok_flagged: "✓*"  # prediction equals the reality, result shown for reference only (green, with an asterisk)
     mark_bad_flagged: "✗*"  # prediction differs from the reality, result shown for reference only (red, with an asterisk)
-    legend_open_year: "* 2026 is not over yet, so the result can still change"  # tab 6 legend line and tooltip of every asterisk mark
-    legend_reference: "An asterisk marks a result shown for reference only, not included in the results."  # fixed legend line under the table
+    legend_open_year: "* {year} is not over yet, so this result can still change"  # caption near the chips (mode 1), note under the table (mode 2) and tooltip of every asterisk mark there, {year} is the first year not over
+    symbols_legend: "✓ right · ✗ wrong · ● no result yet"  # small grey line under the mode 2 table and under the mode 1 timeline once the marks are visible
     mark_when_title: "Timing"  # hover text of the timing mark
     mark_what_title: "Style"  # hover text of the style mark
-    mark_not_forecast: "Not forecast"  # hover text of the grey dot of a row without a WHAT score
+    mark_not_forecast: "No prediction"  # hover text of the grey dot of a row without a WHAT score
     what_na: "—"  # grey cell of a row without a WHAT score
-    what_na_tip: "Style forecast not available for this row"  # hover text of that cell
-    what_na_tip_needs_three: "Needs at least 3 earlier releases"  # hover text of the grey dash of a year-end row with fewer than 3 earlier releases
+    what_na_tip: "No style prediction for this year"  # hover text of that cell
+    what_na_tip_needs_three: "Needs at least {n} earlier releases"  # hover text of the grey dash of a year-end row with too few earlier releases, {n} from config.what.min_previous_works
     what_na_tip_no_later: "No later release in the data yet"  # hover text of the grey dash of a year-end row whose next release is not in the data
     future_card: "?"  # card of a year not revealed yet
-    gap_card: "No Work"  # card of a year without Work, replaced by the year-end tag in a year-end year
+    gap_card: "No release"  # card of a year without release, replaced by the year-end tag in a year-end year
     only_rerecordings: "Only re-recordings"  # card whose Works are all hidden re-recordings
   colors:  # result and mark colors, each with its own text color so they do not depend on the theme
     mark_green: {bg: "#16a34a", fg: "#ffffff"}  # solid mark: prediction matches the reality, white glyph
@@ -277,7 +276,7 @@ route:  # tab 6 mode 2: several artists in one year, read-only table
   artists_by_year:  # prepared selection of a year other than route.year, built by pick_route of src/demo_multi.py
     2026: [4778, 5530, 38661, 51984, 52835, 151199, 219986, 222578, 391170, 3272791]  # 8 Yes and 2 No (only 2 artists with a 2026 Work have a No verdict): Mary J. Blige, Shakira, Eminem, Jennifer Lopez, Beyonce, Drake, Bruce Springsteen, Calvin Harris, Arctic Monkeys, SZA
   title_max_chars: 28  # longest title in a reality cell, longer titles end with an ellipsis and keep the full title in a tooltip
-  selection_note: "Prepared selection for the demo, built for 2019: these artists were chosen after seeing the model results, to show both hits and misses. It is not a sample and not an evaluation."  # one line above the table
+  selection_note: "Selection prepared for {year} to show both hits and misses. It is not a random sample."  # one line above the table, {year} is route.year
   keys:  # widget keys
     year: route_year  # year selector
     genre: route_genre  # genre filter
@@ -286,35 +285,31 @@ route:  # tab 6 mode 2: several artists in one year, read-only table
     predict: route_predict  # Predict button
     reveal: route_reveal  # Show reality button
   texts:  # texts of the table, the model words come from game: and poc:
-    year_label: "Year"  # year selector label
-    genre_label: "Genre"  # genre filter label
     pick_label: "Artists in the table"  # multiselect label
     cap_note: "At most {n} artists in the table."  # shown under the picker
     col_artist: "Artist"  # table column
-    col_timing: "New work next year?"  # header over the prediction and reality columns of the timing forecast
-    col_style: "New style in next release?"  # header over the prediction and reality columns of the style forecast
-    col_style_tip: "Next release, whenever it comes. Independent of the first forecast."  # hover text of the style header
+    col_timing: "Release next year?"  # header over the prediction and reality columns of the timing prediction
+    col_style: "New style next release?"  # header over the prediction and reality columns of the style prediction
+    col_style_tip: "About the next release, whenever it comes. Separate from the first question."  # hover text of the style header
     col_prediction: "Prediction"  # second header row
     col_reality: "Reality"  # second header row
-    col_result: "Result (WHEN, WHAT)"  # table column
-    year_end_tag: "No release in {year} · forecast from earlier releases"  # small grey line of a year-end row (under the artist in mode 2, on the card and in the side panel of mode 1)
+    col_result: "Result"  # table column
+    year_end_tag: "No release in {year} · prediction from earlier releases"  # small grey line of a year-end row (under the artist in mode 2, on the card and in the side panel of mode 1)
     pill_next: "Next year"  # small label of the next-year pill and reality
-    pill_two: "Within 2 years"  # small label of the 2-year pill and reality
-    no_history_one: "{n} selected artist has no earlier releases before {year}."  # line under the table, one artist with no history hidden
-    no_history_many: "{n} selected artists have no earlier releases before {year}."  # line under the table, several artists with no history hidden
+    pill_two: "Within {n} years"  # small label of the second-horizon pill and reality, {n} from game.second_horizon
+    no_history_one: "{n} selected artist has no releases before {year}."  # line under the table, one artist with no history hidden
+    no_history_many: "{n} selected artists have no releases before {year}."  # line under the table, several artists with no history hidden
     no_release_one: "{n} selected artist has no release yet in {year}."  # line under the table for the last data year, artist with history but no row
     no_release_many: "{n} selected artists have no release yet in {year}."  # same, several artists
-    legend_cascade: "The 2-year view is shown when the next-year answer is No; a Yes next year also holds for 2 years."  # line in How to read this
-    independent_note: "The two forecasts are independent: the second one looks at the next release, whenever it comes."  # line in How to read this, both modes
-    year_end_what_note: "Style forecasts for years without a release are not counted."  # line in How to read this, both modes
+    legend_cascade: "Within {n} years is shown only when the next-year prediction is No. A Yes next year already covers it."  # line in How to read this, {n} from game.second_horizon
+    year_end_what_note: "Style predictions for years without a release are not counted."  # line in How to read this, both modes
     forecast_title: "Forecast for {year}"  # title line above the table or panel when the reality year has not happened
-    forecast_note: "{year} has not happened yet, so there is no reality to compare."  # line under the title
+    forecast_note: "{year} has not happened yet, so there is nothing to compare."  # line under the title
     not_yet: "Not yet"  # reality cell of the forecast year
     selection_note_by_year:  # line above the table for a year with a prepared selection
-      2026: "Prepared selection for 2026: artists with a 2026 Work, 8 Yes and 2 No verdicts (the only No verdicts of the year), picked by a fixed rule by Discogs id before any reality exists. It is not a sample and not an evaluation."
-    no_reality: "No reality yet"  # reality cell without a stored label
-    summary_when: "Next year: {k} of {n} · Within 2 years (where shown): {k2} of {n2}"  # WHEN summary line, counted rows only
-    summary_what: "Style of the next release: model right in {k} of {n} years with a release."  # summary line
+      2026: "Selection prepared for {year}: artists with a release in {year}, picked by a fixed rule before any reality exists. It is not a random sample."  # line above the table for 2026, {year} is the selected year
+    summary_when: "Next year: {k} of {n} right · Within {m} years (where shown): {k2} of {n2} right"  # timing summary line, counted rows only, {m} from game.second_horizon
+    summary_what: "Style of the next release: right in {k} of {n} years with a release."  # summary line
     placeholder: "?"  # placeholder of a column that is not shown yet
     change_label: "Change year or artists"  # collapsed expander with the year, genre and artist pickers
     how_label: "How to read this"  # expander with the reliability lines and the legend, shown after Predict
@@ -323,41 +318,42 @@ route:  # tab 6 mode 2: several artists in one year, read-only table
 
 style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
   top_n: 10  # styles in the table, also the k of the hits
-  headline: "Validated on 2018 to 2022: on average 6.0 of the real top 10 styles appear in the forecast top 10."  # one neutral line, always visible
+  base_years: 3  # years in the base mean the growth is measured against (the panel base of src/style_forecast.py); also hard-coded in src/style_forecast.py build_panel (base line), guarded by scripts/run_style_apptest.py
+  headline: "Tested on {first} to {last}: on average {k} of the top {n} styles in reality are in the forecast top {n}."  # one neutral line, always visible, figures computed from the data
   years:  # every target year of the selector, none is hidden
     counted: [2018, 2019, 2020, 2021, 2022]  # final test years, counted in the summary
     flagged: [2023, 2024]  # shown for reference only with the asterisk marks, no summary
     none: [2025, 2026]  # no forecast
   reasons:  # reason shown for a flagged year
-    2023: "Year 2023 is shown for reference only and is not included in the results: its Discogs counts show unusual jumps in some styles and cannot be confirmed as complete."
-    2024: "Year 2024 is shown for reference only and is not included in the results: Discogs was still adding its releases."
-  none_text: "No forecast for this year: Discogs was still adding releases of 2024 and later, so their counts are incomplete and would read as a fall in growth."  # years without forecast
-  validation_text: "How reliable is this forecast? It was tested on 2018 to 2022. On average, 6 of the 10 styles it picked were among the 10 styles that really grew the most. Simply repeating last year's ranking gets 5.4 of 10, so the two are about equal; for that reason repeating last year is the recommended method and this model is shown for comparison. The ranges are a guide: on the tested years the real value fell inside the range for about 5 of the 10 top styles. Only five years were tested, so these figures can change."  # text of the Validation and limits expander
-  growth_note: "The table is ordered by expected growth over the mean of the three latest years, so a small style with a high growth can rank above a large style."  # in How to read this
-  range_note: "The range is the 10th to 90th percentile of the past log errors; an actual count inside it is marked as a check."  # in How to read this
+    2023: "Not counted: Discogs counts for {year} show unusual jumps in some styles."  # {year} is the key
+    2024: "Not counted: Discogs was still adding its {year} releases."  # {year} is the key
+  none_text: "No forecast for this year: Discogs counts for recent years are still incomplete."  # years without forecast
+  validation_text: "Tested on {first} to {last}, the forecast gets {k} of the top {n} styles right. Repeating last year's ranking gets {b} of {n}, so the two are about equal. The ranges are a guide, and only {years} years were tested, so figures can change."  # text of the validation expander, figures computed from the data
+  growth_note: "Styles are ranked by expected growth over the average of the last {n} years. A small style with high growth can rank above a large one."  # in How to read this, {n} from base_years
+  range_note: "The range shows how far past forecasts were off, covering most cases. A ✓ means the count in reality fell inside it."  # in How to read this
   keys:  # widget and state keys
     year: style_year  # year selector
     stage: style_stage  # two-step state
     predict: style_predict  # Predict button
     reveal: style_reveal  # Show reality button
   texts:  # texts of the tab
-    year_label: "Target year"  # year selector label
-    flag_counted: "Final test year, counted in the summary."  # status line of a counted year
+    year_label: "Year to forecast"  # year selector label
+    flag_counted: "Counted in the summary"  # status line of a counted year
     col_rank: "Rank"  # table column
     col_style: "Style"  # table column
-    col_expected_growth: "Expected growth"  # table column, the quantity that defines the rank
-    col_expected: "Expected Works"  # table column
-    col_range: "Range (10th to 90th percentile)"  # table column
-    col_actual: "Actual Works"  # table column
-    col_actual_growth: "Actual growth"  # table column, same units as the expected growth
+    col_expected_growth: "Expected growth in releases"  # table column, the quantity that defines the rank
+    col_expected: "Expected releases"  # table column
+    col_range: "Likely range"  # table column
+    col_actual: "Reality: releases"  # table column
+    col_actual_growth: "Reality: growth"  # table column, same units as the expected growth
     percent_format: "{:+.0f}%"  # format of a growth, applied to the growth times 100
-    col_result: "Actual inside the range"  # table column
-    summary_hits: "Styles of the real top {n} present in the forecast top {n}: {k} of {n}."  # summary line
-    summary_range: "Actual Works inside the range: {k} of {n} forecast styles."  # summary line
+    col_result: "Reality in range?"  # table column
+    summary_hits: "Top {n} styles in reality that were in the forecast top {n}: {k} of {n}."  # summary line
+    summary_range: "Reality inside the range: {k} of {n} styles."  # summary line
     predict_button: "Predict"  # step 1 button
     reveal_button: "Show reality"  # step 2 button
     how_label: "How to read this"  # expander
-    validation_label: "Validation and limits"  # closed expander with the full validation text, on the page from the start
+    validation_label: "How reliable is this?"  # closed expander with the validation text, on the page from the start
     placeholder: "?"  # placeholder cell
-    no_actual: "n/a"  # a style without an actual count
+    no_actual: "—"  # a style without a reality count
 

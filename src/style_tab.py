@@ -25,7 +25,8 @@ def year_status(year: int, cfg: dict) -> dict:  # kind and the line shown for th
     """Kind of the year and its status text (none for a counted year's reason, the reason for a flagged year, the no-forecast text for a year without forecast)."""
     st = cfg["style_tab"]  # tab settings
     kind = year_kind(year, cfg)  # kind
-    text = {"counted": st["texts"]["flag_counted"], "flagged": st["reasons"].get(year), "none": st["none_text"]}[kind]  # status text
+    reason = st["reasons"].get(year)  # reason of a flagged year, with a {year} placeholder
+    text = {"counted": st["texts"]["flag_counted"], "flagged": reason and reason.format(year=year), "none": st["none_text"]}[kind]  # status text
     return {"kind": kind, "text": text}  # status
 
 
@@ -56,15 +57,20 @@ def mark_for(in_range, flagged: bool) -> tuple:  # color and mark key of a row
     return badge_kind(True, "yes" if in_range else "no", not flagged, "yes")  # same rule as mode 2
 
 
+def hits_of(year: int, top_n: int, method: str) -> int:  # top n hits of one method
+    """Top n hits of the method's ranking: styles of the real top n by actual growth among the eligible styles present in its top n."""
+    rf = style_live(year)  # live rows of the year
+    rf = rf[rf["method"] == method]  # one method only
+    act = load_tables()["actuals"]  # stored actuals and labels
+    m = rf.merge(act[act["target_year"] == year][["style", "label"]], on="style", how="left")  # label of every eligible style
+    return int(top_hits(m["expected_growth"].to_numpy(), m["label"].to_numpy(dtype=float), top_n))  # registered definition
+
+
 def style_summary(year: int, top_n: int, cfg: dict) -> dict | None:  # counted years only
     """Top n hits (styles of the real top n by actual growth among the eligible styles present in the forecast top n) and the in-range count of the forecast top n; None for any year that is not counted."""
     if year_kind(year, cfg) != "counted":  # flagged and no-forecast years have no summary
         return None  # never for those years
-    rf = style_live(year)  # live rows of the year
-    rf = rf[rf["method"] == "random_forest"]  # Random Forest only
-    act = load_tables()["actuals"]  # stored actuals and labels
-    m = rf.merge(act[act["target_year"] == year][["style", "label"]], on="style", how="left")  # label of every eligible style
-    hits = int(top_hits(m["expected_growth"].to_numpy(), m["label"].to_numpy(dtype=float), top_n))  # registered definition
+    hits = hits_of(year, top_n, "random_forest")  # registered definition
     shown = with_reality(forecast_table(year, top_n), year)  # forecast top n with reality
     known = shown[shown["in_range"].notna()]  # rows with an actual
     return {"hits": hits, "n": top_n, "in_range": int(known["in_range"].sum()), "m": len(known)}  # counts
@@ -84,3 +90,11 @@ def mean_in_range(cfg: dict) -> float:  # mean in-range count over the counted y
     """Mean over the counted test years of the stored top n in-range count (the figure behind 'about 5 of the 10 top styles')."""
     years = cfg["style_tab"]["years"]["counted"]  # counted test years
     return float(np.mean([stored_in_range(y, cfg["style_tab"]["top_n"]) for y in years]))  # mean of the yearly counts
+
+
+def validation_figures(cfg: dict) -> dict:  # figures of the headline and the validation text
+    """First and last counted year, mean top n hits of the Random Forest (k) and of repeating last year (b), n and the number of counted years."""
+    st = cfg["style_tab"]  # tab settings
+    years, n = st["years"]["counted"], st["top_n"]  # counted test years and the top size
+    k, b = (f"{np.mean([hits_of(y, n, m) for y in years]):.1f}" for m in ("random_forest", "repeat_last"))  # mean hits per method, one decimal
+    return {"first": min(years), "last": max(years), "k": k, "b": b, "n": n, "years": len(years)}  # placeholders of the texts
