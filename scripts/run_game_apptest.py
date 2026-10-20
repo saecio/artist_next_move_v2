@@ -184,4 +184,70 @@ for who in ("Kendrick Lamar", "Beyonce", "Peso Pluma", "boygenius"):  # pool B a
             at.button(key=keys["reveal"].format(id=aid)).click().run()  # reveal
             assert want in [m.value for m in at.markdown], "the WHAT column must show what_missing after the reveal"  # step B text
             print(f"   boygenius {yr}: WHAT column shows: {want}")  # printed proof
+print("\n##### release titles, year-end years and the scoreboard in mode 1")  # section title
+import html  # unescape of the panel text
+import re  # tags of the panel HTML
+import pandas as pd  # tables
+from demo_multi import md_escape  # same escaping as the page
+route = pd.read_csv(ROOT / "results/demo/route_table_year_end.csv")  # independent reference: verdicts, realities, flags of every artist-year
+picks = pd.read_csv(ROOT / "results/demo/release_pick.csv")  # independent reference: release titles
+rt_tx = cfg["route"]["texts"]  # route texts
+
+
+def at_year(name: str, year: int) -> tuple:  # app at the step A of a year
+    """Fresh app, mode 1, artist picked and walked to the question year (step A); returns the app and the artist id."""
+    aid = find(name)[0]["discogs_id"]  # its id
+    at = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=60).run()  # fresh app
+    pick(at, name)  # artist
+    while at.session_state[keys["state"]][aid]["year"] != year:  # walk to the year
+        at.button(key=keys["reveal"].format(id=aid)).click().run()  # reveal
+        at.button(key=keys["next"].format(id=aid)).click().run()  # next year
+    return at, aid  # app and id
+
+
+def panel_text(at: AppTest) -> str:  # side panel as text
+    """Text of the side panel HTML (the cascade), without style blocks and tags."""
+    raw = next(h.value for h in at.get("html") if "poc-casc" in h.value)  # the panel element
+    return html.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<style>.*?</style>", "", raw, flags=re.S)))  # readable text
+
+
+def case(name: str, year: int) -> None:  # one mode 1 year against the route table
+    """Play one artist-year in mode 1 and compare the page with the route table and the pick file."""
+    r = route[(route["artist"] == name) & (route["year"] == year)].iloc[0]  # reference row
+    at, aid = at_year(name, year)  # step A
+    before = scoreboard(at.session_state[keys["state"]][aid]["history"])  # board before the reveal
+    tag = rt_tx["year_end_tag"].format(year=year)  # grey tag text
+    p0 = panel_text(at)  # panel at step A
+    assert (tag in p0) == bool(r["is_year_end"]) and ((tag in [c.value for c in at.caption]) == bool(r["is_year_end"])), f"{name} {year}: the grey tag belongs to the card and the panel of year-end years only"  # tag in both places
+    assert (rt_tx["pill_two"] in p0) == bool(r["verdict_1y"] == "no" or r["verdict_2y"] == "no") and rt_tx["pill_next"] in p0, f"{name} {year}: the 2-year pill follows the cascade rule"  # same rule as mode 2
+    assert ("Yes: " not in p0) and ("Reality" not in " ".join(m.value for m in at.markdown)), "no reality before the reveal"  # nothing revealed
+    if r["is_year_end"]:  # year without a Work
+        assert rt_tx["what_year_end"] in [m.value for m in at.markdown], f"{name} {year}: the WHAT column must say there is no release"  # WHAT text
+    at.button(key=keys["reveal"].format(id=aid)).click().run()  # reveal
+    after = scoreboard(at.session_state[keys["state"]][aid]["history"])  # board after the reveal
+    assert after["n"] - before["n"] == int(bool(r["counted_1y"])), f"{name} {year}: the scoreboard must follow counted_1y"  # counted flag only
+    lines = [m.value for m in at.markdown if m.value.startswith("Reality")]  # the reality line
+    if r["reality_1y"] == "yes":  # a release followed
+        t = picks[(picks["artist_id"] == r["artist_id"]) & (picks["year"] == year + 1)]  # its pick
+        want = g["reality_yes_title"].format(title=md_escape(t.iloc[0]["title"]), year=year + 1) if not t.empty else g["reality_yes"].format(year=year + 1)  # expected line
+    else:  # no release
+        want = g["reality_no"].format(year=year + 1)  # expected line
+    assert lines == [want], f"{name} {year}: reality line {lines} differs from {want}"  # title rule
+    p1 = panel_text(at)  # panel after the reveal
+    assert p1.count(rt_tx["pill_next"]) == 2 and p1.count(rt_tx["pill_two"]) == 2 * int(r["verdict_1y"] == "no" or r["verdict_2y"] == "no"), f"{name} {year}: the reality cascade has the structure of the model cascade"  # reality cascade
+    assert not at.exception  # no exception
+    print(f"   {name} {year}: year-end {bool(r['is_year_end'])}, counted {bool(r['counted_1y'])}, n {before['n']} -> {after['n']}, line: {lines[0]}")  # proof
+
+
+ye = route[route["is_year_end"]]  # year-end rows of the route table
+case("Taylor Swift", 2020)  # Work year, Yes with a title
+case("Olivia Rodrigo", 2019)  # Work year, Yes with a title, no WHAT difference
+a_no = route[~route["is_year_end"] & (route["reality_1y"] == "no") & route["counted_1y"]].iloc[0]  # a Work year whose reality is No
+case(a_no["artist"], int(a_no["year"]))  # Work year, reality No
+case("boygenius", 2019)  # year-end year, counted, cascade with the 2-year pill
+c_yes = ye[(ye["reality_1y"] == "yes") & ye["counted_1y"]].iloc[0]  # a counted year-end row whose reality is Yes
+case(c_yes["artist"], int(c_yes["year"]))  # year-end year with a title in the reality line
+c_unc = ye[~ye["counted_1y"] & ye["reality_1y"].notna()].iloc[0]  # a reference-only year-end row (2024 on)
+case(c_unc["artist"], int(c_unc["year"]))  # year-end year that must not change the scoreboard
+print("mode 1 release titles, year-end cards, cascade and scoreboard checks passed")  # all asserts held
 print(f"\ntotal AppTest time {time.time() - t_all:.2f} s")  # print the result

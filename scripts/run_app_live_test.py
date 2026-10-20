@@ -128,3 +128,14 @@ for i in (1124645, 7592689, 2929902):  # artist with all years, artist with gaps
     w = t[t["year"] >= 2023][["year", "title", "stage0_score", "what_label", "what_label_after_holdout"]]  # WHAT columns from 2023
     print(f"\n{i} WHAT from 2023 (rows with a score: {int(w['stage0_score'].notna().sum())})")  # artist header
     print(w.assign(title=w["title"].str[:30]).to_string(index=False))  # table
+
+print("\n== release titles of the reality cells (results/demo/release_pick.csv through load_tables)")  # section title
+picks = load_tables()["release_pick"]  # cached pick table
+works = load_tables()["works"]  # Works of both pools
+assert list(picks.columns) == ["artist_id", "year", "work_id", "title", "is_album_like", "picked_by"], "pick file columns"  # file layout
+assert not picks.duplicated(["artist_id", "year"]).any() and picks["title"].notna().all(), "one title per artist-year"  # keys and titles
+assert set(picks["picked_by"]) == {"album", "fallback"} and picks[picks["picked_by"] == "album"]["is_album_like"].all() and not picks[picks["picked_by"] == "fallback"]["is_album_like"].any(), "album picks are album-like, fallback picks are not"  # rule B flags
+assert picks["work_id"].isin(works.loc[~works["is_rerecording"], "work_id"]).all(), "every pick is a non-re-recording Work of the demo files"  # membership
+need = works[(works["year"] >= 2018) & ~works["is_rerecording"]][["artist_id", "year"]].drop_duplicates()  # artist-years that need a title
+assert len(need.merge(picks, on=["artist_id", "year"])) == len(need), "every artist-year with a Work from 2018 on has a pick"  # coverage, 2024 and later included
+print(f"picks {len(picks)}: {picks['picked_by'].value_counts().to_dict()}, years {int(picks['year'].min())} to {int(picks['year'].max())}, all {len(need)} artist-years with a Work covered")  # result

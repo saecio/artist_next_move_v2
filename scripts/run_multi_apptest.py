@@ -5,6 +5,7 @@ Usage:
 """
 
 import html  # unescape of table text
+import logging  # capture of the Streamlit widget warning
 import re  # extraction of rows from the HTML
 import sys  # module path
 import time  # timings
@@ -56,9 +57,19 @@ def table_html(at: AppTest) -> str:  # HTML of the mode 2 table
     return re.sub(r"<style>.*?</style>", "", next(h.value for h in at.get("html") if "poc-table" in h.value), flags=re.S)  # the table element without its style blocks
 
 
+def artist_cells(at: AppTest) -> dict:  # artist cells of the table
+    """Artist name -> inner HTML of its artist cell (the name and, for a year-end row, the grey tag)."""
+    return {html.unescape(re.sub(r"<[^>]+>", "", a.split("<div")[0])): a for a, _ in re.findall(r"<tr><th>(.*?)</th>(.*?)</tr>", table_html(at)) if not a.startswith(tx["col_artist"])}  # name before the tag div
+
+
 def rows_of(at: AppTest) -> list:  # parsed rows
-    """(artist, row HTML) of every table row, in display order."""
-    return [(html.unescape(a), r) for a, r in re.findall(r"<tr><th>(.*?)</th>(.*?)</tr>", table_html(at)) if a != tx["col_artist"]]  # artist cells and the rest, header row left out
+    """(artist, row HTML) of every table row, in display order; the artist is the name only, without the year-end tag."""
+    return [(html.unescape(a.split("<div")[0]), r) for a, r in re.findall(r"<tr><th>(.*?)</th>(.*?)</tr>", table_html(at)) if not a.startswith(tx["col_artist"])]  # artist cells and the rest, header row left out
+
+
+def tag_text(year: int) -> str:  # escaped year-end tag
+    """The year-end tag of a year as it is written in the HTML."""
+    return html.escape(tx["year_end_tag"].format(year=year))  # text from the yaml
 
 
 def stored_when(ids: list, year: int, target: str = "next_1y") -> pd.DataFrame:  # independent WHEN reference from the stored files
@@ -136,7 +147,7 @@ def check_boygenius() -> None:  # test 4
     go(at, "reveal")  # the state reset, press again
     row18 = dict(rows_of(at))["boygenius"]  # its 2018 row
     want18 = html.escape(tx["what_missing"].format(n=CONFIG["what"]["min_previous_works"]))  # expected text of a Work row without a WHAT score
-    assert "colspan='2'" in row18 and want18 in row18 and tx["release_none"].split("{")[0] not in row18, "the Work row must show the not-eligible WHAT text"  # colspan text
+    assert "colspan='2'" in row18 and want18 in row18 and "poc-sub" not in dict(artist_cells(at))["boygenius"], "the Work row must show the not-eligible WHAT text and no year-end tag"  # colspan text
     top = load_tables()["what_top10"]["score_cutoff"]  # WHAT cutoff
     for year in (2018, 2019):  # both years
         rows = multi_rows(cfg, rt["artists"], year, g["threshold"], top, rt["max_artists"])  # rows from the logic
@@ -150,8 +161,8 @@ def check_years() -> None:  # test 5
     at.selectbox(key=k["year"]).select(2019).run()  # 2019
     go(at, "reveal")  # the state reset, press again
     assert not at.exception  # no exception
-    boy = dict(rows_of(at))["boygenius"]  # boygenius in 2019
-    assert tx["release_estimated"] in boy, "boygenius has no Work in 2019, its year-end row is shown"  # year-end row
+    boy = artist_cells(at)["boygenius"]  # boygenius artist cell in 2019
+    assert tag_text(2019) in boy, "boygenius has no Work in 2019, its year-end row is shown"  # year-end row
     at.selectbox(key=k["year"]).select(2024).run()  # 2024
     go(at, "reveal")  # the state reset, press again
     h24 = table_html(at)  # table in 2024
@@ -243,10 +254,12 @@ def check_year_end() -> None:  # test 11
     at = new_app("predict")  # Predict stage: pills without realities
     ref = cascade_reference(rt["artists"], rt["year"])  # stored reference
     rows1 = dict(rows_of(at))  # rows after Predict
+    cells_by_artist = artist_cells(at)  # artist cells after Predict
     for _, r in ref.iterrows():  # every artist with a row
         row = rows1[r["name"]]  # its row
         assert row.count(html.escape(tx["pill_two"])) == int(r["show2"]) and row.count(html.escape(tx["pill_next"])) == 1, f"{r['name']}: the 2-year pill must show only when the next year or the 2-year verdict is No"  # cascade rule
-        assert (tx["release_estimated"] in row) == bool(r["is_year_end"]) and ((html.escape(tx["what_year_end"]) in row) == bool(r["is_year_end"])), f"{r['name']}: the year-end tag and the WHAT text belong to year-end rows only"  # tag and WHAT text
+        cell = cells_by_artist[r["name"]]  # artist cell of the row
+        assert (tag_text(rt["year"]) in cell) == bool(r["is_year_end"]) and ("poc-sub" in cell) == bool(r["is_year_end"]) and ((html.escape(tx["what_year_end"]) in row) == bool(r["is_year_end"])), f"{r['name']}: the year-end tag and the WHAT text belong to year-end rows only"  # tag under the artist and WHAT text
     at = go(at, "reveal")  # Show reality
     rows2 = dict(rows_of(at))  # rows after Show reality
     for _, r in ref.iterrows():  # every artist with a row
@@ -279,6 +292,66 @@ def check_year_end() -> None:  # test 11
         assert tx[key].format(n=len(extra), year=year) in [c.value for c in at.caption], f"the hidden artists line is missing for {year}"  # line under the table
         assert all(n not in [a for a, _ in rows_of(at)] for n in extra), "hidden artists are not in the table"  # not shown
     print(f"11 year-end: tag and WHAT text on year-end rows only, 2-year pill only when next year or 2-year is No, marks = pills + WHAT, summary equals route_table_year_end.csv ({k1} of {n1}, {k2} of {n2}, WHAT {kw} of {nw}), hidden lines for 2018 (2, plural) and 2019 (1, singular)")  # result
+
+
+def check_titles() -> None:  # test 13
+    """Release titles in the reality cells (from release_pick.csv, read directly), cut at title_max_chars with the full title in the tooltip, no Release column, the year-end tag under the artist, scoreboard-relevant counts unchanged."""
+    picks = pd.read_csv(ROOT / "results/demo/release_pick.csv")  # independent source of the titles
+    ref = cascade_reference(rt["artists"], rt["year"])  # stored reference of the default view
+    at = new_app()  # full table, default view
+    head = re.findall(r"<th>(.*?)</th>", table_html(at).split("</tr>")[0])  # header cells
+    assert head == [html.escape(tx[c]) for c in ("col_artist", "col_when", "col_when_reality", "col_what", "col_what_reality", "col_result")] and "col_release" not in tx and "Release" not in head, f"the Release column must be gone: {head}"  # header
+    limit, shown_title, shown_cut = rt["title_max_chars"], 0, 0  # title limit and counters
+    rows = dict(rows_of(at))  # rows by artist
+    for _, r in ref.iterrows():  # every artist with a row
+        row = rows[r["name"]]  # its row
+        reality = re.findall(r"<td>(.*?)</td>", row)[1]  # the WHEN reality cell (second plain cell: after the model cascade)
+        t1 = picks[(picks["artist_id"] == r["artist_id"]) & (picks["year"] == rt["year"] + 1)]  # pick of the next year
+        if r["label"] == 1 and not t1.empty:  # next-year reality is Yes and a title exists
+            full = t1.iloc[0]["title"]  # full title
+            want = full if len(full) <= limit else full[:limit - 1].rstrip() + "\u2026"  # expected text
+            assert html.escape("Yes: " + want) in reality, f"{r['name']}: the next-year reality cell must read 'Yes: {want}'"  # text with the title
+            assert (f"title='{html.escape(full, quote=True)}'" in reality), f"{r['name']}: the full title must be in the tooltip"  # tooltip
+            shown_title += 1  # counted
+            shown_cut += int(len(full) > limit)  # cut titles
+        elif r["label"] == 0:  # next-year reality is No
+            assert "title=" not in reality.split("poc-step")[1], f"{r['name']}: a No reality has no title"  # the next-year item is the first step of the cell
+    assert shown_title >= 1 and shown_cut >= 1, "the default view must show a title and a cut title (BTS)"  # both cases present in the data
+    assert "\u2026" in re.sub(r"<[^>]+>", "|", rows["BTS"]) and "Map Of The Soul 7 ~ The Journey ~" in rows["BTS"], "the BTS title is cut with an ellipsis and keeps the full title in the tooltip"  # cut title
+    cells_by_artist = artist_cells(at)  # artist cells
+    ye_names = {r["name"] for _, r in ref.iterrows() if r["is_year_end"]}  # year-end rows
+    assert ye_names and all(("poc-sub" in cells_by_artist[n]) == (n in ye_names) for n in cells_by_artist), "the tag sits under the artist of year-end rows only"  # tag placement
+    assert all(tag_text(rt["year"]) in cells_by_artist[n] for n in ye_names), "the tag text is 'No release in {year} \u00b7 estimated from history'"  # tag text
+    print(f"13 titles: {shown_title} reality cells with a title ({shown_cut} cut at {limit} with the full title in the tooltip), Release column gone, tag under the artist of {sorted(ye_names)} only")  # result
+
+
+def widget_warnings(run) -> list:  # widget warnings logged while a function runs
+    """Messages of the Streamlit session-state widget warning logged during `run()`."""
+    records = []  # collected messages
+    class Catch(logging.Handler):  # collects the records of one logger
+        def emit(self, record):  # one record
+            records.append(record.getMessage())  # keep the text
+    log = logging.getLogger("streamlit.elements.lib.policies")  # logger of the widget policies
+    handler = Catch()  # collector
+    log.addHandler(handler)  # attach
+    try:  # always detach
+        run()  # the code under test
+    finally:  # detach
+        log.removeHandler(handler)  # back to the state before
+    return [m for m in records if "Session State" in m]  # the widget warning only
+
+
+def check_no_widget_warning() -> None:  # test 14
+    """The route_year selectbox gets index only at its first draw: no session-state widget warning when the year changes. A positive control shows the capture sees the warning when index and a session value meet."""
+    control = widget_warnings(lambda: AppTest.from_string("import streamlit as st\nst.session_state['w'] = 2\nst.selectbox('x', [1, 2, 3], index=1, key='w')").run())  # index plus a session value
+    assert control, "the capture must see the warning in the positive control"  # the capture works
+    def change_year():  # first draw and two year changes
+        at = new_app("placeholder")  # first run
+        at.selectbox(key=k["year"]).select(2020).run()  # year change
+        at.selectbox(key=k["year"]).select(2021).run()  # second change
+        assert at.selectbox(key=k["year"]).value == 2021 and not at.exception  # the value follows
+    assert not widget_warnings(change_year), "the route_year widget must not warn"  # no warning
+    print(f"14 widget warning: captured in the positive control ({len(control)}), none for route_year over a first draw and two year changes")  # result
 
 
 def check_hidden_last_year() -> None:  # test 12
@@ -348,7 +421,7 @@ def check_reset() -> None:  # test 9
     print("9 reset: year change and artist change return to placeholders, mode 1 changes leave the mode 2 stage (predict) untouched")  # result
 
 
-for fn in (check_default, check_order_and_summary, check_boygenius, check_years, check_manual_and_cap, check_switch, check_stages, check_reset, check_structure, check_year_end, check_hidden_last_year):  # all checks
+for fn in (check_default, check_order_and_summary, check_boygenius, check_years, check_manual_and_cap, check_switch, check_stages, check_reset, check_structure, check_year_end, check_titles, check_no_widget_warning, check_hidden_last_year):  # all checks
     t = time.time()  # clock
     fn()  # run the check
     print(f"   {fn.__name__} {time.time() - t:.2f} s")  # timing

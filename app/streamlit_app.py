@@ -14,10 +14,10 @@ from app_data import (  # noqa: E402  data access functions
 from app_live import artist_timeline, load_tables  # noqa: E402  live data layer
 from config import CONFIG  # noqa: E402  project settings
 from style_tab import forecast_table, mark_for, style_summary, style_years, with_reality, year_status  # noqa: E402  tab 7 logic
-from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, reliability_lines, route_ids, row_marks  # noqa: E402  mode 2 logic
-from poc_view import how_lines, multi_table_html, style_table_html  # noqa: E402  mode 2 table
+from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reality_line, reliability_lines, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
+from poc_view import how_lines, multi_table_html, side_panel_html, style_table_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 side panel and tag
 from demo_game import (  # noqa: E402  pure game functions
-    card_status, hidden_counts, names, new_state, next_year, play, scored_years, scoreboard, session_total, verdict, year_cards, first_uncounted_year, flag, reliability, outside_text_key,  # imported names
+    card_status, hidden_counts, names, new_state, next_year, scored_years, scoreboard, session_total, verdict, year_cards, first_uncounted_year, flag, reliability, outside_text_key,  # imported names
 )  # close the import
 
 def render_multi(cfg: dict) -> None:  # tab 6 mode 2: widgets only, the rows and the HTML come from src/
@@ -29,7 +29,8 @@ def render_multi(cfg: dict) -> None:  # tab 6 mode 2: widgets only, the rows and
     years = list(range(CONFIG["years"]["holdout_start"], int(works["year"].max()) + 1))  # 2018 to the last data year
     with st.expander(tx["change_label"], expanded=False):  # the pickers, collapsed by default
         c1, c2 = st.columns([1, 2])  # year and genre side by side
-        year = c1.selectbox(tx["year_label"], years, index=years.index(rt["year"]), key=k["year"])  # year selector
+        first = {} if k["year"] in st.session_state else {"index": years.index(rt["year"])}  # the prepared year only at the first draw, a widget with a session value must not get index
+        year = c1.selectbox(tx["year_label"], years, key=k["year"], **first)  # year selector
         genres = sorted(dict.fromkeys(a["genre"] for a in all_artists(cfg)))  # genres of both pools
         genre = c2.selectbox(tx["genre_label"], [ui["all_genres"]] + genres, key=k["genre"])  # genre filter
         names = {int(a["discogs_id"]): a["name"] for a in all_artists(cfg)}  # id -> name
@@ -88,7 +89,8 @@ with tabs[5]:  # Time Machine demo
         g, keys = cfg["game"], cfg["game"]["keys"]  # game texts and widget keys
         aid = artist["discogs_id"]  # selected artist id
         tl = artist_timeline(aid)  # one row per year, live scores and stored labels
-        years = scored_years(tl, CONFIG["years"]["holdout_start"])  # playable years
+        years = playable_years(aid, tl, CONFIG["years"]["holdout_start"])  # playable years: Work years and year-end years
+        ye_years = set(years) - set(scored_years(tl, CONFIG["years"]["holdout_start"]))  # years without a dated Work
         games = st.session_state.setdefault(keys["state"], {})  # one state per artist
         state = games.setdefault(aid, new_state(years))  # this artist's state
         st.warning(g["what_years_warning"].format(n=CONFIG["what"]["min_previous_works"]))  # WHAT coverage
@@ -103,7 +105,9 @@ with tabs[5]:  # Time Machine demo
         else:  # game running
             year, hist = state["year"], state["history"]  # current year and history
             step = "model" if state["step"] == "ask" and not state["pred"] else state["step"]  # the question is skipped without a user prediction
-            row = tl[tl["year"] == year].iloc[0]  # representative Work of the question year
+            row = tl[tl["year"] == year].iloc[0]  # representative Work of the question year, empty values in a year-end year
+            top = load_tables()["what_top10"]  # WHAT cutoff and holdout figures
+            mr = multi_rows(cfg, [aid], year, g["threshold"], top["score_cutoff"], 1).iloc[0]  # the mode 2 row of the question year: both horizons, realities and release titles
             last = int(tl["year"].max())  # last year of the data
             until = min(year + 1, last) if step == "reveal" else year  # last year drawn
             works = load_tables()["works"]  # Works of the demo artists
@@ -125,6 +129,8 @@ with tabs[5]:  # Time Machine demo
                                 st.caption(g["more_line"].format(n=yc["more"]))  # "+N more" line
                         else:  # future, gap or hidden
                             st.write({"future": g["future_card"], "gap": g["gap_card"], "hidden": g["hidden_card"]}[status])  # state text
+                            if status == "gap" and y in ye_years:  # year-end year: the prediction exists, the tag says it is estimated
+                                st.caption(year_end_tag(cfg["route"]["texts"], y))  # grey tag
                         if g["hide_rerecordings"] and y <= until and hidden.get(y):  # hidden re-recordings in this year
                             st.caption(g["hidden_line"].format(n=hidden[y]))  # count line
             st.subheader(g["question"].format(year=year))  # question
@@ -136,26 +142,24 @@ with tabs[5]:  # Time Machine demo
                     st.rerun()  # redraw with step A
             if step in ("model", "reveal"):  # step A is always visible after the ask
                 wc, sc = st.columns(2)  # WHEN column and WHAT column
-                top = load_tables()["what_top10"]  # WHAT cutoff and holdout figures
                 rel = reliability(top)  # x and y of the reliability line
                 played = hist[-1] if step == "reveal" else None  # this year's entry after the reveal
                 with wc:  # WHEN column
                     st.markdown(g["when_title"])  # column title
-                    st.write(g["model_score"].format(year=year, score=row["next_1y"]))  # live score
-                    st.write(g["model_verdict"].format(verdict=yn[verdict(row["next_1y"], g["threshold"])]))  # model verdict
+                    st.write(g["model_score"].format(year=year, score=mr["when_score"]))  # live score
+                    st.html(side_panel_html(mr, bool(played), g, cfg["route"], cfg["poc"]))  # the mode 2 cascade: pills, and after the reveal the realities
                     if state["answer"]:  # user predicted this year
-                        st.write(g["user_answer"].format(answer=yn[state["answer"]]))  # user answer
+                        st.write(g["user_answer"].format(answer=yn[state["answer"]]))  # user answer, next-year question only
                     if played:  # step B
                         if played["label"] is not None:  # stored label exists, counted or not
-                            st.write(g["reality_" + played["label"]].format(year=year + 1))  # reality text of the stored label
+                            st.write(reality_line(g, mr))  # reality line with the release title
                         else:  # last data year, no stored label
                             st.info(g["no_reality"].format(year=last))  # no reality row, no scoreboard change
-                        lab2 = row["label_next_2y"]  # stored next_2y label
-                        part2 = "" if pd.isna(lab2) else g["label_part"].format(label=yn["yes" if lab2 == 1 else "no"])  # label part, omitted when missing
-                        st.write(g["next2_info"].format(score=row["next_2y"], label_part=part2))  # next_2y info
                 with sc:  # WHAT column, never counted
                     st.markdown(g["what_title"])  # column title
-                    if pd.notna(row["stage0_score"]):  # WHAT score exists for this artist-year
+                    if mr["is_year_end"]:  # year without a Work: no WHAT score because there is no release
+                        st.write(cfg["route"]["texts"]["what_year_end"])  # same text as mode 2
+                    elif pd.notna(row["stage0_score"]):  # WHAT score exists for this artist-year
                         st.write(g["what_yes" if verdict(row["stage0_score"], top["score_cutoff"]) == "yes" else "what_no"])  # verdict, Yes at or above the cutoff
                         if verdict(row["stage0_score"], top["score_cutoff"]) == "yes":  # Yes verdict
                             st.caption(g["what_reliability"].format(x=rel[0], y=rel[1]))  # reliability of the top 10% group
@@ -172,7 +176,7 @@ with tabs[5]:  # Time Machine demo
                     else:  # no WHAT score for this artist-year
                         st.write(g["what_missing"].format(n=CONFIG["what"]["min_previous_works"]))  # reason, in both steps
             if step == "model" and st.button(g["reveal_label"], key=keys["reveal"].format(id=aid)):  # reveal
-                hist.append(play(row, state["answer"], g["threshold"]))  # record the year
+                hist.append(play_year(mr, state["answer"]))  # record the year, counted by the counted_1y flag
                 state["step"] = "reveal"  # step B
                 st.rerun()  # redraw with step B
             if step == "reveal":  # step B

@@ -1,12 +1,12 @@
 """Mode 2 of tab 6: several artists in one year as a read-only table. Pure logic, no Streamlit code."""
 
-import json  # styles stored as JSON text
+import re  # markdown escaping of titles
 
 import pandas as pd  # tables
 
 from app_data import all_artists, artists_by_genre  # mixed artist list and genre filter
 from app_live import load_tables, when_rows  # cached tables and WHEN rows of an artist-year, as tab 6 reads them
-from demo_game import outside_text_key, reliability, verdict  # same rules as mode 1
+from demo_game import outside_text_key, reliability, scored_years, verdict  # same rules as mode 1
 from poc_view import badge_kind, what_parts  # same marks and WHAT parts as the proof of concept
 
 
@@ -26,10 +26,45 @@ def picker_options(cfg: dict, genre: str | None, selected: list) -> list:  # ids
     return sorted(keep, key=lambda i: pool[i]["name"].lower())  # sorted by name
 
 
-def first_style(styles_text) -> str | None:  # first style of a Work
-    """First style of the JSON list stored in the Works file, None when the list is empty or missing."""
-    items = [] if pd.isna(styles_text) else json.loads(styles_text)  # styles of the Work
-    return items[0] if items else None  # first style or none
+def pick_title(picks: pd.DataFrame, artist_id: int, year: int) -> str | None:  # release title of an artist-year
+    """Title chosen by rule B for the artist-year (results/demo/release_pick.csv), None when the file has no title for it."""
+    m = picks[(picks["artist_id"] == artist_id) & (picks["year"] == year)]  # the pick of the artist-year, at most one row
+    return None if m.empty or pd.isna(m.iloc[0]["title"]) else str(m.iloc[0]["title"])  # title text or none
+
+
+def reality_titles(picks: pd.DataFrame, artist_id: int, year: int, label1: str | None, label2: str | None) -> tuple:  # titles of the two reality cells
+    """(next-year title, within-2-years title): the next-year cell uses year + 1; the 2-year cell uses the year of the release, year + 1 when the next-year label is Yes, else year + 2. None where the reality is not Yes or the file has no title."""
+    t1 = pick_title(picks, artist_id, year + 1) if label1 == "yes" else None  # next-year release
+    t2 = pick_title(picks, artist_id, year + 1 if label1 == "yes" else year + 2) if label2 == "yes" else None  # release inside the 2 years
+    return t1, t2  # both titles
+
+
+def md_escape(text: str) -> str:  # title safe inside a markdown line
+    """Backslash-escapes the characters markdown or LaTeX would read, so a title such as 'Rock $ & Roll' prints as written."""
+    return re.sub(r"([\\`*_{}\[\]()#+!$~<>|])", r"\\\1", text)  # one backslash before each special character
+
+
+def playable_years(artist_id: int, timeline: pd.DataFrame, first_year: int) -> list:  # years of mode 1
+    """Playable years of mode 1: the years with a scored Work plus the year-end years (no Work, stored year-end score) from first_year on, ascending."""
+    ye = load_tables()["when_year_end"]  # stored year-end scores
+    gap = ye[(ye["artist_id"] == artist_id) & ye["is_year_end"] & (ye["snapshot_year"] >= first_year)]["snapshot_year"]  # year-end years of the artist
+    return sorted(set(scored_years(timeline, first_year)) | {int(y) for y in gap})  # Work years and year-end years
+
+
+def play_year(r: pd.Series, answer: str | None) -> dict:  # record one played year of mode 1
+    """One history entry from a multi_rows row: user answer, model verdict, next-year reality and whether it counts (the counted_1y flag, same fields as demo_game.play)."""
+    return {"year": int(r["year"]), "user": answer, "model": r["when_verdict"], "label": text_or_none(r["when_label"]), "counted": bool(r["when_counted"])}  # history entry
+
+
+def reality_line(g: dict, r: pd.Series) -> str:  # reality line of mode 1
+    """'Reality: Yes: <title> (<year>)', 'Reality: Yes (<year>)' without a title, or 'Reality: No release in <year>'; the year is the one the next-year verdict refers to."""
+    year = int(r["year"]) + 1  # year of the next-year question
+    if r["when_label"] == "no":  # no release
+        return g["reality_no"].format(year=year)  # no-release text
+    if text_or_none(r["when_title"]) is None:  # Yes without a title in the file
+        return g["reality_yes"].format(year=year)  # plain Yes
+    return g["reality_yes_title"].format(title=md_escape(r["when_title"]), year=year)  # Yes with the title
+
 
 def multi_rows(cfg: dict, artist_ids: list, year: int, threshold: float, cutoff: float, cap: int, stage: str = "reveal") -> pd.DataFrame:  # one row per artist with a row
     """Rows of the table for one year, at most `cap` artists. An artist with a Work that year shows its representative Work row, one without shows its year-end row, one with neither is left out (see hidden_counts). From the predict stage on the rows are sorted by the next-year score descending (ties by name); in the placeholder stage they keep the selection order, so the order does not give the scores away."""
@@ -41,11 +76,12 @@ def multi_rows(cfg: dict, artist_ids: list, year: int, threshold: float, cutoff:
             continue  # left out of the table
         h1, h2 = w["next_1y"], w["next_2y"]  # both horizons
         v1, v2 = verdict(h1["score"], threshold), verdict(h2["score"], threshold)  # model answers
-        out = {"artist": names[aid], "artist_id": aid, "has_row": True, "is_year_end": w["kind"] == "year_end", "title": None, "style": None}  # identity
+        t1, t2 = reality_titles(load_tables()["release_pick"], aid, year, h1["label"], h2["label"])  # release titles of the two reality cells
+        out = {"artist": names[aid], "artist_id": aid, "year": year, "has_row": True, "is_year_end": w["kind"] == "year_end", "when_title": t1, "when2_title": t2}  # identity and reality titles
         out.update(when_score=h1["score"], when_verdict=v1, when_label=h1["label"], when_counted=h1["counted"], when2_score=h2["score"], when2_verdict=v2, when2_label=h2["label"], when2_counted=h2["counted"], show2=v1 == "no" or v2 == "no")  # both horizons and the cascade rule
-        if w["kind"] == "work":  # a Work year: release text and WHAT
+        if w["kind"] == "work":  # a Work year: WHAT
             what, wlab, safe = what_parts(w["row"], {"score_cutoff": cutoff})  # WHAT verdict, label and flag
-            out.update(title=w["row"]["title"], style=first_style(w["row"]["styles"]), what_available=what is not None, what_verdict=what, what_label=wlab, what_safe=bool(safe))  # Work and WHAT fields
+            out.update(what_available=what is not None, what_verdict=what, what_label=wlab, what_safe=bool(safe))  # WHAT fields
         else:  # a year-end row has no WHAT score
             out.update(what_available=False, what_verdict=None, what_label=None, what_safe=True)  # no WHAT
         rows.append(out)  # one row per artist

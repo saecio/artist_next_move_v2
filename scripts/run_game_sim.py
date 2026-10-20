@@ -198,4 +198,63 @@ assert advance_stage(s3, sig, "predict")["stage"] == "reveal"  # no step back
 assert list(multi_rows(rcfg, route_ids(rcfg), rcfg["route"]["year"], cfg["threshold"], top["score_cutoff"], 10, "placeholder")["artist_id"]) == route_ids(rcfg)  # placeholder keeps the selection order
 print("stage machine checks passed: placeholder -> predict -> reveal, reset on change, selection order before predict")  # result
 print("mode 2 checks passed")  # all asserts held
+print("\n== release titles (rule B), mode 1 years and cascade, scoreboard")  # section title
+from demo_multi import play_year, playable_years, reality_line, reality_titles  # mode 1 reuse of the mode 2 logic
+picks = pd.read_csv(ROOT / "results/demo/release_pick.csv")  # the pick file
+pool_b = load_demo_config()["pool_b"]["paths"]  # pool B file paths
+allw = pd.concat([pd.read_csv(ROOT / CONFIG["paths"]["works_demo"]), pd.read_csv(ROOT / pool_b["works"])])  # Works of both pools
+allw = allw[allw["year"] >= CONFIG["years"]["holdout_start"]]  # holdout start on
+snap = pd.read_parquet(ROOT / CONFIG["paths"]["snapshots"], columns=["work_id", "is_album_like"], filters=[("work_id", "in", allw["work_id"].tolist())])  # album marker of the snapshots
+album = dict(zip(snap["work_id"], snap["is_album_like"]))  # work_id -> album-like
+want = {}  # independent rule B, plain loops
+for (a, y), grp in allw[~allw["is_rerecording"]].groupby(["artist_id", "year"]):  # every artist-year with a non-re-recording Work
+    ids = grp.sort_values("works_so_far_this_year")["work_id"].tolist()  # within-year order
+    alb = [w for w in ids if album[w]]  # album-like Works in that order
+    want[(a, y)] = (alb[0], "album") if alb else (ids[-1], "fallback")  # first album-like, else the representative (last in the order)
+got = {(r.artist_id, r.year): (r.work_id, r.picked_by) for r in picks.itertuples()}  # the file
+assert got == want, "release_pick.csv differs from an independent recomputation of rule B"  # same picks
+assert set(picks["year"]) >= {2024, 2025, 2026}, "the file must cover the years after the holdout and 2024"  # coverage
+print(f"rule B recomputed independently: {len(want)} artist-years, {picks['picked_by'].value_counts().to_dict()}")  # counts
+assert reality_titles(picks, 4778, 2021, "yes", "yes")[0] == picks[(picks["artist_id"] == 4778) & (picks["year"] == 2022)]["title"].iloc[0]  # next year uses year + 1
+route = pd.read_csv(ROOT / "results/demo/route_table_year_end.csv")  # route table with the year-end rows
+rows_by = {}  # (artist id, year) -> mode 2 row
+all_ids = sorted(route["artist_id"].unique().tolist())  # every artist of both pools
+for yr in sorted(route["year"].unique()):  # one call per year, cap above the number of artists
+    for _, mr in multi_rows(rcfg, all_ids, int(yr), cfg["threshold"], top["score_cutoff"], 100).iterrows():  # rows of the year
+        rows_by[(int(mr["artist_id"]), int(yr))] = mr  # keep
+title_of = {(r.artist_id, r.year): r.title for r in picks.itertuples()}  # (artist id, year) -> title, read from the file
+n_t = 0  # checked reality titles
+for r in route.itertuples():  # every route row, Work rows and year-end rows
+    mr = rows_by[(r.artist_id, r.year)]  # same artist-year in the mode 2 rows
+    assert bool(mr["is_year_end"]) == bool(r.is_year_end) and mr["when_verdict"] == r.verdict_1y, "mode 2 row differs from the route table"  # same rows and verdicts
+    t = lambda y: title_of.get((r.artist_id, y))  # title of a year, None without a pick
+    e1 = t(r.year + 1) if r.reality_1y == "yes" else None  # next-year title
+    e2 = (t(r.year + 1) if r.reality_1y == "yes" else t(r.year + 2)) if r.reality_2y == "yes" else None  # title of the year of the release inside 2 years
+    assert (None if pd.isna(mr["when_title"]) else mr["when_title"]) == e1 and (None if pd.isna(mr["when2_title"]) else mr["when2_title"]) == e2, f"{r.artist} {r.year}: reality titles differ"  # titles (a DataFrame turns None into NaN)
+    n_t += int(e1 is not None) + int(e2 is not None)  # count
+assert n_t > 0  # something was checked
+print(f"reality titles of {len(route)} route rows equal the rule: {n_t} titles checked")  # result
+ye_sample = route[route["is_year_end"]].iloc[0]  # a year-end row
+line = reality_line(cfg, rows_by[(ye_sample.artist_id, ye_sample.year)])  # its reality line
+assert line.startswith("Reality: ") and str(ye_sample.year + 1) in line, line  # year of the verdict
+print("sample reality line of a year-end row:", line)  # example
+board_checks = 0  # artists whose boards were checked
+for aid in all_ids:  # every artist
+    tl = artist_timeline(aid)  # timeline
+    years = playable_years(aid, tl, CONFIG["years"]["holdout_start"])  # mode 1 years
+    sub = route[route["artist_id"] == aid]  # route rows of the artist
+    assert years == sorted(sub["year"].tolist()), f"{aid}: mode 1 years differ from the route table years"  # Work years and year-end years
+    ye_years = set(sub[sub["is_year_end"]]["year"])  # year-end years
+    h_all = [play_year(rows_by[(aid, y)], None) for y in years]  # history over every playable year
+    h_work = [h for h in h_all if h["year"] not in ye_years]  # Work years only
+    h_ye_unc = [h for h in h_all if h["year"] in set(sub[sub["is_year_end"] & ~sub["counted_1y"]]["year"])]  # year-end years that are reference only
+    assert scoreboard(h_all)["n"] == int(sub["counted_1y"].sum()), f"{aid}: the scoreboard must follow counted_1y"  # counted flag of the route table
+    assert scoreboard([h for h in h_all if h not in h_ye_unc]) == scoreboard(h_all), f"{aid}: reference-only year-end rows changed the scoreboard"  # asterisk rows add nothing
+    assert scoreboard(h_work)["n"] == int(sub[~sub["is_year_end"]]["counted_1y"].sum()), f"{aid}: the Work-year scoreboard changed"  # Work years as before
+    board_checks += 1  # counted
+print(f"mode 1 years equal the route table years and the scoreboard follows counted_1y for {board_checks} artists")  # result
+for aid in ARTISTS:  # the three regression artists
+    assert scoreboard([h for h in [play_year(rows_by[(aid, y)], None) for y in playable_years(aid, artist_timeline(aid), 2018)] if h["year"] in scored_years(artist_timeline(aid), 2018)]) == scoreboard(walk(aid, False)), f"{aid}: Work-year board differs from the earlier walk"  # unchanged by the year-end years
+print("scoreboard of the Work years equals the earlier walk for the three regression artists")  # result
+
 print(f"\nsimulation time {time.time() - t0:.2f} s")  # print the result

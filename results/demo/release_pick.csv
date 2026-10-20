@@ -1,0 +1,431 @@
+artist_id,year,work_id,title,is_album_like,picked_by
+4778,2018,10013128813,Stronger Than I Ever Was,False,fallback
+4778,2019,10013980208,Know,False,fallback
+4778,2020,10034784174,Last Christmas (Amazon Original),False,fallback
+4778,2021,10035358382,Good Morning Gorgeous,False,fallback
+4778,2022,2511931,Good Morning Gorgeous,True,album
+4778,2023,3633156,Still Believe In Love,False,fallback
+4778,2024,3658170,Gratitude,True,album
+4778,2026,10036961797,Want Love,False,fallback
+5530,2018,2723114,Clandestino,False,fallback
+5530,2019,3168972,Shakira In Concert: El Dorado World Tour,True,album
+5530,2020,10014680057,Me Gusta,False,fallback
+5530,2021,2316757,Don't Wait Up,False,fallback
+5530,2022,2675945,Te Felicito,False,fallback
+5530,2023,3256336,El Jefe,False,fallback
+5530,2024,3433214,Las Mujeres Ya No Lloran,True,album
+5530,2025,4122973,Zoo,False,fallback
+5530,2026,10037613331,Algo Tú,False,fallback
+29735,2018,1467398,Love In Tokyo,True,album
+29735,2019,1638967,Everyday Life,True,album
+29735,2020,10014866724,Reimagined,True,album
+29735,2021,2337988,Music Of The Spheres,True,album
+29735,2022,2547752,Let Somebody Go,False,fallback
+29735,2023,10028454332,Earth / Percent x Earth Day,False,fallback
+29735,2024,3614440,Moon Music,True,album
+38661,2018,1416558,Kamikaze,True,album
+38661,2019,10014420894,Just Don't Give A Fuck / Still Don't Give A Fuck,False,fallback
+38661,2020,1669732,Music To Be Murdered By,True,album
+38661,2021,2429041,Killer (Remix),False,fallback
+38661,2022,3862972,The King & I (From The Original Motion Picture Soundtrack Elvis),False,fallback
+38661,2023,10029209222,The Ringer,False,fallback
+38661,2024,3540523,The Death Of Slim Shady (Coup De Grâce),True,album
+38661,2025,4100641,Stans (The Official Soundtrack),True,album
+38661,2026,10038204634,My Dad's Gone Crazy / Mockingbird,False,fallback
+51984,2018,10011510995,Us,False,fallback
+51984,2019,1551004,Medicine,False,fallback
+51984,2020,10016289488,In The Morning,False,fallback
+51984,2021,10021039826,On My Way (From The Film Marry Me),False,fallback
+51984,2022,2495734,Marry Me (Original Motion Picture Soundtrack),True,album
+51984,2024,10031029673,On The 6 (Sped Uptown And Slowed Downtown),True,album
+51984,2025,4265796,Kiss Of The Spider Woman,False,fallback
+51984,2026,4265943,Save Me Tonight,False,fallback
+52835,2019,10013761771,Homecoming: A Film By Beyoncé,False,fallback
+52835,2021,10020961904,Be Alive,False,fallback
+52835,2022,2726912,Renaissance,True,album
+52835,2023,3190554,Delresto (Echoes),False,fallback
+52835,2024,3440309,Cowboy Carter,True,album
+52835,2026,4308234,Morning Dew (Donk),False,fallback
+90037,2018,1366501,Sangria Wine,False,fallback
+90037,2019,2104216,Letter To My Godfather (From The Black Godfather),False,fallback
+90037,2020,1832841,Entrepreneur,False,fallback
+90037,2022,10022911770,Just A Cloud Away,False,fallback
+90037,2023,3342592,Airplane Tickets,False,fallback
+90037,2024,3729225,Piece By Piece (Music From The Motion Picture),True,album
+97139,2018,3684921,"""A""",True,album
+97139,2019,1763624,Don't Waste My Time,False,fallback
+97139,2020,10027904974,I Cry,False,fallback
+97139,2023,10026526401,Glu,False,fallback
+97139,2024,3391627,Coming Home,True,album
+137418,2018,10037575483,Entire Catalog,False,fallback
+137418,2019,10037964445,What Was I Thinking - Episode 1,False,fallback
+137418,2024,3386197,Turn The Lights Back On,False,fallback
+137418,2025,10036022450,And So It Goes (The Musical Companion To The HBO Documentary Film),True,album
+151199,2018,1387765,Scorpion,True,album
+151199,2019,2020084,The Best In The World Pack,False,fallback
+151199,2020,1710606,Toosie Slide,False,fallback
+151199,2021,2020066,Scary Hours 2,True,album
+151199,2022,3022082,Her Loss,True,album
+151199,2023,3310897,For All The Dogs,True,album
+151199,2024,10031627756,No Face,False,fallback
+151199,2025,3966656,Dog House,False,fallback
+151199,2026,4226013,Iceman,True,album
+219986,2018,1395914,"Van Andel Arena, Michigan 2005",True,album
+219986,2019,1626748,Western Stars (Songs From The Film),True,album
+219986,2020,1804542,"Wembley Arena, November 11, 2006",True,album
+219986,2021,2370034,Tower Theater 2005,True,album
+219986,2022,2597075,"Waldbühne, Berlin Germany May 14, 1993",True,album
+219986,2023,10033735669,Addicted To Romance,False,fallback
+219986,2024,10029985406,"Akron, Ohio 1996",True,album
+219986,2025,3892285,Tracks II (The Lost Albums),True,album
+219986,2026,4161697,A Rainy Night In Soho,False,fallback
+222578,2018,1344397,One Kiss,False,fallback
+222578,2019,1487285, Giant,False,fallback
+222578,2020,1798028,Over Now,False,fallback
+222578,2021,2210413,By Your Side,False,fallback
+222578,2022,2737550,"Funk Wav Bounces, Vol. 2",True,album
+222578,2023,3183159,Desire,False,fallback
+222578,2024,3495696,Lovers In A Past Life,False,fallback
+222578,2025,3965945,Ocean,False,fallback
+222578,2026,4129681,Release The Pressure,False,fallback
+256399,2018,1522677,Dura,False,fallback
+256399,2019,10035189908,Si Supieras,False,fallback
+256399,2020,10015900594,Don Don,False,fallback
+256399,2021,10025372372,Problema ,False,fallback
+256399,2022,2811509,LegenDaddy,True,album
+256399,2023,3167127,Beachy,False,fallback
+256399,2024,10035180992,Bailando En La Lluvia,False,fallback
+256399,2025,10035393980,Lamento En Baile,True,album
+256399,2026,10037165578,Barrio Fino,False,fallback
+391170,2018,1360573,Tranquility Base Hotel + Casino,True,album
+391170,2022,2830043,The Car,True,album
+391170,2023,10026340446,Sculptures Of Anything Goes,False,fallback
+391170,2026,10036368695,Opening Night,False,fallback
+502784,2018,1316682,"By The Way, I Forgive You",True,album
+502784,2020,10015928801,A Rooster Says,False,fallback
+502784,2021,2320372,In These Silent Days,True,album
+502784,2022,10037236999,In These Silent Days / In The Canyon Haze,False,fallback
+502784,2025,4013554,Returning To Myself,True,album
+676432,2018,1704503,(Happy Xmas) War Is Over!,False,fallback
+676432,2019,1557059,She Is Coming,True,album
+676432,2020,1847448,Plastic Hearts,True,album
+676432,2021,10025442284,Nothing Else Matters,False,fallback
+676432,2023,3009836,Endless Summer Vacation,True,album
+676432,2025,10035184310,Something Beautiful (Edits),True,album
+676432,2026,4177530,Younger You,False,fallback
+1042739,2019,1594486,"i,i",True,album
+1042739,2020,1720147,PDLIF,False,fallback
+1042739,2024,3657675,"Sable,",True,album
+1042739,2025,3808224,"Sable, Fable",True,album
+1097928,2018,1541781,Boys,False,fallback
+1097928,2019,1545412,Cuz I Love You,True,album
+1097928,2021,2262793,Rumors,False,fallback
+1097928,2022,2707919,Special,True,album
+1097928,2023,3966959,Pink (From Barbie The Album),False,fallback
+1097928,2025,3786170,Love In Real Life,False,fallback
+1097928,2026,4247094,Bitch,True,album
+1103159,2018,1659166,Always Remember Us This Way,False,fallback
+1103159,2019,10037766100,A Star Is Born Encore,False,fallback
+1103159,2020,1746431,Chromatica,True,album
+1103159,2021,2287330,Dawn Of Chromatica,True,album
+1103159,2022,2623907,Hold My Hand,False,fallback
+1103159,2023,3041759,Bloody Mary,False,fallback
+1103159,2024,3609260,Harlequin,True,album
+1103159,2025,3772997,Mayhem,True,album
+1103159,2026,4192938,Runway (Music From The Motion Picture The Devil Wears Prada 2),False,fallback
+1124645,2018,1336119,Delicate (Seeb Remix),False,fallback
+1124645,2019,1585737,The Archer,False,fallback
+1124645,2020,10016567938,Folklore: The Sleepless Nights Chapter,True,album
+1124645,2021,2384629,All Too Well (Sad Girl Autumn Version) - Recorded At Long Pond Studios,False,fallback
+1124645,2022,2831825,Midnights,True,album
+1124645,2023,10026452034,The More Lover Chapter,True,album
+1124645,2024,3461018,The Tortured Poets Department,True,album
+1124645,2025,3990556,The Life Of A Showgirl,True,album
+1124645,2026,4250067,"I Knew It, I Knew You",False,fallback
+1154116,2018,1439682,Audio,False,fallback
+1154116,2019,1531968,LSD,True,album
+1154116,2022,2626931,Euphoria Season 2 Official Score (From The HBO Original Series),True,album
+1154116,2023,10026923055,Ends & Begins,True,album
+1154116,2025,4027417,Prelude,True,album
+1154116,2026,10037010127,Cosmic Opera Act I,True,album
+1345479,2018,10012802960,Focus (Yaeji Remix),False,fallback
+1345479,2019,1605251,Charli,True,album
+1345479,2020,1738844,How I'm Feeling Now,True,album
+1345479,2021,2486347,New Shapes,False,fallback
+1345479,2022,2554859,Crash,True,album
+1345479,2023,10028071166,Bottoms (Original Motion Picture Score),True,album
+1345479,2024,3505440,Brat,True,album
+1345479,2025,10035656588,Chains Of Love,False,fallback
+1345479,2026,4130530,Wuthering Heights,True,album
+1602787,2020,10014999080,R&Bieber,True,album
+1602787,2021,2063308,Freedom.,True,album
+1602787,2022,10025715815,Under The Mistletoe Christmas Video Album ,True,album
+1602787,2025,3905749,Swag,True,album
+1778977,2018,2434525,All The Stars,False,fallback
+1778977,2022,2631506,Mr. Morale & The Big Steppers,True,album
+1778977,2024,3664443,GNX,True,album
+1967268,2018,3335362,Music Inspired By Illumination & Dr. Seuss' The Grinch,True,album
+1967268,2019,1591877,Igor,True,album
+1967268,2020,10017740585,Group B,False,fallback
+1967268,2021,2192617,Call Me If You Get Lost,True,album
+1967268,2023,10026595575,Dogtooth,False,fallback
+1967268,2024,3639498,Chromakopia,True,album
+1967268,2025,3915187,Don't Tap The Glass,True,album
+2171152,2018,1339555,"My Dear Melancholy,",True,album
+2171152,2019,1694710,Heartless,False,fallback
+2171152,2020,1702022,After Hours,True,album
+2171152,2021,2246293,Take My Breath,False,fallback
+2171152,2022,2452996,Dawn FM,True,album
+2171152,2023,3168015,The Idol Episode 5 Pt.2 (Music From The HBO Original Series),True,album
+2171152,2024,3600101,Dancing In The Flames,False,fallback
+2171152,2025,3737196,Hurry Up Tomorrow,True,album
+2171152,2026,10038086677,Starboy / Die For You,False,fallback
+2184482,2018,1580103,Happier,False,fallback
+2184482,2019,1576004,No.6 Collaborations Project,True,album
+2184482,2020,2428273,Afterglow,False,fallback
+2184482,2021,2356768,= (Equals),True,album
+2184482,2022,2623514,2Step,False,fallback
+2184482,2023,3255931,Autumn Variations,True,album
+2184482,2025,3969131,Play,True,album
+2184482,2026,10037262229,Shape Of You/Sing,False,fallback
+2409771,2018,1477914,Testing,True,album
+2409771,2019,3900940,Babushka Boi,False,fallback
+2409771,2022,3900841,Shittin' Me,False,fallback
+2409771,2023,3900832,Same Problems?,False,fallback
+2409771,2024,3900784,Ruby Rosary,False,fallback
+2409771,2025,10034444309,Pray4DaGang,False,fallback
+2409771,2026,4100995,Don't Be Dumb,True,album
+2445772,2018,4133935,Venice Bitch,False,fallback
+2445772,2019,1597875,Norman F*****g Rockwell!,True,album
+2445772,2020,1960255,Let Me Love You Like A Woman,False,fallback
+2445772,2021,2344513,Blue Banisters,True,album
+2445772,2022,3844260,Buddy's Rendezvous,True,album
+2445772,2023,3028427,Did You Know That There's A Tunnel Under Ocean Blvd,True,album
+2445772,2024,10034774832,Blue Skies,False,fallback
+2445772,2025,3844263,"Henry, Come On",False,fallback
+2445772,2026,10036539227,White Feather Hawk Tail Deer Hunter,False,fallback
+2508414,2018,10038155218,Two Ghosts,False,fallback
+2508414,2019,1649896,Fine Line,True,album
+2508414,2020,1784493,Watermelon Sugar,False,fallback
+2508414,2022,2640143,Harry's House,True,album
+2508414,2026,4153480,"Kiss All The Time. Disco, Occasionally.",True,album
+2727700,2018,1451270,Origins,True,album
+2727700,2019,1573802,Birds,False,fallback
+2727700,2020,10016031972,Radioactive / Demons / Thunder / Bad Liar,True,album
+2727700,2021,2282830,Mercury - Act 1,True,album
+2727700,2022,2898043,Mercury - Act 2,True,album
+2727700,2023,10028751005,Bones - Single ,False,fallback
+2727700,2024,3527840,Loom,True,album
+2727700,2025,3846474,Smoke + Mirrors (Ten),True,album
+2866928,2018,1830378,Acoustic Remixed,True,album
+2866928,2020,1822953,The Kacey Musgraves Christmas Show,True,album
+2866928,2021,2292145,Star-Crossed,True,album
+2866928,2024,10032429340,Deeper Into The Well,True,album
+2866928,2025,10033152598,The Architect ,False,fallback
+2866928,2026,4210611,Middle Of Nowhere,True,album
+2929902,2018,10037432743,Fuego,False,fallback
+2929902,2019,10021852094,En Letra De Otro,True,album
+2929902,2021,2467858,La 167,True,album
+2929902,2022,10028652683,Suelta,False,fallback
+3094075,2019,1559676,Utopía,True,album
+3094075,2022,2940715,Formula Vol. 3,True,album
+3094075,2025,4056658,Better Late Than Never,True,album
+3160392,2018,1513091,Nothin Like U / Chances,False,fallback
+3160392,2019,1660007,Bubba,True,album
+3160392,2021,10024115685,Intimidated,True,album
+3160392,2022,10024119228,Twin Flame,False,fallback
+3160392,2023,3786290,Lover/Friend,True,album
+3160392,2024,3510960,Timeless,True,album
+3160392,2025,3980134,Ain't No Damn Way!,True,album
+3272791,2019,3697296,Power Is Power,False,fallback
+3272791,2020,1690670,The Other Side,False,fallback
+3272791,2021,2939104,I Hate U,False,fallback
+3272791,2022,2929684,SOS,True,album
+3272791,2023,3221056,Snooze,False,fallback
+3272791,2024,3594218,Saturn,False,fallback
+3272791,2026,10036831178,Save The Day,False,fallback
+3310737,2018,1408887,Sweetener,True,album
+3310737,2019,1498712,"Thank U, Next",True,album
+3310737,2020,1794450,Stuck With U,False,fallback
+3310737,2021,4087831,It Was A… (Masked Christmas),False,fallback
+3310737,2024,3418216,Eternal Sunshine,True,album
+3310737,2025,4043428,Wicked: For Good (The Soundtrack),True,album
+3310737,2026,4301262,Petal,True,album
+3460330,2018,1377968,Vibras,True,album
+3460330,2019,1599255,Oasis,True,album
+3460330,2020,1715554,Colores,True,album
+3460330,2021,2388022,Jose,True,album
+3460330,2022,3541603,Sigue / Forever My Love,False,fallback
+3460330,2023,10027542754,En Alta,False,fallback
+3460330,2024,3569066,Rayo,True,album
+3460330,2025,10034202557,KLK,False,fallback
+3460330,2026,4263264,Omertá,True,album
+3913668,2018,1394520,F.A.M.E.,True,album
+3913668,2019,1552241,11:11,True,album
+3913668,2020,10020671183,Qué Chimba,False,fallback
+3913668,2021,10020693236,#7DJ (7 Días En Jamaica),False,fallback
+3913668,2022,2875480,Papi Juancho,True,album
+3913668,2023,10027646854,4 Babys,False,fallback
+3913668,2024,3390406,Don Juan,True,album
+3970719,2018,1689565,Amala,True,album
+3970719,2019,1692792,Hot Pink,True,album
+3970719,2020,3249208,Say So / Like That (Mashup),False,fallback
+3970719,2021,2189101,Planet Her,True,album
+3970719,2022,2870968,Vegas (From The Original Motion Picture Soundtrack Elvis),False,fallback
+3970719,2023,3247138,Scarlet,True,album
+3970719,2025,3983038,Vie,True,album
+4016434,2018,1355120,Beerbongs & Bentleys,True,album
+4016434,2019,1611652,Hollywood's Bleeding,True,album
+4016434,2020,10015563128,Saint-Tropez,False,fallback
+4016434,2021,2324200,Motley Crew,False,fallback
+4016434,2022,2659262,Twelve Carat Toothache,True,album
+4016434,2023,3183240,Austin,True,album
+4016434,2024,3570692,F-1 Trillion,True,album
+4016434,2025,4059052,Long Bed,True,album
+4016434,2026,10036232648,I Had Some Help / Losers,False,fallback
+4357593,2018,1424137,Want To,False,fallback
+4357593,2019,1630209,Don't Start Now,False,fallback
+4357593,2020,1705638,Future Nostalgia,True,album
+4357593,2021,3552993,Love Again,False,fallback
+4357593,2023,3306523,Houdini,False,fallback
+4357593,2024,3472783,Radical Optimism,True,album
+4378284,2018,1463124,Singular Act I,True,album
+4378284,2019,1580813,Singular Act II,True,album
+4378284,2020,10032679126,Let Me Move You,False,fallback
+4378284,2021,3036920,Skin,False,fallback
+4378284,2022,2710871,Emails I Can't Send,True,album
+4378284,2023,3334696,Fruitcake,True,album
+4378284,2024,3577354,Short N' Sweet,True,album
+4378284,2025,3954800,Man's Best Friend,True,album
+4378284,2026,10037701483,House Tour,False,fallback
+4452209,2018,3205302,Tu Pum Pum,False,fallback
+4452209,2019,3264070,Ocean,True,album
+4452209,2020,2035993,"Ay, DiOs Mío!",False,fallback
+4452209,2021,2165338,KG0516,True,album
+4452209,2022,10025813180,Gatúbela,False,fallback
+4452209,2023,3207825,Mañana Será Bonito (Bichota Season),True,album
+4452209,2024,3859306,Si Antes Te Hubiera Conocido,False,fallback
+4452209,2025,3983167,Tropicoqueta,True,album
+5034422,2018,1350090,Face Yourself,True,album
+5034422,2019,1532766,Map Of The Soul: Persona,True,album
+5034422,2020,1812787,Map Of The Soul 7 ~ The Journey ~,True,album
+5034422,2021,2331811,Memories Of 2020,False,fallback
+5034422,2022,10023677484,Yet To Come (The Most Beautiful Moment),False,fallback
+5034422,2025,10035208619,2025 BTS Festa: Capsule Album Vol. 1,True,album
+5034422,2026,4169260,Arirang,True,album
+5153025,2018,1348255,Invasion Of Privacy,True,album
+5153025,2019,1505440,Please Me,False,fallback
+5153025,2020,1808659,WAP,False,fallback
+5153025,2021,1967209,Up,False,fallback
+5153025,2022,2698337,Hot Shit,False,fallback
+5153025,2023,3232603,Bongos,False,fallback
+5153025,2024,3491495,Enough (Miami),False,fallback
+5153025,2025,3977024,Am I The Drama?,True,album
+5153025,2026,10038093211,Ah Ha,False,fallback
+5210284,2018,1467653,Blackpink In Your Area,True,album
+5210284,2019,3671256,Kill This Love (Japan Version),True,album
+5210284,2020,1814682,The Album,True,album
+5210284,2021,2176168,Blackpink: The Show,True,album
+5210284,2022,2787407,Born Pink,True,album
+5210284,2023,3671160,The Girls (Blackpink The Game OST),False,fallback
+5210284,2025,3953684,Jump,False,fallback
+5210284,2026,4147249,Deadline,True,album
+5395551,2018,10012637919,Aura,True,album
+5395551,2019,1693478,Nibiru,True,album
+5395551,2020,1831289,ENOC,True,album
+5395551,2021,10023159390,Tiempo,False,fallback
+5395551,2022,4003039,Ozutochi,True,album
+5395551,2023,10031933081,Cosmo,True,album
+5395551,2025,10037194975,Stendhal,False,fallback
+5395551,2026,4234830,Stendhal,True,album
+5495084,2018,10013306789,I Used To Know Her - Part 2,True,album
+5495084,2019,3630504,I Used To Know Her,True,album
+5495084,2020,10024482291,I Can't Breathe,False,fallback
+5495084,2021,4172914,Back Of My Mind (Apple Music Edition),True,album
+5495084,2023,3350158,The Glass,False,fallback
+5590213,2018,1467757,Lovely ,False,fallback
+5590213,2019,1524311,"When We All Fall Asleep, Where Do We Go?",True,album
+5590213,2020,2914522,Therefore I Am,False,fallback
+5590213,2021,2234794,Happier Than Ever,True,album
+5590213,2022,2889004,Guitar Songs,False,fallback
+5590213,2023,10027036306,Hotline,False,fallback
+5590213,2024,3487663,Hit Me Hard And Soft,True,album
+5648334,2018,1447781,El Mal Querer,True,album
+5648334,2019,2080969,Con Altura,False,fallback
+5648334,2020,10014696343,Juro Que,False,fallback
+5648334,2021,10020958427,La Fama,False,fallback
+5648334,2022,2555024,Motomami,True,album
+5648334,2023,3151362,LLYLM,False,fallback
+5648334,2024,10031819898,Omega,False,fallback
+5648334,2026,10036550144,Sauvignon Blanc,False,fallback
+5794658,2018,1746989,Real Hasta La Muerte,True,album
+5794658,2019,10027543198,Secreto,False,fallback
+5794658,2020,1780538,Emmanuel,True,album
+5794658,2021,2543290,Los Dioses,True,album
+5794658,2023,10027678024,Mejor Que Yo,False,fallback
+5794658,2024,10035202469,Baby Demon,False,fallback
+5794658,2025,10035200414,Portate Bonito,False,fallback
+5894905,2018,1611526,X 100pre,True,album
+5894905,2019,10013832920,Callaita,False,fallback
+5894905,2020,2532028,El Último Tour Del Mundo,True,album
+5894905,2021,10021035857,Yonaguni,False,fallback
+5894905,2022,2670629,Un Verano Sin Ti,True,album
+5894905,2023,3424638,Nadie Sabe Lo Que Va A Pasar Mañana,True,album
+5894905,2024,10032485956,El Clúb,False,fallback
+5894905,2025,3716847,Debí Tirar Más Fotos,True,album
+5940000,2019,1647678,The Prequel,True,album
+5940000,2020,10015786180,Six Feet Apart,False,fallback
+5940000,2021,10019292530,Forever After All,False,fallback
+5940000,2022,2685296,Growin' Up,True,album
+5940000,2023,3030449,Gettin' Old,True,album
+5940000,2024,3583921,Fathers & Sons,True,album
+5940000,2025,10034653793,Back In The Saddle,False,fallback
+5940000,2026,4169476,The Way I Am,True,album
+6628105,2018,1755764,If I Know Me,True,album
+6628105,2019,10016071238,Cover Me Up,False,fallback
+6628105,2020,10016071326,7 Summers,False,fallback
+6628105,2021,1914828,Dangerous: The Double Album,True,album
+6628105,2022,10034997018,Don't Think Jesus,False,fallback
+6628105,2023,3005540,One Thing At A Time,True,album
+6628105,2024,10034662964,Love Somebody,False,fallback
+6628105,2025,3848892,I'm The Problem,True,album
+6774153,2018,1443762,Boygenius,True,album
+6774153,2020,3973937,Boygenius Demos,False,fallback
+6774153,2023,3272932,The Rest,True,album
+6838809,2018,1506458,I Am Who,True,album
+6838809,2019,1717094,Clé 2 : Yellow Wood,True,album
+6838809,2020,2178361,All In,True,album
+6838809,2021,2312458,NOEASY,True,album
+6838809,2022,2841145,MAXIDENT DIGITAL ALBUM,True,album
+6838809,2023,3086298,The Sound,True,album
+6838809,2024,3678834,GIANT,True,album
+6838809,2025,4049113,Do It,True,album
+6838809,2026,4309236,This & That,True,album
+7080995,2018,10018079168,October 31st,True,album
+7080995,2019,1666132,7,True,album
+7080995,2020,3585574,Rodeo,False,fallback
+7080995,2021,2720402,Montero,True,album
+7080995,2022,10024718445,Star Walkin' (League Of Legends Worlds Anthem),False,fallback
+7080995,2024,3896416,J Christ,False,fallback
+7080995,2025,10034427524,Days Before Dreamboy,True,album
+7153566,2019,1795944,El Efecto,False,fallback
+7153566,2020,2491264,Afrodisíaco,True,album
+7153566,2021,2572097,Vice Versa,True,album
+7153566,2022,10022693238,Trap Cake Vol. 2,True,album
+7153566,2023,10027603258,Playa Saturno,True,album
+7153566,2024,3665619,Cosa Nuestra,True,album
+7153566,2025,4217322,Cosa Nuestra: Capítulo 0,True,album
+7592689,2019,2165614,"All I Want  (From ""High School Musical: The Musical: The Series"")",False,fallback
+7592689,2020,10019083760,"I Think I Kinda, You Know - Just For A Moment Mashup (From “High School Musical: The Series”)",False,fallback
+7592689,2021,2136718,Sour,True,album
+7592689,2022,10025699732,The Bels,False,fallback
+7592689,2023,3231790,Guts,True,album
+7592689,2024,3562046,Stick Season / Lacy,False,fallback
+7592689,2026,4253262,You Seem Pretty Sad For A Girl So In Love,True,album
+13200183,2020,10027628113,Relajado Voy,False,fallback
+13200183,2021,10029306950,Efectos Secundarios,True,album
+13200183,2022,10027817014,Siempre Pendientes,False,fallback
+13200183,2023,3397045,Génesis,True,album
+13200183,2024,10030949105,LA DURANGO,False,fallback
+13200183,2025,10035180911,Rari,False,fallback
+13200183,2026,10038293905,DINASTÍA,True,album

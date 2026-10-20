@@ -65,6 +65,7 @@ def load_tables() -> dict:  # load the cached tables
         "percentiles": pd.concat([pd.read_csv(style / live["style_percentiles"]), pd.read_csv(style / live["style_percentiles_extra"])], ignore_index=True),  # residual percentiles, old and extra files
         "actuals": pd.read_csv(style / live["style_actuals"]),  # actual Works and labels per style and target year
         "predictions": pd.read_csv(ROOT / live["style_predictions"]),  # stored style forecast, validation display only
+        "release_pick": pd.read_csv(ROOT / live["release_pick"]),  # release title per artist-year, rule B
         "when_year_end": pd.read_csv(ROOT / live["when_year_end"]),  # stored WHEN scores of the year-end rows, long format with is_year_end
     }  # close the table dict
 

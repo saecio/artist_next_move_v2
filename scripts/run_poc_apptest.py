@@ -136,4 +136,28 @@ print("flagged year 2024 result cells:", cells, "| legend present:", legend in p
 assert all(c in ("green", "red") and m in ("✓*", "✗*") and (c == "green") == (m == "✓*") for c, m in cells), "flagged results must be green or red with the asterisk"  # color and asterisk
 assert "amber" not in panel  # no amber left
 assert legend in panel and "⏳" not in panel  # legend present, hourglass gone
+print("\n== shared view functions of tab 6 (reality cells, year-end tag, side panel)")  # section title
+import html  # escaping in the expected strings
+import pandas as pd  # synthetic rows
+import poc_view  # module under test
+from poc_view import reality_item, side_panel_html, year_end_tag  # functions under test
+
+route_cfg = cfg["route"]  # route settings
+rt = {**route_cfg["texts"], "title_max_chars": route_cfg["title_max_chars"]}  # texts with the title limit
+yn = {"yes": cfg["game"]["answer_yes"], "no": cfg["game"]["answer_no"]}  # Yes / No words
+limit = rt["title_max_chars"]  # longest title before the ellipsis
+long_title = "A" * (limit + 5) + " & more"  # a title above the limit with a character that needs escaping
+cell = reality_item("yes", long_title, yn, rt)  # Yes with a long title
+assert ("Yes: " + "A" * (limit - 1) + "\u2026") in cell and f"title='{html.escape(long_title, quote=True)}'" in cell, "a long title is cut with an ellipsis and keeps the full title in the tooltip"  # truncation and tooltip
+short = reality_item("yes", "Short", yn, rt)  # a short title
+assert "Yes: Short" in short and "\u2026" not in short, "a short title is not cut"  # no ellipsis
+assert reality_item("yes", None, yn, rt) == "Yes" and reality_item("yes", float("nan"), yn, rt) == "Yes", "a Yes without a title is just Yes"  # no crash, no title
+assert reality_item("no", "Ignored", yn, rt) == "No" and reality_item(None, None, yn, rt) == html.escape(rt["no_reality"]), "No and missing reality carry no title"  # other cases
+assert year_end_tag(rt, 2019) == "No release in 2019 \u00b7 estimated from history", "the tag text"  # tag
+assert not hasattr(poc_view, "release_cell") and "col_release" not in rt, "the Release column code and keys are gone"  # removed
+row = pd.Series({"year": 2019, "is_year_end": True, "when_verdict": "no", "when2_verdict": "yes", "when_label": "no", "when2_label": "yes", "when_title": None, "when2_title": long_title, "show2": True})  # synthetic year-end row
+model_only, full = side_panel_html(row, False, cfg["game"], route_cfg, cfg["poc"]), side_panel_html(row, True, cfg["game"], route_cfg, cfg["poc"])  # panel before and after the reveal
+assert year_end_tag(rt, 2019) in model_only and model_only.count(rt["pill_next"]) == 1 and model_only.count(rt["pill_two"]) == 1 and "title=" not in model_only, "model cascade with the tag and no reality"  # before the reveal
+assert full.count(rt["pill_next"]) == 2 and full.count(rt["pill_two"]) == 2 and "\u2026" in full, "reality cascade has the same structure, with the cut title"  # after the reveal
+print("reality items, truncation and tooltip, year-end tag, side panel cascade checked")  # result
 print(f"\ntotal time {time.time() - t_all:.2f} s")  # total

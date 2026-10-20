@@ -136,6 +136,7 @@ live:  # live scoring assets and stored files read by src/app_live.py, relative 
   when_year_end: results/demo/when_demo_scores_year_end.csv  # stored WHEN scores of the year-end rows (artist-years without a Work), long format
   what_scores: results/holdout_what/row_scores.csv  # stored WHAT scores, labels and baseline (c)
   works: results/demo/works_demo.csv  # Works of the demo artists for the timeline
+  release_pick: results/demo/release_pick.csv  # release title per artist-year for the reality cells (rule B)
   style_predictions: results/style_forecast/predictions.csv  # stored style forecast, validation display only
 
 game:  # tab 6 flow, thresholds, widget keys and texts
@@ -168,8 +169,9 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   model_score: "Model score (next_1y) for year {year}: {score:.3f}"  # step A
   model_verdict: "Model prediction: {verdict}"  # step A
   user_answer: "My answer: {answer}"  # step A, only when the user predicted
-  reality_yes: "Reality: Yes (a new Work in {year})"  # step B, stored label is yes
-  reality_no: "Reality: No (no new Work in {year})"  # step B, stored label is no
+  reality_yes: "Reality: Yes ({year})"  # step B, stored label is yes and the year has no release title
+  reality_yes_title: "Reality: Yes: {title} ({year})"  # step B, stored label is yes, title of the release (rule B)
+  reality_no: "Reality: No release in {year}"  # step B, stored label is no
   no_reality: "No reality yet: the data ends in {year}."  # year without a stored label, {year} is the last data year
   uncounted_note: "Years from {year} on may not reflect reality because of cataloguing delay."  # fixed line under the scoreboard, {year} is read from the data
   label_part: ", stored label: {label}"  # label part of the information lines, omitted when the label is missing
@@ -296,7 +298,7 @@ route:  # tab 6 mode 2: several artists in one year, read-only table
   year: 2019  # year shown first
   artists: [3272791, 3094075, 7592689, 6774153, 391170, 2866928, 1345479, 4357593, 5034422, 1154116]  # prepared selection by discogs_id: SZA, Romeo Santos, Olivia Rodrigo, boygenius, Arctic Monkeys, Kacey Musgraves, Charli XCX, Dua Lipa, BTS, Labrinth
   max_artists: 10  # most artists in the table
-  title_max_chars: 28  # longest title in the Release column, longer titles end with an ellipsis and keep the full title in a tooltip
+  title_max_chars: 28  # longest title in a reality cell, longer titles end with an ellipsis and keep the full title in a tooltip
   selection_note: "Prepared selection for the demo, built for 2019: these artists were chosen after seeing the model results, to show both hits and misses. It is not a sample and not an evaluation."  # one line above the table
   keys:  # widget keys
     year: route_year  # year selector
@@ -316,9 +318,7 @@ route:  # tab 6 mode 2: several artists in one year, read-only table
     col_what: "WHAT: model"  # table column
     col_what_reality: "WHAT: reality"  # table column
     col_result: "Result (WHEN, WHAT)"  # table column
-    col_release: "Release"  # table column after the artist
-    release_none: "No release in {year}"  # release cell of a year-end row
-    release_estimated: "estimated from history"  # small muted line under the text of a year-end row
+    year_end_tag: "No release in {year} · estimated from history"  # small grey line of a year-end row (under the artist in mode 2, on the card and in the side panel of mode 1)
     pill_next: "Next year"  # small label of the next-year pill and reality
     pill_two: "Within 2 years"  # small label of the 2-year pill and reality
     what_year_end: "No WHAT score: no release in this year."  # WHAT cells of a year-end row

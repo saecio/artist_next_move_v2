@@ -197,6 +197,20 @@ def check_reset_and_tab6() -> None:  # test 7
     print(f"7 reset: year change returns tab 7 to placeholders; tab 6 stage ({route_before}) and mode untouched")  # result
 
 
+def check_tab6_table() -> None:  # test 8
+    """Tab 6 mode 2 shares the table styles with tab 7: after tab 7 is used, the tab 6 table has no Release column, the year-end tag sits under the artist and the reality cells carry titles."""
+    route = cfg["route"]["texts"]  # tab 6 texts
+    at = go(set_year(new_app(), 2019), "reveal")  # tab 7 used first
+    at.button(key=cfg["route"]["keys"]["predict"]).click().run()  # tab 6 Predict
+    at.button(key=cfg["route"]["keys"]["reveal"]).click().run()  # tab 6 Show reality
+    page = next(h.value for h in at.get("html") if route["col_artist"] in h.value and route["col_when"] in h.value)  # the tab 6 table element
+    head = re.findall(r"<th>(.*?)</th>", page.split("</tr>")[0])  # header cells
+    assert "Release" not in head and len(head) == 6, f"the tab 6 header must have six columns and no Release: {head}"  # no Release column
+    assert html.escape(route["year_end_tag"].format(year=cfg["route"]["year"])) in page and page.count("poc-sub'>" + html.escape(route["year_end_tag"].format(year=cfg["route"]["year"]))) >= 1, "the year-end tag sits under the artist"  # tag
+    assert "Yes: " in page, "the reality cells carry the release title"  # titles
+    print(f"8 tab 6 table after using tab 7: header {len(head)} columns without Release, year-end tag under the artist, titles in the reality cells")  # result
+
+
 def timing() -> None:  # live scoring per year
     """Time of the live scoring of every forecast year, first call after the models are loaded."""
     style_live(2018)  # warm the caches
@@ -208,7 +222,7 @@ def timing() -> None:  # live scoring per year
     print("live scoring per year:", ", ".join(parts))  # result
 
 
-for fn in (check_default, check_stages, check_order_and_reality, check_flagged_and_none, check_reset_and_tab6, timing):  # all checks
+for fn in (check_default, check_stages, check_order_and_reality, check_flagged_and_none, check_reset_and_tab6, check_tab6_table, timing):  # all checks
     t = time.time()  # clock
     fn()  # run the check
     print(f"   {fn.__name__} {time.time() - t:.2f} s")  # timing
