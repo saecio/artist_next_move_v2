@@ -794,3 +794,68 @@ def sample_pairs_by_similarity_band(
                         reservoir[replace_at] = record
 
     return {label: pd.DataFrame(records) for label, records in reservoirs.items()}  # one DataFrame per band, ready to print and eyeball
+
+
+LAST_RELIABLE_LABEL_YEAR = 2022 # last snapshot year whose next-year label is reliable (Y+1 is at most 2023, later years are incompletely loaded)
+GAP_BUCKET_EDGES = [0, 1, 2, 4, 9, float("inf")] # right-inclusive bucket edges for years_since_last
+GAP_BUCKET_LABELS = ["1", "2", "3-4", "5-9", "10+"] # bucket names for years since the last Work
+HISTORY_BUCKET_EDGES = [0, 2, 5, 10, 20, float("inf")] # right-inclusive bucket edges for history_count
+HISTORY_BUCKET_LABELS = ["1-2", "3-5", "6-10", "11-20", "21+"] # bucket names for catalogue length
+
+
+def load_when_gap_rows(snapshots_path: str, last_year: int = LAST_RELIABLE_LABEL_YEAR) -> pd.DataFrame:
+    """One row per artist-year for the WHEN timing test, with gap and history buckets."""
+    columns = ["artist_id", "year", "works_so_far_this_year", "history_count", "years_since_last", "next_1y"] # only the columns the test needs
+    snapshots = pd.read_parquet(snapshots_path, columns=columns) # cached snapshots table, not rebuilt here
+    rows = snapshots[snapshots["works_so_far_this_year"] == 1] # first snapshot of each artist-year
+    rows = rows[(rows["history_count"] >= 1) & (rows["years_since_last"] >= 1)] # artists with a past Work and a real gap
+    rows = rows[rows["next_1y"].notna() & (rows["year"] <= last_year)].copy() # resolved label and reliable years only
+    rows["gap_bucket"] = pd.cut(rows["years_since_last"], bins=GAP_BUCKET_EDGES, labels=GAP_BUCKET_LABELS) # ordered gap buckets
+    rows["history_bucket"] = pd.cut(rows["history_count"], bins=HISTORY_BUCKET_EDGES, labels=HISTORY_BUCKET_LABELS) # ordered catalogue-length buckets
+    return rows # one row per artist-year, ready for the tests
+
+
+def next_year_rate_by_gap_bucket(rows: pd.DataFrame) -> pd.DataFrame:
+    """Count and next-year release rate per years-since-last bucket."""
+    grouped = rows.groupby("gap_bucket", observed=True)["next_1y"] # next_1y grouped by gap bucket
+    return grouped.agg(n_rows="count", released_next_year="sum", rate="mean") # one row per bucket
+
+
+def gap_bucket_chi_square(rows: pd.DataFrame) -> dict:
+    """Chi-square test of independence between next_1y and the gap bucket."""
+    table = pd.crosstab(rows["gap_bucket"], rows["next_1y"]) # bucket x outcome counts
+    chi2, p_value, dof, expected = chi2_contingency(table) # chi-square independence test
+    return {
+        "chi2": chi2, # test statistic
+        "p_value": p_value, # p-value, overstated because rows of one artist are not independent
+        "dof": dof, # degrees of freedom
+        "cramers_v": (chi2 / (table.to_numpy().sum() * (min(table.shape) - 1))) ** 0.5, # effect size, comparable across tables
+        "min_expected_count": float(expected.min()), # size assumption check
+        "n_rows": int(table.to_numpy().sum()), # rows behind the test
+    }
+
+
+def gap_chi_square_by_history_bucket(rows: pd.DataFrame) -> pd.DataFrame:
+    """Repeat the gap test inside each history_count bucket and list the rate per gap bucket."""
+    records = [] # one record per history bucket
+    for label in HISTORY_BUCKET_LABELS: # keeps the bucket order
+        subset = rows[rows["history_bucket"] == label] # rows of this catalogue length only
+        result = gap_bucket_chi_square(subset) # same test with history held fixed
+        rates = subset.groupby("gap_bucket", observed=False)["next_1y"].mean() # rate per gap bucket, NaN if a cell is empty
+        record = {"history_bucket": label, "n_rows": result["n_rows"], "chi2": result["chi2"], "p_value": result["p_value"], "cramers_v": result["cramers_v"]} # test summary
+        record.update({f"rate_gap_{gap}": rates[gap] for gap in GAP_BUCKET_LABELS}) # rate per gap bucket as columns
+        records.append(record) # collect the row
+    return pd.DataFrame(records).set_index("history_bucket") # one row per history bucket
+
+
+def plot_next_year_rate_by_gap(rate_table: pd.DataFrame) -> None:
+    """Bar chart of the pooled next-year release rate per gap bucket."""
+    fig, ax = plt.subplots(figsize=(8, 5)) # single chart
+    bars = ax.bar(rate_table.index.astype(str), rate_table["rate"] * 100, color=SERIES_COLOR) # rate in percent per bucket
+    ax.bar_label(bars, fmt="%.1f%%") # value label on each bar
+    ax.set_xlabel("Years since the last release") # x-axis label
+    ax.set_ylabel("Artist-years with a release next year (%)") # y-axis label
+    ax.set_title("Chance of releasing next year by years since the last release") # chart title
+    ax.spines["top"].set_visible(False) # cleaner look
+    ax.spines["right"].set_visible(False) # cleaner look
+    plt.show() # render the figure

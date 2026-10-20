@@ -470,6 +470,23 @@ Tests (print-only, all exit 0): run_multi_apptest.py (reality 2025 counted witho
 
 **Interpretation**: The new-style introduction rate varies significantly by prior-work bucket, with a strong monotonic decline as artists accumulate more prior works. This is not noise; artist history length is a real signal that predicts stylistic consistency. The effect is large: a 4x difference between the lowest (6.20%) and highest (26.88%) buckets.
 
+**Hypothesis 6 (20-10-2026)**: Does the chance that an artist releases something next year depend on how many years have passed since their last release? H0: next_1y (the artist has activity in year Y+1) is independent of the bucket of years since the last Work. H1: they are dependent. Hypotheses 1 to 5 study the WHAT target, so they use the transitions table. This hypothesis covers WHEN (does the artist release next year?), so it uses the snapshots table. It tests the main timing signal of the WHEN model, the years since the last release. The test describes a relationship in the data; all models are already locked and nothing is fitted, scored or changed. Caveat: rows of the same artist are not independent, so the p-value is overstated; the rate gap and Cramer's V are the stronger evidence, and with this many rows significance is guaranteed.
+
+**Method**: Chi-square test of independence (5 x 2: gap bucket x next_1y) on 2,085,428 artist-years of 578,620 artists. Data: snapshots table from config.yaml (not rebuilt), the first snapshot of each artist-year (works_so_far_this_year == 1), history_count >= 1, years_since_last >= 1, resolved next_1y, all years with a reliable label, from the earliest (1896) up to 2022 (Y+1 at most 2023; later years have incomplete loading). Buckets of years since the last Work: 1, 2, 3-4, 5-9, 10+. Control as in Hypothesis 2: the test repeated inside buckets of history_count (1-2, 3-5, 6-10, 11-20, 21+). Code in src/eda.py (load_when_gap_rows and following functions).
+
+**Results** (notebooks/02_eda_visualization.ipynb, Hypothesis 6 cells, executed 20-10-2026):
+- 1 year: 1,134,284 artist-years, 54.82% release next year
+- 2 years: 393,882 artist-years, 33.66%
+- 3-4 years: 297,765 artist-years, 23.36%
+- 5-9 years: 173,051 artist-years, 17.61%
+- 10+ years: 86,446 artist-years, 12.46%
+
+**Chi-square test**: chi-square = 203,924.55, p-value < 1e-300 (underflows to 0), degrees of freedom = 4, Cramer's V = 0.313, smallest expected count 35,866. **Result: REJECT null hypothesis** (p < 0.05).
+
+**Control by history_count** (chi-square, Cramer's V, rate at gap 1 and at gap 10+): 1-2 works (754,999 rows): 44,925, V 0.244, 44.1% and 12.8%; 3-5 (500,776): 43,601, V 0.295, 49.2% and 10.6%; 6-10 (331,195): 32,099, V 0.311, 57.2% and 12.9%; 11-20 (240,098): 25,731, V 0.327, 64.3% and 13.8%; 21+ (258,360): 32,703, V 0.356, 73.1% and 14.1%. All p < 1e-300.
+
+**Interpretation**: The next-year release rate falls steadily as the years since the last release grow, a 4.4x difference between the 1-year (54.82%) and 10+ (12.46%) buckets. The effect is large and does not disappear inside any history bucket (V 0.244 to 0.356), so it is not only a catalogue-length effect; it is stronger for long catalogues (gap 1 rate 73.1% at 21+ works against 44.1% at 1-2), while at 10+ years all buckets are between 10.6% and 14.1%. Years since the last release is a strong timing signal for WHEN. It does not say how much a model gains from the feature.
+
 ## Future improvements
 
 - Neural networks and clustering, untested hypotheses outside the current scope (15-10-2026). Neural networks: the data is tabular (about 25 inputs, about 143k holdout rows for WHAT) and gradient-boosted trees usually match or beat neural networks on tabular data, so a gain from the model class alone is not expected. Possible gains would come from sequence models over an artist's release history or from learned embeddings for style, label and artist. Not tested. Any trial would need the same walk-forward protocol, and because the WHAT holdout is spent it could only be compared on development folds or on a new untouched period. Clustering: unsupervised, so not a predictor by itself. It could be used as feature engineering (for example career-stage or style-cluster ids) or to segment results. It would have to be fitted inside each training fold to avoid leakage. Benefit not tested. Neither is part of the current scope; the current choice favours the simplest effective model.
