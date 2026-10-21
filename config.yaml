@@ -37,3 +37,11 @@ what:
 
 works:
   min_standalone_releases: 3  # an artist needs at least this many standalone releases (no Master) for them to become Works (notebooks/01_cleaning_eda.ipynb, cell 98)
+
+calibration:
+  bins: 10  # equal-frequency bins of the reliability tables and the expected calibration error
+  confidence: 0.95  # level of the Wilson interval of the observed rate
+  tolerance: 0.0001  # largest accepted gap between a recomputed PR-AUC and the published one
+  published_pr_auc: {what: 0.4986, next_1y: 0.7851, next_2y: 0.8352}  # published holdout PR-AUC per target (controls)
+  controls: {what_rows: 143228, what_positive_rate: 0.3128, when_rows: 1020151, when_artists: 291481}  # published row counts and rates (controls)
+  out_dir: "results/calibration"  # output folder, created once
