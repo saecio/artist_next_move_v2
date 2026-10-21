@@ -13,7 +13,7 @@ import numpy as np  # arrays
 import pandas as pd  # tables
 
 from config import CONFIG, ROOT  # project settings and root
-from style_forecast import LOCKED_RF_PARAMS, build_panel, count_bounds, feature_columns, fit_model, predict_bundle, walk_forward  # forecast functions
+from style_forecast import FINAL_MODEL, LOCKED_RF_PARAMS, build_panel, count_bounds, feature_columns, fit_model, predict_bundle, walk_forward  # forecast functions
 from style_series import keep_dated_styled, load_works  # series from the first phase
 
 TOLERANCE = 0.00005  # largest accepted absolute difference (4 decimals)
@@ -93,7 +93,7 @@ def run() -> None:
     models = {}  # fitted forest per test target year
     for year in range(FIRST, LAST + 1):  # same training rows as walk_forward
         train = panel[(panel["origin"] <= year - 2) & panel["label"].notna()]  # origins up to year - 2 with a known label
-        models[year] = fit_model("random_forest", train, cols, LOCKED_RF_PARAMS)  # locked forest and seed
+        models[year] = fit_model(FINAL_MODEL, train, cols, LOCKED_RF_PARAMS)  # locked forest and seed
     models[PROJECTION] = joblib.load(BUNDLE)  # stored model of the projection, read only
     pct = percentile_table(results)  # residual percentiles
     keep_cols = ["style", "origin", "c_t", "base", "gr0"] + cols  # columns the live rows need

@@ -138,6 +138,17 @@ N_FOLD_TRANCHES = 5
 TRANCHE_YEARS = 5
 
 
+def method_spans(holdout_start: int = HOLDOUT_START_YEAR, holdout_end: int = HOLDOUT_END_YEAR, n_folds: int = N_FOLD_TRANCHES, test_years: int = TRANCHE_YEARS, gap_years: int = GAP_YEARS) -> list:  # years of the practice runs and of the final exam
+    """One dict per run (the folds of `make_folds`, then the final split) with train_end, gap_start, test_start and test_end, years only, no data needed."""
+    last_year = holdout_start - 1  # last development year, end of the final tranche
+    first_test_year = last_year - n_folds * test_years + 1  # first year of fold 1's test tranche, same arithmetic as make_folds
+    runs = []  # one dict per run
+    for k in range(n_folds):  # fold 1 tests the earliest tranche
+        start = first_test_year + k * test_years  # first test year of this fold
+        runs.append({"train_end": start - gap_years - 1, "gap_start": start - gap_years, "test_start": start, "test_end": start + test_years - 1})  # train up to the gap, then the tranche
+    runs.append({"train_end": holdout_start - gap_years - 1, "gap_start": holdout_start - gap_years, "test_start": holdout_start, "test_end": holdout_end})  # final split, as holdout_gap and split_holdout
+    return runs  # five practice runs and the final exam
+
 def holdout_gap(development: pd.DataFrame, holdout_start: int = HOLDOUT_START_YEAR, gap_years: int = GAP_YEARS) -> tuple:
     """Split development into rows safe to train the final model on and the gap rows.
 

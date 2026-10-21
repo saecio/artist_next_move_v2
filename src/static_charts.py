@@ -3,6 +3,8 @@
 import altair as alt  # charts, ships with Streamlit
 import textwrap  # grid title wrapping
 
+from config import CONFIG  # project settings (bootstrap level)
+
 import pandas as pd  # tables
 
 _REGISTERED = []  # names of themes already registered
@@ -31,22 +33,27 @@ def register_theme(cfg: dict) -> None:  # one shared dark theme
 
 
 def panel_chart(df: pd.DataFrame, title: str, subtitle: str, title_color: str, colors: dict, cfg: dict, top: float) -> alt.LayerChart:  # one results panel
-    """Three bars with value labels, interval whiskers, a muted line under the title and a tag on the model bar; `df` has label, value, lo, hi, tag columns."""
-    c, ch = cfg["design"]["palette"], cfg["design"]["chart"]  # palette and chart settings
+    """Three bars with value labels, interval whiskers, a muted line under the title and a tag on the model bar; `df` has label, value, lo, hi, tag, score_txt, range_txt columns. The width follows the container."""
+    c, ch, t = cfg["design"]["palette"], cfg["design"]["chart"], cfg["static_tabs"]["texts"]  # palette, chart settings and texts
     order = list(df["label"])  # bar order
     y = alt.Y("value:Q", axis=None, scale=alt.Scale(domain=[0, top]))  # hidden shared y axis, the labels carry the numbers
     x = alt.X("label:N", sort=order, title=None, axis=alt.Axis(labelAngle=0, labelFontSize=ch["label_font"], grid=False))  # bar names
-    tip = [alt.Tooltip("label:N", title=""), alt.Tooltip("value:Q", format=".3f"), alt.Tooltip("lo:Q", format=".3f"), alt.Tooltip("hi:Q", format=".3f")]  # plain values
-    base = alt.Chart(df).encode(x=x, tooltip=tip)  # shared encoding
-    bars = base.mark_bar(cornerRadiusTopLeft=ch["bar_corner"], cornerRadiusTopRight=ch["bar_corner"]).encode(y=y, color=alt.Color("label:N", scale=alt.Scale(domain=order, range=[colors[k] for k in order]), legend=None))  # bars
-    whisk = base.mark_rule(color=c["text"], strokeWidth=ch["whisker_width"]).encode(y=alt.Y("lo:Q", axis=None, scale=alt.Scale(domain=[0, top])), y2="hi:Q").transform_filter(alt.expr.isValid(alt.datum.lo))  # interval, rows with one only
-    text = base.mark_text(dy=-8, baseline="bottom", color=c["text"], fontSize=ch["label_font"]).encode(y=alt.Y("label_y:Q", axis=None, scale=alt.Scale(domain=[0, top])), text=alt.Text("value:Q", format=".3f"))  # value on top
-    tag = base.mark_text(align="right", dx=ch["tag_dx"], dy=-ch["tag_dy"], baseline="bottom", color=title_color, fontSize=ch["axis_font"]).encode(y=alt.Y("label_y:Q", axis=None, scale=alt.Scale(domain=[0, top])), text="tag:N").transform_filter(alt.expr.isValid(alt.datum.tag))  # advantage tag above the model value
-    return alt.layer(bars, whisk, text, tag).properties(title=alt.TitleParams(title, subtitle=subtitle, subtitleColor=c["muted"], subtitleFontSize=ch["axis_font"], color=title_color, fontSize=ch["title_font"], anchor="start"), height=ch["height_results"], width=240)  # panel
+    range_title = t["t5_tt_range"].format(ci=round(CONFIG["bootstrap"]["confidence"] * 100))  # "95% range", level from the bootstrap setting
+    name_score = [alt.Tooltip("label:N", title=t["t5_tt_name"]), alt.Tooltip("score_txt:N", title=t["t5_tt_score"])]  # friendly rows: bar name and score
+    base = alt.Chart(df).encode(x=x)  # shared encoding
+    has_range = alt.expr.isValid(alt.datum.lo)  # bars with an interval (past habits and model)
+    color = alt.Color("label:N", scale=alt.Scale(domain=order, range=[colors[k] for k in order]), legend=None)  # bar colors
+    bar_mark = dict(cornerRadiusTopLeft=ch["bar_corner"], cornerRadiusTopRight=ch["bar_corner"])  # rounded tops
+    bars_plain = base.mark_bar(**bar_mark).encode(y=y, color=color, tooltip=name_score).transform_filter(~has_range)  # by chance: name and score only
+    bars_range = base.mark_bar(**bar_mark).encode(y=y, color=color, tooltip=name_score + [alt.Tooltip("range_txt:N", title=range_title)]).transform_filter(has_range)  # name, score and 95% range
+    whisk = base.mark_rule(color=c["text"], strokeWidth=ch["whisker_width"]).encode(y=alt.Y("lo:Q", axis=None, scale=alt.Scale(domain=[0, top])), y2="hi:Q", tooltip=name_score + [alt.Tooltip("range_txt:N", title=range_title)]).transform_filter(has_range)  # interval, rows with one only
+    text = base.mark_text(dy=-8, baseline="bottom", color=c["text"], fontSize=ch["label_font"]).encode(y=alt.Y("label_y:Q", axis=None, scale=alt.Scale(domain=[0, top])), text=alt.Text("value:Q", format=".3f"), tooltip=alt.value(None))  # value on top
+    tag = base.mark_text(align="right", dx=ch["tag_dx"], dy=-ch["tag_dy"], baseline="bottom", color=title_color, fontSize=ch["axis_font"]).encode(y=alt.Y("label_y:Q", axis=None, scale=alt.Scale(domain=[0, top])), text="tag:N", tooltip=alt.Tooltip("tag_tip:N", title=" ")).transform_filter(alt.expr.isValid(alt.datum.tag))  # advantage tag above the model value, with its tooltip
+    return alt.layer(bars_plain, bars_range, whisk, text, tag).properties(title=alt.TitleParams(title, subtitle=subtitle, subtitleColor=c["muted"], subtitleFontSize=ch["axis_font"], color=title_color, fontSize=ch["title_font"], anchor="start"), height=ch["height_results"], width="container")  # panel
 
 
-def results_chart(data: pd.DataFrame, cfg: dict) -> alt.HConcatChart:  # Timing and Style panels side by side
-    """Two panels from the results table (panel, label, value, lo, hi, color), one shared y scale."""
+def results_chart(data: pd.DataFrame, cfg: dict) -> list:  # one chart per question, the caller puts them in equal columns
+    """Two panels from the results table, one shared y scale; each panel fills the width of its column."""
     register_theme(cfg)  # shared theme
     ch = cfg["design"]["chart"]  # chart settings
     d = data.copy()  # keep the caller's table
@@ -56,7 +63,7 @@ def results_chart(data: pd.DataFrame, cfg: dict) -> alt.HConcatChart:  # Timing 
     for name, part in d.groupby("panel", sort=False):  # in table order
         colors = dict(zip(part["label"], part["color"]))  # label -> bar color
         panels.append(panel_chart(part.reset_index(drop=True), name, part["subtitle"].iloc[0], part["title_color"].iloc[0], colors, cfg, top))  # panel
-    return alt.hconcat(*panels).resolve_scale(y="shared")  # side by side
+    return panels  # Timing then Style
 
 
 def steps_chart(df: pd.DataFrame, bucket: str, rate: str, count: str, color: str, cfg: dict) -> alt.LayerChart:  # one bar per bucket
@@ -106,7 +113,7 @@ def works_chart(df: pd.DataFrame, incomplete_from: int, texts: dict, cfg: dict) 
     d = df[["year", "works"]].copy()  # only the columns used
     peak = d.loc[d["works"].idxmax()]  # peak year and value, from the data
     first, last = int(d["year"].min()), int(d["year"].max())  # year range
-    x = alt.X("year:Q", axis=alt.Axis(format="d", labelAngle=0, labelFontSize=ch["axis_font"], title=None, grid=False), scale=alt.Scale(domain=[first, last], nice=False))  # years
+    x = alt.X("year:Q", axis=alt.Axis(format="d", labelAngle=0, labelFontSize=ch["axis_font"], title=None, grid=False, tickMinStep=1), scale=alt.Scale(domain=[first, last], nice=False))  # years
     y = alt.Y("works:Q", axis=alt.Axis(format="~s", title=None, labelFontSize=ch["axis_font"]), scale=alt.Scale(domain=[0, float(d["works"].max()) * ch["y_headroom"]]))  # works
     area = alt.Chart(d).mark_area(color=c["highlight"], opacity=ch["area_opacity"], interpolate="monotone", line=alt.OverlayMarkDef(color=c["highlight"], strokeWidth=ch["line_width"], opacity=1)).encode(x=x, y=y)  # area and thin line
     hover = alt.Chart(d).mark_point(opacity=0, size=ch["peak_size"]).encode(x=x, y=y, tooltip=[alt.Tooltip("year:Q", title="year", format="d"), alt.Tooltip("works:Q", title="works", format=",")])  # invisible points carry the tooltip
@@ -134,7 +141,9 @@ def timeline_chart(df: pd.DataFrame, cutoff: int, future: int, color: str, texts
     here_label = alt.Chart(pd.DataFrame({"x": [cutoff], "text": [texts["t1_here"]], "lane": [0.95]})).mark_text(align="right", dx=-6, color=c["text"], fontSize=ch["axis_font"]).encode(x=alt.X("x:Q", scale=dom, axis=None), y=y, text="text:N")  # label of the rule
     future_line = alt.Chart(pd.DataFrame({"x0": [cutoff], "x1": [end - 0.5], "lane": [0.5]})).mark_rule(color=color, strokeDash=[5, 5], strokeWidth=ch["whisker_width"]).encode(x=alt.X("x0:Q", scale=dom, axis=None), x2="x1:Q", y=y)  # dashed line into the unknown
     mark = alt.Chart(pd.DataFrame({"x": [end], "text": ["?"], "lane": [0.5]})).mark_text(color=color, fontSize=ch["story_glyph_font"], fontWeight="bold").encode(x=alt.X("x:Q", scale=dom, axis=None), y=y, text="text:N")  # large question mark
-    return alt.layer(line, here, here_label, future_line, dots, mark).properties(height=ch["height_story"])  # chart
+    years = sorted({int(df["year"].min()), int(df["year"].max()), cutoff})  # first dot, last dot and cutoff, each year once
+    ticks = alt.Chart(pd.DataFrame({"x": years, "text": [str(v) for v in years], "lane": 0.25})).mark_text(color=c["muted"], fontSize=ch["axis_font"]).encode(x=alt.X("x:Q", scale=dom, axis=None), y=y, text="text:N")  # muted years below the line
+    return alt.layer(line, here, here_label, future_line, dots, mark, ticks).properties(height=ch["height_story"])  # chart
 
 
 def genre_chart(df: pd.DataFrame, texts: dict, cfg: dict) -> alt.Chart:  # genre share by year
@@ -144,13 +153,18 @@ def genre_chart(df: pd.DataFrame, texts: dict, cfg: dict) -> alt.Chart:  # genre
     names = list(d["genre_palette"])  # genre names in palette order, which is the stack order
     data = df[["year", "genre", "share"]]  # only the columns used
     pick = alt.selection_point(fields=["genre"], bind="legend")  # click a legend entry to highlight a genre
-    x = alt.X("year:Q", axis=alt.Axis(format="d", labelAngle=0, labelFontSize=ch["axis_font"], title=None, grid=False), scale=alt.Scale(domain=[int(data["year"].min()), int(data["year"].max())], nice=False))  # years
+    x = alt.X("year:Q", axis=alt.Axis(format="d", labelAngle=0, labelFontSize=ch["axis_font"], title=None, grid=False, tickMinStep=1), scale=alt.Scale(domain=[int(data["year"].min()), int(data["year"].max())], nice=False))  # years
     y = alt.Y("share:Q", stack="normalize", axis=alt.Axis(format="%", title=None, labelFontSize=ch["axis_font"]), scale=alt.Scale(domain=[0, 1]))  # shares, each year adds up to 100%
     color = alt.Color("genre:N", scale=alt.Scale(domain=names, range=[d["genre_palette"][n] for n in names]), legend=alt.Legend(orient="right", title=None, symbolType="square"))  # palette colors, legend on the right
     tip = [alt.Tooltip("year:Q", title=texts["year"], format="d"), alt.Tooltip("genre:N", title=texts["genre"]), alt.Tooltip("share:Q", title=texts["share"], format=".1%")]  # year, genre and share
     area = alt.Chart(data).mark_area(interpolate="monotone").encode(x=x, y=y, color=color, order=alt.Order("genre:N", sort="ascending"), opacity=alt.condition(pick, alt.value(1), alt.value(ch["genre_opacity_off"])), tooltip=tip).add_params(pick)  # stacked areas
     return area.properties(height=ch["height_genres"])  # chart
 
+
+def strength_ticks(ch: dict) -> list:  # tick values of the Six tests axis
+    """Axis values from 0 to strength_axis_max in steps of strength_axis_step, so no label repeats and the grid sits on the ticks."""
+    n = round(ch["strength_axis_max"] / ch["strength_axis_step"])  # number of steps
+    return [round(k * ch["strength_axis_step"], 10) for k in range(n + 1)]  # 0, step, 2 x step, up to the maximum
 
 def strength_chart(df: pd.DataFrame, cfg: dict) -> alt.LayerChart:  # one bar per hypothesis
     """Horizontal bars sorted by effect size, the label on the left, the number at the end of each bar, a tooltip with the question and the answer."""
@@ -159,7 +173,7 @@ def strength_chart(df: pd.DataFrame, cfg: dict) -> alt.LayerChart:  # one bar pe
     t = cfg["static_tabs"]["texts"]  # texts
     d = df[["short_label", "effect_size", "color", "question", "answer_text", "strength_text"]]  # only the columns used
     y = alt.Y("short_label:N", sort=list(d["short_label"]), title=None, axis=alt.Axis(labelFontSize=ch["label_font"], labelLimit=ch["strength_label_limit"], labelColor=c["text"], grid=False, ticks=False, domain=False))  # labels, strongest first
-    x = alt.X("effect_size:Q", title=None, scale=alt.Scale(domain=[0, ch["strength_axis_max"]], nice=False), axis=alt.Axis(labelFontSize=ch["axis_font"], grid=True, format=".1f"))  # strength axis with a light grid
+    x = alt.X("effect_size:Q", title=None, scale=alt.Scale(domain=[0, ch["strength_axis_max"]], nice=False), axis=alt.Axis(labelFontSize=ch["axis_font"], grid=True, format=".1f", values=strength_ticks(ch)))  # strength axis with a light grid
     tip = [alt.Tooltip("question:N", title=t["t3s_tt_question"]), alt.Tooltip("answer_text:N", title=t["t3s_tt_answer"]), alt.Tooltip("strength_text:N", title=t["t3s_tt_strength"])]  # question, answer, strength
     base = alt.Chart(d).encode(y=y, x=x, tooltip=tip)  # shared encoding
     bars = base.mark_bar(size=ch["strength_bar"], cornerRadiusTopRight=ch["bar_corner"], cornerRadiusBottomRight=ch["bar_corner"]).encode(color=alt.Color("color:N", scale=None))  # bars, color from the data

@@ -369,8 +369,8 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     data_figures: data_figures.csv  # metric, value
     hypotheses: hypotheses_summary.csv  # id, question, result, test, h0_rejected, source
     when_model: results/holdout_ci95/xgboost_final_next_1y.json  # Timing model, holdout, next_1y
-    when_baseline: results/holdout_ci95/baseline_next_1y.json  # Timing rule of thumb, holdout, next_1y
-    what_headline: results/holdout_what/headline.csv  # Style model and rule of thumb, holdout
+    when_baseline: results/holdout_ci95/baseline_next_1y.json  # Timing past habits, holdout, next_1y
+    what_headline: results/holdout_what/headline.csv  # Style model and past habits, holdout
     what_top10: results/holdout_what/top10_lift.csv  # Style top group hit rate, holdout
     works_per_year: works_per_year.csv  # year, works (dated cleaned Works per year), written once by scripts/run_static_assets.py
     data_quality: data_quality.csv  # metric, value (works_undated), written once by scripts/run_static_assets.py
@@ -383,7 +383,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     when_tests: results/holdout_ci95/xgboost_final_next_1y.json  # test_rows: number of test snapshots (same value in the other holdout_ci95 files)
   rows:  # row names inside the stored files
     what_model: stage 0  # Style model row of headline.csv and top10_lift.csv
-    what_rule: baseline (c)  # Style rule of thumb row of headline.csv
+    what_rule: baseline (c)  # Style past habits row of headline.csv
     metric_master: works_master  # data_figures.csv metric: Works that come from a Master
     metric_standalone: works_standalone  # data_figures.csv metric: Works that come from a standalone release
     source_master: master  # work_source value of a Master Work
@@ -414,12 +414,6 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     tab5_columns: [2, 1]  # relative widths of the chart card and the dot card of tab 5
     tab2_columns: [3, 2]  # relative widths of the chart card and the right blocks of tab 2
     dots_side: 10  # circles per side of a grid, the grid shows side x side artists
-    big_font: 40  # big numbers of tab 2
-    bar_height: 22  # bar of tab 3
-    bar_label_width: 70  # bucket label column of tab 3
-    segment_height: 44  # segment of the tab 4 timeline
-    train_flex: 3  # relative width of the train segment of the tab 4 timeline
-    block_pad: 10  # padding of a text block
   hypotheses:  # one entry per hypothesis, in order; the file hypotheses_summary.csv is built from here and from the two bucket files
     H1: {question: "More releases before, fewer new styles?", result: "Falls from {first} to {last} as an artist's history grows", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 51"}  # rate range from h1_buckets.csv
     H2: {question: "Does genre matter?", result: "Yes, but less and less as history grows", test: Chi-square per history group, h0_rejected: "yes", source: "notebook 02 cell 54"}  # qualitative
@@ -438,12 +432,12 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t1_kpi_hyp: "hypotheses tested"  # label of the first number of the strip
     t1_kpi_models: "models compared"  # label of the second number of the strip
     t1_kpi_tests: "predictions tested on unseen years"  # label of the third number of the strip
-    t1_kpi_years: "test years untouched"  # label of the fourth number of the strip
+    t1_kpi_years: "final exam years"  # label of the fourth number of the strip
     t1_years_value: "{first} to {last}"  # value of the fourth number
     t1_tip_hyp: "Each hypothesis is a question about the data, checked with a statistical test."  # tooltip of the first number
     t1_tip_models: "Compared on past years before the final test: {names}."  # tooltip of the second number, names from models_compared
     t1_tip_tests: "Each prediction is one artist at one past date, scored on years the models never saw."  # tooltip of the third number
-    t1_tip_years: "Years kept aside and never used while building the models."  # tooltip of the fourth number
+    t1_tip_years: "Years kept aside and never used to train the models."  # tooltip of the fourth number
     t1_use: "Helps a label or platform anticipate when an artist will release again and whether the next release will bring a new style."  # tab 1 subtitle
     t2_source: "Discogs data dump of {date}"  # tab 2 source line
     t2_headline: "A century of releases, and the last years are still being written"  # tab 2 headline
@@ -463,22 +457,40 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t2_tip_standalone: "Releases without a Master. They count only for artists with enough of them."  # tooltip of input 2
     t2_tip_out: "The unit of the project: one release family per row."  # tooltip of the output
     t2_artists: "Artists"  # label of the second big number
-    t4_train: "Train, up to {last}"  # timeline segment
-    t4_gap: "Gap of {n} years"  # timeline segment
-    t4_test: "Test, {first} to {last}"  # timeline segment
-    t4_test_note: "Test years are never touched while building the models."  # under the timeline
-    t4_line: "{label}: {question} Model: {model}."  # one line per question
-    t4_model_timing: "gradient boosting trees"  # Timing model in plain words
-    t4_model_style: "gradient boosting trees"  # Style model in plain words
-    t4_rule: "Both are compared with a rule of thumb based on the artist's history."  # last line
+    t4_headline: "Every score comes from years the models never saw."  # tab 4 headline
+    t4_run: "Practice run {n}"  # label of a practice run
+    t4_final: "Final exam"  # label of the final exam row
+    t4_train: "all earlier years"  # label of the train bar of a practice run
+    t4_train_final: "Learns from everything up to {year}"  # label of the train bar of the final exam, year = last training year of the final split
+    t4_legend_train: "Learns from"  # legend: train bar
+    t4_legend_gap: "Skipped"  # legend: dashed gap block
+    t4_legend_test: "Graded on"  # legend: test block
+    t4_tip_gap: "Two years are skipped so the training answers never overlap the test years."  # tooltip of the Skipped legend item and of every gap block
+    t4_test: "{first} to {last}"  # years of a test block
+    t4_sealed: "Graded once"  # words next to the lock of the final exam
+    t4_caption: "Practice runs are used to compare and tune models. The final exam years are never used to train a model."  # under the card
+    t4_caption_tip: "The answers of the last practice run reach into the exam years. We checked it: it does not change which model was chosen."  # tooltip next to the caption
+    t4_final_models: "Final models:"  # label of the line under the model chips
+    t4_final_timing: "Timing: {model}"  # tag, model name from the code that builds the Timing final model
+    t4_final_style: "Style: {model}"  # tag, model name from the code that builds the Style final model
+    t4_final_forecast: "Style forecast (tab 7): {model}"  # tag, model name from the style forecast final model
+    t4_final_flag: "Final model"  # flag over the last model chip
+    t4_chips_tip: "The three tree models tied on the practice runs, within the margin of error. We use XGBoost because it works with missing values without filling them in and was the one we tuned the most."  # tooltip of the chip row
     t5_col_chance: "By chance"  # results column
     t5_col_model: "Our model"  # results column
-    t8_data_title: "Data"  # block title
-    t8_data: "Discogs is a collector database, so it does not list every release ever made."  # block text
-    t8_style_title: "Style forecast"  # block title
-    t8_style: "Tested on {n} years ({first} to {last}); not clearly better than repeating last year's ranking."  # block text
-    t8_next_title: "Next step"  # block title
-    t8_next: "Try sequence models over an artist's release history, and clustering of styles. The {first} to {last} test years are used up, so a new test needs a new period."  # block text
+    t8_headline: "What it can do, what to keep in mind, what comes next."  # tab 8 headline
+    t8_works_title: "What works"  # card title
+    t8_works_1: "Beats a guess from past habits on both questions, on years it never saw: +{d1} points Timing, +{d2} points Style."  # item, d1 and d2 equal the tab 5 tags
+    t8_works_2: "No peeking: every input is checked to be known at the prediction date."  # item
+    t8_works_3: "Tested the way it would be used: forward in time, with {ci}% intervals."  # item, ci from bootstrap.confidence
+    t8_mind_title: "What to keep in mind"  # card title
+    t8_mind_1: "Discogs is a collector database, so it does not list every release ever made."  # item
+    t8_mind_2: "Recent years are still being filled in, so they are left out of training, tuning and scoring."  # item
+    t8_mind_3: "The style forecast was tested on {n} years ({first} to {last}) and is not clearly better than repeating last year's ranking."  # item, years from tab 7
+    t8_next_title: "What comes next"  # card title
+    t8_next_1: "Try sequence models over an artist's release history, and clustering of styles."  # item
+    t8_next_2: "A new test needs a new period: the {test_first} to {test_last} test years are used up."  # item, years from config.yaml
+    t8_next_3: "For a label or platform: use the ranking to decide whom to look at first, not as exact odds."  # item
     t3_headline: "More history means fewer new styles. A longer silence means fewer releases."  # tab 3 headline, shown only when both series decrease in the data
     t3_card_style: "New style by number of earlier releases"  # Style card title
     t3_card_timing: "Release next year by years since the last one"  # Timing card title
@@ -504,18 +516,23 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t3s_tt_strength: "Strength"  # tooltip title of the effect size and its measure
     t3s_tip_h3: "The pause is far from normal, so a rank test (Mann-Whitney) was used."  # sentence added to the H3 tooltip
     t3_headline_neutral: "How history relates to new styles and releases"  # tab 3 headline when the data does not support the conclusion
-    t5_headline: "Both models beat the rule of thumb"  # tab 5 headline, shown only when true
+    t5_headline: "Both models beat a guess from past habits"  # tab 5 headline, shown only when true
     t5_headline_neutral: "Results on years the models never saw"  # tab 5 headline otherwise
-    t5_sub: "Test years {first} to {last}, never touched while building the models."  # tab 5 subtitle
+    t5_sub: "Test years {first} to {last}, never used to train the models."  # tab 5 subtitle
     t5_info: "PR-AUC: how well the model finds the artists who do release or do bring a new style. Higher is better. Chance equals the share of yes cases."  # tooltip next to the subtitle
-    t5_line_timing: "Rule of thumb: artists who release often keep releasing."  # visible line under the Timing panel title
-    t5_line_style: "Rule of thumb: the usual rate for artists with a similar history and output."  # visible line under the Style panel title
-    t5_advantage: "+{d} over the rule of thumb"  # tag above the model bar, d = model minus rule PR-AUC
+    t5_line_timing: "Past habits: artists who release often keep releasing."  # visible line under the Timing panel title
+    t5_line_style: "Past habits: the usual rate for artists with a similar history and output."  # visible line under the Style panel title
+    t5_advantage: "+{d} points over past habits"  # tag above the model bar, d = round(100 x (model minus past habits PR-AUC))
+    t5_tt_name: "Bar"  # tab 5 bar tooltip: title of the bar name row
+    t5_tt_score: "Score"  # tab 5 bar tooltip: title of the score row
+    t5_tt_range: "{ci}% range"  # tab 5 bar tooltip: title of the interval row, ci from bootstrap.confidence
+    t5_range_fmt: "{lo} to {hi}"  # tab 5 bar tooltip: interval text
+    t5_tip_advantage: "Difference between the two scores, multiplied by 100."  # tooltip of the advantage tag
     t5_caption: "Score: PR-AUC, higher is better."  # caption under the results chart
-    t5_col_rule: "Rule of thumb"  # bar label of the baseline
+    t5_col_rule: "Past habits"  # bar label of the baseline
     t5_tip_chance: "Always guessing the average share of yes cases."  # tooltip of the By chance label
-    t5_tip_rule_timing: "Ranks artists only by how often they released per year of activity so far."  # Rule of thumb, Timing
-    t5_tip_rule_style: "Uses only the artist's number of earlier releases and their output this year."  # Rule of thumb, Style
+    t5_tip_rule_timing: "Ranks artists only by how often they released per year of activity so far."  # Past habits, Timing
+    t5_tip_rule_style: "Uses only the artist's number of earlier releases and their output this year."  # Past habits, Style
     t5_tip_model: "Gradient boosting trees trained on each artist's history up to a past date."  # tooltip of the Our model label
     t5_dot_left: "Guessing blindly"  # title of the left grid
     t5_dot_right: "Top {s}% predictions"  # title of the right grid, s from top10_lift.csv selected_share
@@ -555,7 +572,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     timing: "#3DD6D0"  # the Timing question, on every tab and chart
     style: "#FF4D8D"  # the Style question, on every tab and chart
     chance: "#3A4060"  # By chance bar
-    rule: "#7C86A8"  # Rule of thumb bar
+    rule: "#7C86A8"  # Past habits bar
     highlight: "#FFB547"  # accent for emphasis
   shadow: "0 4px 18px rgba(0,0,0,0.35)"  # soft card shadow
   type:  # type scale in px
@@ -565,6 +582,23 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     label: 13  # label
     caption: 12  # caption
   box: {radius: 12, border: 1, pad: 18, gap: 12}  # card radius, border width, padding and gap in px
+  method_axis_start: 1985  # first year of the tab 4 time axis (the last year is the last test year of the final exam)
+  method_tick_every: 10  # tab 4 axis: a year label every this many years
+  method:  # tab 4 infographic and tab 8 marker, sizes in px
+    label_w: 120  # run label column
+    row_h: 32  # height of one run
+    row_gap: 4  # space between runs
+    text_pad: 6  # padding left of the train label and gap around the lock
+    test_radius: 4  # corner of a test block
+    lock_w: 14  # lock body width
+    lock_h: 10  # lock body height
+    shackle_h: 7  # lock shackle height
+    arrow_len: 28  # arrow between model chips, shaft length
+    arrow_head: 5  # arrow head half height
+    arrow_lift: 12  # lift of arrows and the tooltip icon to the middle of a chip
+    dot: 14  # round marker of the tab 8 cards
+    swatch_w: 22  # width of a legend swatch of tab 4
+    swatch_h: 12  # height of a legend swatch of tab 4
   chip: {pad_v: 4, pad_h: 12, font: 13}  # chip sizes in px
   header: {title_font: 20, tagline_font: 14, gap: 14, top_pad: 56}  # header sizes in px, top_pad is the space above the header (page padding)
   button: {weight: 700, hover_brightness: 1.12}  # primary button label weight and hover brightness (text color is the palette background)
@@ -591,8 +625,9 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     count_font: 30  # count inside a flow box
   chart:  # Altair settings
     theme_name: demo_dark  # registered theme name
-    height_results: 330  # tab 5 chart height in px
+    height_results: 280  # tab 5 chart height in px
     strength_axis_max: 0.5  # Six tests chart axis maximum; all six effect sizes are below it (a test checks it)
+    strength_axis_step: 0.1  # Six tests chart axis step, ticks and grid lines sit at multiples of it
     height_strength: 300  # Six tests chart height in px
     strength_bar: 26  # Six tests bar thickness in px
     strength_label_limit: 260  # longest hypothesis label of the Six tests chart in px
@@ -603,13 +638,13 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     grid_opacity: 0.5  # gridline opacity
     bar_corner: 4  # bar corner radius in px
     whisker_width: 2  # whisker line width in px
-    y_headroom_results: 1.35  # headroom of the tab 5 chart, room for the advantage tag
+    y_headroom_results: 1.22  # headroom of the tab 5 chart, room for the advantage tag
     height_story: 200  # tab 1 timeline height in px
     story_dot_min: 60  # smallest timeline dot area
     story_dot_max: 420  # largest timeline dot area
     story_glyph_font: 44  # size of the question mark after the cutoff
     tag_dx: 36  # horizontal shift of the advantage tag, px
-    tag_dy: 24  # lift of the advantage tag above the value label, px
+    tag_dy: 28  # lift of the advantage tag above the value label, px
     y_headroom: 1.15  # share of the top value kept free above the bars
     dot_cell: 15  # width and height of one circle cell in px
     dot_fill: 0.7  # circle diameter as a share of its cell

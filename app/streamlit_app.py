@@ -104,9 +104,8 @@ with tabs[1]:  # Data and cleaning
             st.altair_chart(works_chart(works_per_year(cfg), cfg["design"]["incomplete_from_year"], {"incomplete": sct["texts"]["t2_incomplete"], "peak": sct["texts"]["t2_peak"], "band_tip": sct["texts"]["t2_band_tip"]}, cfg), theme=None, width="stretch")  # Works per year
         right.html(tab2_right_html(cfg))  # numbers and cleaning schema
 
-for i, build in ((3, tab4_html), (7, tab8_html)):  # static tabs with one HTML block
+for i, build in ((3, tab4_html), (7, tab8_html)):  # static tabs with one HTML block, the headline is the only title
     with tabs[i]:  # open the tab
-        st.header(cfg["tabs"][i])  # tab title
         st.html(build(cfg))  # the tab content
 
 with tabs[2]:  # Data exploration
@@ -129,7 +128,8 @@ with tabs[4]:  # Results
     left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_columns"])  # chart card and dot card
     with left, st.container(border=True):  # chart card
         st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
-        st.altair_chart(results_chart(results, cfg), theme=None, width="stretch")  # Timing and Style panels
+        for col, panel in zip(st.columns(2), results_chart(results, cfg)):  # Timing and Style panels share the width equally
+            col.altair_chart(panel, theme=None, width="stretch")  # one panel
         st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}</div>")  # what the score is
     dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
     dtx = cfg["static_tabs"]["texts"]  # texts of the dot card

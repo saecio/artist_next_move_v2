@@ -2,15 +2,19 @@
 
 import html  # escape of artist names
 import json  # result files of the Timing model and the stored card values
+import re  # model names compared without spaces or case
 
 import pandas as pd  # tables
 import streamlit as st  # cache decorator
 
 from ui_components import card, card_title, chip, headline, info, kpi_card  # design system helpers
-from static_diagrams import clean_flow  # HTML and CSS flow of tab 2
+from static_diagrams import clean_flow, close_css, final_models_html, method_card, method_chips, method_css, method_legend  # HTML and CSS schemas of tabs 2, 4 and 8
 
 from config import CONFIG, ROOT  # project settings and root
 from static_charts import genre_chart, steps_chart, strength_chart, timeline_chart  # Altair charts of tabs 3, 2 and 1
+from backtesting import method_spans  # fold and final split years
+from models import make_what_xgboost, make_xgboost  # builders of the Timing and Style final models (their names give the model names)
+from style_forecast import FINAL_MODEL  # final model of the style forecast
 from style_tab import validation_figures  # tab 7 test years, reused for tab 8 (read only)
 
 
@@ -30,27 +34,6 @@ def load_json(path: str) -> dict:  # one JSON file
 def static_path(sc: dict, key: str) -> str:  # path of a file of the static folder
     """Path of one of the four small data files, relative to the project root."""
     return f"{sc['paths']['dir']}/{sc['paths'][key]}"  # folder and file name
-
-
-def css(cfg: dict) -> str:  # style rules of the static tabs, scoped by the poc-st prefix
-    """Style block of the static tabs; colors come from the poc section."""
-    c, s = cfg["poc"]["colors"], cfg["static_tabs"]["sizes"]  # colors and sizes
-    rules = [  # one rule per element
-        f".poc-st-big{{font-size:{s['big_font']}px;font-weight:700}}",  # big number
-        f".poc-st-row{{display:flex;gap:{s['block_pad'] * 3}px}}",  # blocks side by side
-        f".poc-st-block{{flex:1;border:1px solid {c['card_border']};border-radius:{cfg['poc']['sizes']['card_radius']}px;padding:{s['block_pad']}px}}",  # one block
-        f".poc-st-title{{font-weight:700}}",  # block title
-        f".poc-st-bar-row{{display:flex;align-items:center;gap:{s['block_pad']}px;margin:4px 0}}",  # one bucket bar line
-        f".poc-st-bar-label{{width:{s['bar_label_width']}px}}",  # bucket label
-        f".poc-st-bar{{height:{s['bar_height']}px;background:{c['accent']};color:{c['accent_fg']};padding:0 6px;display:flex;align-items:center;box-sizing:border-box}}",  # the bar with its rate
-        f".poc-st-seg{{display:flex;align-items:center;justify-content:center;height:{s['segment_height']}px;border:1px solid {c['card_border']};box-sizing:border-box;text-align:center}}",  # timeline segment
-        f".poc-st-seg.test{{background:{c['accent']};color:{c['accent_fg']}}}",  # test segment
-        ".poc-st-table{border-collapse:collapse;width:100%}",  # table
-        f".poc-st-table th,.poc-st-table td{{border-bottom:1px solid {c['card_border']};padding:{cfg['poc']['sizes']['cell_padding']}px {cfg['poc']['sizes']['card_padding']}px;text-align:left}}",  # cells
-        f".poc-st-note{{font-size:{cfg['poc']['sizes']['note_font']}px;opacity:{cfg['poc']['sizes']['muted_opacity']}}}",  # small grey text
-        f".poc-st-line{{margin-top:{s['block_pad']}px}}",  # one text line
-    ]
-    return "<style>" + "".join(rules) + "</style>"  # the style element
 
 
 def figure_values(cfg: dict) -> dict:  # data_figures.csv as a dict
@@ -89,7 +72,7 @@ def tab1_panels(cfg: dict) -> list:  # the two story cards
 
 
 def tab1_kpis_html(cfg: dict) -> str:  # strip of four numbers
-    """Hypotheses tested, models compared, predictions tested on unseen years, test years untouched."""
+    """Hypotheses tested, models compared, predictions tested on unseen years, final exam years."""
     sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
     t, y = sc["texts"], CONFIG["years"]  # texts and split years
     names = sc["models_compared"]  # compared models
@@ -128,26 +111,39 @@ def tab2_right_html(cfg: dict) -> str:  # right blocks of tab 2
     pct = f"{undated / int(fig['works']) * 100:.1f}"  # share in percent
     return "<div class='ui-stack'>" + card(clean_flow(cfg, t, n, counts)) + "<div class='ui-chips' style='margin:0'>" + chip(t["t2_undated"].format(pct=pct), pal["muted"], t["t2_tip_undated"]) + "</div></div>"  # flow and chip
 
-def tab4_html(cfg: dict) -> str:  # method
-    """Timeline of the split, the two question lines and the rule of thumb line."""
+def final_models(cfg: dict) -> list:  # the three final-model tags of tab 4
+    """Texts "Timing: X", "Style: X", "Style forecast (tab 7): X"; X is the models_compared entry that matches the name of the code building each final model."""
     sc = cfg["static_tabs"]  # settings
-    t, p, y = sc["texts"], cfg["poc"]["texts"], CONFIG["years"]  # texts and years
-    gap, first, last = y["label_gap"], y["holdout_start"], y["holdout_end"]  # split years
-    seg = lambda text, flex, cls="": f"<div class='poc-st-seg {cls}' style='flex:{flex}'>{text}</div>"  # one segment
-    line = lambda label, q, m: f"<p class='poc-st-line'>{t['t4_line'].format(label=label, question=q, model=m)}</p>"  # one question line
-    timeline = "<div style='display:flex'>" + seg(t["t4_train"].format(last=first - gap - 1), sc["sizes"]["train_flex"]) + seg(t["t4_gap"].format(n=gap), gap) + seg(t["t4_test"].format(first=first, last=last), last - first + 1, "test") + "</div>"  # three segments
-    return css(cfg) + timeline + f"<div class='poc-st-note'>{t['t4_test_note']}</div>" + line(p["label_timing"], p["q_timing"], t["t4_model_timing"]) + line(p["label_style"], p["q_style"], t["t4_model_style"]) + f"<p class='poc-st-line'>{t['t4_rule']}</p>"  # page
+    t = sc["texts"]  # texts
+    flat = lambda name: re.sub(r"[^a-z0-9]", "", name.lower())  # name without spaces, case or underscores
+    shown = {flat(n): n for n in sc["models_compared"]}  # flat name -> name shown on the chips
+    keys = (make_xgboost.__name__.removeprefix("make_"), make_what_xgboost.__name__.removeprefix("make_what_"), FINAL_MODEL)  # Timing builder, Style builder, forecast model
+    return [t[k].format(model=shown[flat(key)]) for k, key in zip(("t4_final_timing", "t4_final_style", "t4_final_forecast"), keys)]  # three texts
 
-
-
+def tab4_html(cfg: dict) -> str:  # method
+    """Headline, the legend and the time infographic of the five practice runs and the final exam, one caption, the model chips and the final models."""
+    sc = cfg["static_tabs"]  # settings
+    t = sc["texts"]  # texts
+    runs = method_spans()  # years of the folds and of the final split, from backtesting
+    card_html = method_card(cfg, t, runs, runs[-1]["test_end"])  # six rows on one year axis
+    caption = t["t4_caption"]  # one line under the card
+    chips = method_chips(cfg, t, sc["models_compared"])  # past habits and the compared models
+    finals = final_models_html(cfg, final_models(cfg))  # label and the three final-model tags
+    return method_css(cfg) + "<div class='ui-stack'>" + headline(t["t4_headline"]) + method_legend(cfg, t) + card_html + f"<div class='ui-caption'>{html.escape(caption)} {info(t['t4_caption_tip'])}</div>" + chips + finals + "</div>"  # page
 
 def tab8_html(cfg: dict) -> str:  # limits and next steps
-    """Three short blocks: Data, Style forecast, Next step."""
-    t, y = cfg["static_tabs"]["texts"], CONFIG["years"]  # texts and years
+    """Closing slide: three equal cards with a marker, a title and three items; numbers come from the tab 5 tags and the tab 7 test years."""
+    t, p = cfg["static_tabs"]["texts"], cfg["poc"]["texts"]  # texts and Timing / Style labels
     v = validation_figures(cfg)  # tab 7 tested years: first, last, years
-    block = lambda title, text: f"<div class='poc-st-block'><div class='poc-st-title'>{title}</div><div>{text}</div></div>"  # one block
-    blocks = block(t["t8_data_title"], t["t8_data"]) + block(t["t8_style_title"], t["t8_style"].format(n=v["years"], first=v["first"], last=v["last"])) + block(t["t8_next_title"], t["t8_next"].format(first=y["holdout_start"], last=y["holdout_end"]))  # three blocks
-    return css(cfg) + f"<div class='poc-st-row'>{blocks}</div>"  # page
+    y = CONFIG["years"]  # test years
+    res = results_data(cfg)  # the table of tab 5, its advantage values are the tag numbers
+    d = res[res["d"].notna()].set_index("panel")["d"]  # advantage per panel, as shown in the tags
+    values = {"d1": d[p["label_timing"]], "d2": d[p["label_style"]], "ci": round(CONFIG["bootstrap"]["confidence"] * 100), "n": v["years"], "first": v["first"], "last": v["last"], "test_first": y["holdout_start"], "test_last": y["holdout_end"]}  # every placeholder of the items
+    cards = ""  # html of the three cards
+    for key in ("works", "mind", "next"):  # left to right
+        items = "".join(f"<div class='ui-close-item'>{html.escape(t[f't8_{key}_{i}'].format(**values))}</div>" for i in (1, 2, 3))  # three one-line items
+        cards += card(f"<div class='ui-close-title'><span class='ui-close-dot'></span>{html.escape(t[f't8_{key}_title'])}</div>{items}")  # one card
+    return close_css(cfg) + "<div class='ui-stack'>" + headline(t["t8_headline"]) + f"<div class='ui-row'>{cards}</div></div>"  # page
 
 
 def results_data(cfg: dict) -> pd.DataFrame:  # chart table of tab 5
@@ -165,10 +161,11 @@ def results_data(cfg: dict) -> pd.DataFrame:  # chart table of tab 5
     lines = {p["label_timing"]: t["t5_line_timing"], p["label_style"]: t["t5_line_style"]}  # visible line under each panel title
     rows = []  # one dict per bar
     for panel, (color, chance, rule, model) in cols.items():  # in panel order
-        base = {"panel": panel, "title_color": color, "subtitle": lines[panel], "tag": None}  # shared fields
-        rows.append({**base, "label": t["t5_col_chance"], "value": chance, "lo": None, "hi": None, "color": pal["chance"]})  # By chance
-        rows.append({**base, "label": t["t5_col_rule"], "value": rule[0], "lo": rule[1], "hi": rule[2], "color": pal["rule"]})  # Rule of thumb
-        rows.append({**base, "label": t["t5_col_model"], "value": model[0], "lo": model[1], "hi": model[2], "color": color, "tag": t["t5_advantage"].format(d=f"{model[0] - rule[0]:.3f}")})  # Our model with its advantage tag
+        d = round(100 * (model[0] - rule[0]))  # advantage in whole points
+        base = {"panel": panel, "title_color": color, "subtitle": lines[panel], "tag": None, "tag_tip": None, "d": None}  # shared fields
+        rows.append({**base, "label": t["t5_col_chance"], "value": chance, "lo": None, "hi": None, "color": pal["chance"], "score_txt": f"{chance:.3f}", "range_txt": None})  # By chance
+        rows.append({**base, "label": t["t5_col_rule"], "value": rule[0], "lo": rule[1], "hi": rule[2], "color": pal["rule"], "score_txt": f"{rule[0]:.3f}", "range_txt": t["t5_range_fmt"].format(lo=f"{rule[1]:.3f}", hi=f"{rule[2]:.3f}")})  # Past habits
+        rows.append({**base, "label": t["t5_col_model"], "value": model[0], "lo": model[1], "hi": model[2], "color": color, "score_txt": f"{model[0]:.3f}", "range_txt": t["t5_range_fmt"].format(lo=f"{model[1]:.3f}", hi=f"{model[2]:.3f}"), "d": str(d), "tag": t["t5_advantage"].format(d=d), "tag_tip": t["t5_tip_advantage"]})  # Our model with its advantage tag
     return pd.DataFrame(rows)  # six rows
 
 
@@ -188,7 +185,7 @@ def tab5_head_html(cfg: dict, data: pd.DataFrame) -> str:  # headline and subtit
 
 
 def tab5_chips_html(cfg: dict) -> str:  # the three column labels with tooltips
-    """By chance, Rule of thumb, Our model: one chip each, the tooltip explains the bar."""
+    """By chance, Past habits, Our model: one chip each, the tooltip explains the bar."""
     t, pal, p = cfg["static_tabs"]["texts"], cfg["design"]["palette"], cfg["poc"]["texts"]  # texts, palette, labels
     rule = f"{p['label_timing']}: {t['t5_tip_rule_timing']} {p['label_style']}: {t['t5_tip_rule_style']}"  # both baseline definitions
     chips = chip(t["t5_col_chance"], pal["chance"], t["t5_tip_chance"]) + chip(t["t5_col_rule"], pal["rule"], rule) + chip(t["t5_col_model"], pal["text"], t["t5_tip_model"])  # three chips

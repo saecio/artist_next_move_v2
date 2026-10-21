@@ -27,6 +27,7 @@ TOP_K = 10  # size of the ranking that is scored
 SEED = CONFIG["project"]["SEED"]  # project.SEED, one seed for every model and for the bootstrap
 N_BOOT = CONFIG["bootstrap"]["style_draws"]  # bootstrap.style_draws, bootstrap draws over years
 MODELS = ["bayes_ridge", "xgboost", "random_forest"]  # model names, in report order
+FINAL_MODEL = "random_forest"  # the model that scores the forecast shown in the demo
 # Locked Random Forest settings, fixed in the decisions entry "Style trend forecast, adoption and pass rule results, final test, 2024 projection and output procedure" (trial m_trees600 of results/trials/rf_style_forecast.jsonl).
 LOCKED_RF_PARAMS = {"n_estimators": 600, "max_depth": 13, "min_samples_leaf": 7, "max_features": 0.5, "bootstrap": True, "max_samples": 0.3253691715004556, "random_state": 1}  # same keys as the tuning trials
 BASELINES = ["repeat_last", "mean_growth"]  # ranking baselines, in report order
