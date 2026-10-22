@@ -142,6 +142,11 @@ def multi_css(poc: dict) -> str:  # style rules of the mode 2 table, all scoped 
         f".poc-multi .poc-pill.no{{background:transparent;color:{c['accent']}}}",  # No and Not likely: outlined
         f".poc-multi .poc-sub{{font-size:{s['note_font']}px;opacity:{s['muted_opacity']}}}",  # small muted line or label
         f".poc-multi .poc-casc{{display:flex;align-items:flex-end;gap:{s['card_gap']}px;flex-wrap:wrap}}",  # the cascade of pills in one cell
+        ".poc-multi .poc-casc.poc-stack{flex-direction:column;align-items:flex-start;flex-wrap:nowrap}",  # reality lines one under the other, no arrow
+        f".poc-multi .poc-res{{display:flex;flex-direction:column;gap:{s['card_gap']}px}}",  # the lines of the Result cell, one under the other
+        f".poc-multi .poc-res-line{{display:flex;align-items:center;gap:{s['card_gap'] + 2}px;white-space:nowrap}}",  # label cell and mark cell
+        f".poc-multi .poc-res-lab{{flex:none;width:{s['result_label_w']}px;text-align:left;font-size:{s['note_font']}px;opacity:{s['muted_opacity']}}}",  # label cell, the same width in every row so the marks line up
+        f".poc-multi .poc-res-rule{{border-top:1px solid {c['card_border']};margin:{s['card_gap']}px 0}}",  # thin line between the Timing lines and the Style line
         ".poc-multi .poc-step{display:flex;flex-direction:column;align-items:flex-start}",  # one label above its pill or text
         ".poc-multi th .poc-sub{font-weight:400}",  # the year-end tag under an artist name is not bold
         f".poc-multi .poc-q{{font-weight:700;font-size:{s['table_font']}px}}",  # question of a block
@@ -173,26 +178,27 @@ def year_end_tag(rt: dict, year: int) -> str:  # grey line of a year-end row
     """'No release in {year} · forecast from earlier releases', the line of a year-end row in both modes."""
     return rt["year_end_tag"].format(year=year)  # text from the yaml
 
-def reality_item(label: str | None, title: str | None, yn: dict, rt: dict, year=None) -> str:  # one reality cell content
+def reality_item(label: str | None, title: str | None, yn: dict, rt: dict, year=None, show_title: bool = True) -> str:  # one reality cell content
     """'Yes: <title> (<year>)' with the title cut at route.title_max_chars and the full title in a tooltip, the plain word (with the year when given) without a title, or the "Not yet" text when there is no stored label."""
     if label is None or pd.isna(label):  # no stored label
         return html.escape(rt["not_yet"])  # no-reality text
     when = "" if year is None or pd.isna(year) else f" ({int(year)})"  # release year after the word or the title
-    if title is None or pd.isna(title):  # no title in the file
+    if not show_title or title is None or pd.isna(title):  # no title in the file, or already shown on the line above
         return html.escape(yn[label] + when)  # plain word, with the year when given
     return f"<span title='{html.escape(str(title), quote=True)}'>{html.escape(yn[label] + ': ' + short_title(str(title), rt['title_max_chars']) + when)}</span>"  # word, cut title, year, tooltip with the full title
 
-def cascade_div(r: pd.Series, items: list, rt: dict, n: int) -> str:  # the next-year item and, when shown, the 2-year item
+def cascade_div(r: pd.Series, items: list, rt: dict, n: int, show_next: bool = True, stack: bool = False) -> str:  # the next-year item and, when shown, the 2-year item
     """Cascade with the next-year item first (small label above) and, when show2, an arrow and the second-horizon item (`n` years). `items` holds the two inner HTML strings."""
-    parts = [f"<div class='poc-step'><span class='poc-sub'>{html.escape(rt['pill_next'])}</span>{items[0]}</div>"]  # next-year item
+    label = f"<span class='poc-sub'>{html.escape(rt['pill_next'])}</span>" if show_next else ""  # the label is left out where the column header already says it
+    parts = [f"<div class='poc-step'>{label}{items[0]}</div>"]  # next-year item
     if r["show2"]:  # the second item is shown
-        parts.append("<span class='poc-arrow'>\u2192</span>")  # arrow
+        parts.append("" if stack else "<span class='poc-arrow'>\u2192</span>")  # arrow, none in a stacked cell
         parts.append(f"<div class='poc-step'><span class='poc-sub'>{html.escape(rt['pill_two'].format(n=n))}</span>{items[1]}</div>")  # 2-year item
-    return f"<div class='poc-casc'>{''.join(parts)}</div>"  # the cascade
+    return f"<div class='poc-casc{' poc-stack' if stack else ''}'>{''.join(parts)}</div>"  # the cascade
 
-def cascade_cell(r: pd.Series, items: list, rt: dict, n: int) -> str:  # cascade inside a table cell
+def cascade_cell(r: pd.Series, items: list, rt: dict, n: int, show_next: bool = True, stack: bool = False) -> str:  # cascade inside a table cell
     """The cascade as a table cell."""
-    return f"<td>{cascade_div(r, items, rt, n)}</td>"  # the cell
+    return f"<td>{cascade_div(r, items, rt, n, show_next, stack)}</td>"  # the cell
 
 def tip_of(poc: dict, score: float, target: str) -> str:  # tooltip text of a prediction word
     """The score as a plain number (never a percentage) and the average calibration gap of the target the panel belongs to."""
@@ -294,7 +300,7 @@ def multi_table_html(rows: pd.DataFrame, summary: dict, g: dict, route: dict, po
         if stage == "placeholder":  # nothing but the artist
             body.append(f"<tr>{name}{ph * 5}</tr>")  # five equal placeholder cells
             continue  # next artist
-        when = cascade_cell(r, [pill(yn[r["when_verdict"]], r["when_verdict"] == "yes"), pill(yn[r["when2_verdict"]], r["when2_verdict"] == "yes")], rt, g["second_horizon"])  # WHEN verdict pills
+        when = cascade_cell(r, [pill(yn[r["when_verdict"]], r["when_verdict"] == "yes"), pill(yn[r["when2_verdict"]], r["when2_verdict"] == "yes")], rt, g["second_horizon"], False)  # WHEN verdict pills, the header says Next year
         if r["what_available"]:  # WHAT score exists
             what_model = f"<td>{pill(t['likely'] if r['what_verdict'] == 'yes' else t['not_likely'], r['what_verdict'] == 'yes')}</td>"  # WHAT verdict pill
             what_rest = ph  # WHAT reality placeholder
@@ -305,13 +311,17 @@ def multi_table_html(rows: pd.DataFrame, summary: dict, g: dict, route: dict, po
             when_real, what_real_ph, mark_ph = (nope, nope if r["what_available"] else "", nope) if r["is_forecast"] else (ph, what_rest, ph)  # reality cells, result cell
             body.append(f"<tr>{name}{when}{when_real}{what_model}{what_real_ph}{mark_ph}</tr>")  # model columns shown
             continue  # next artist
-        reality = cascade_cell(r, [reality_item(r["when_label"], r["when_title"], yn, rt, year + 1 if r["when_label"] == "yes" else None), reality_item(r["when2_label"], r["when2_title"], yn, rt, (year + 1 if r["when_label"] == "yes" else year + 2) if r["when2_label"] == "yes" else None)], rt, g["second_horizon"])  # WHEN realities in the same structure, with the release title and its year
+        same = r["when_label"] == "yes" and r["when2_label"] == "yes"  # the 2-year Yes is the same release as the next-year Yes
+        reality = cascade_cell(r, [reality_item(r["when_label"], r["when_title"], yn, rt, year + 1 if r["when_label"] == "yes" else None), reality_item(r["when2_label"], r["when2_title"], yn, rt, (year + 1 if r["when_label"] == "yes" else year + 2) if r["when2_label"] == "yes" else None, not same)], rt, g["second_horizon"], True, True)  # WHEN realities as two stacked lines, the release title shown once
         no_later = r["is_year_end"] and pd.isna(r["what_label"])  # year-end row with a score and no resolved label
         what_real = (f"<td>{html.escape(t['what_na_tip_no_later'])}</td>" if no_later else f"<td>{reality_item(r['what_label'], r['what_release_title'], yn, rt, r['what_year'])}</td>") if r["what_available"] else ""  # WHAT reality, with the title and year of the next active year
         shown = marks_fn(r)  # next year, optional 2-year, WHAT
         tips = [f" title='{html.escape(open_year_text(t), quote=True)}'" if key.endswith("_flagged") else "" for _, key in shown]  # the asterisk marks carry the open-year sentence
         tips[-1] = tips[-1] if r["what_available"] else f" title='{html.escape(t['mark_not_forecast'], quote=True)}'"  # the WHAT mark of a row without a score gets its own tooltip
-        mk = "".join(f"<span class='poc-mark {k}'{tip}>{html.escape(t[key])}</span>" for (k, key), tip in zip(shown, tips))  # one mark per pill shown plus WHAT
+        marks = [f"<span class='poc-mark {k}'{tip}>{html.escape(t[key])}</span>" for (k, key), tip in zip(shown, tips)]  # one mark per pill shown plus WHAT
+        line_of = lambda label, mark: f"<div class='poc-res-line'><span class='poc-res-lab'>{html.escape(label)}</span>{mark}</div>"  # label cell and mark
+        two = line_of(rt["pill_two"].format(n=g["second_horizon"]), marks[1]) if r["show2"] else ""  # Within n years line where that part is shown
+        mk = f"<div class='poc-res'><div class='poc-res-lab' style='width:auto'>{html.escape(rt['result_timing'])}</div>{line_of(rt['pill_next'], marks[0])}{two}<div class='poc-res-rule'></div>{line_of(t['label_style'], marks[-1])}</div>"  # Timing lines, rule, Style line
         body.append(f"<tr>{name}{when}{reality}{what_model}{what_real}<td>{mk}</td></tr>")  # full row
     lines = [rt["summary_when"].format(k=summary["when_right"], n=summary["when_n"], k2=summary["when2_right"], n2=summary["when2_n"], m=g["second_horizon"]), rt["summary_what"].format(k=summary["what_right"], n=summary["what_n"])] if stage == "reveal" else []  # the two summary lines, after Show reality
     if stage == "reveal" and any(star_in_row(r) for _, r in rows.iterrows()):  # a shown asterisk needs its legend under the table

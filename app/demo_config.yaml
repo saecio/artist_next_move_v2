@@ -16,9 +16,9 @@ tabs:  # tab titles, in display order
   - Limits and next steps  # tab title
 header:  # fixed header above the tabs
   title: "Artist Next Move"  # project name
-  tagline: "Predicts when an artist will release again, and whether the next release will bring a new style."  # one line under or beside the name
+  tagline: "Predicts when an artist will release again, and whether the next release will bring a style new to them."  # one line under or beside the name
 notices:  # texts shown verbatim
-  style_notice: "Which styles will have the most new releases next year?"  # tab 7 headline
+  style_notice: "Which styles will grow the most next year?"  # tab 7 headline
 ui:  # interface labels
   genre_label: "Genre"  # genre selector
   all_genres: "All genres"  # genre selector, no filter option
@@ -149,6 +149,7 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   hide_rerecordings: true  # hide cards of Works flagged is_rerecording, scores and labels are unchanged
   similar_gap: 1  # largest gap, in whole artists out of 10, between the outside rate and the base rate still worded "almost the same"
   default_mode: many  # mode shown first in tab 6: many (several artists) or one (one artist)
+  t6_disclaimer: "This demo is an illustration, not a measurement. The artists are chosen to show both hits and misses, so the tally above says nothing about the model's overall accuracy. The tested results are on the Results tab."  # muted line at the very bottom of tab 6, both modes
   mode_label: "View"  # mode selector label
   mode_options: {one: "One artist", many: "Several artists"}  # mode selector texts
   threshold: 0.5  # the model says yes when the live next_1y score is at least this value
@@ -174,11 +175,11 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   reveal_label: "Show reality"  # reveal button
   next_label: "Go to {year}"  # next year button, {year} is the next playable year
   restart_label: "Restart"  # restart button
-  what_reliability: "When the model says Likely, about {x} in {scale} artists did add a new style, against {y} in {scale} overall."  # reliability line of a Yes verdict, x and y come from the holdout file, {scale} from reliability_scale
-  what_reliability_no_similar: "When the model says Not likely, about {z} in {scale} still added a new style, about the same as overall ({y} in {scale})."  # No verdict, z and y equal or one unit apart
-  what_reliability_no_other: "When the model says Not likely, about {z} in {scale} still added a new style, against {y} in {scale} overall."  # No verdict, z and y more than one unit apart
-  what_reality_yes: "Reality: Yes, new style: {styles}"  # step B, stored label is yes, {styles} are the new styles of the next active year
-  what_reality_no: "Reality: No new style"  # step B, stored label is no
+  what_reliability: "When the model says Likely, about {x} in {scale} artists did add a style new to them, against {y} in {scale} overall."  # reliability line of a Yes verdict, x and y come from the holdout file, {scale} from reliability_scale
+  what_reliability_no_similar: "When the model says Not likely, about {z} in {scale} still added a style new to them, about the same as overall ({y} in {scale})."  # No verdict, z and y equal or one unit apart
+  what_reliability_no_other: "When the model says Not likely, about {z} in {scale} still added a style new to them, against {y} in {scale} overall."  # No verdict, z and y more than one unit apart
+  what_reality_yes: "Reality: Yes, a style new to them: {styles}"  # step B, stored label is yes, {styles} are the new styles of the next active year
+  what_reality_no: "Reality: No style new to them"  # step B, stored label is no
   what_no_reality: "No later release with styles in the data yet."  # step B, score but no stored label
   hidden_line: "{n} re-recording(s) hidden"  # line under a year with hidden re-recordings
   more_line: "+{n} more"  # line under the drawn cards when the year has more Works than the cap
@@ -201,7 +202,7 @@ poc:  # tab 6 mode 1 timeline and panel: texts, colors and sizes shared by tab 6
     label_timing: "Timing"  # small grey label of the first block
     label_style: "Style"  # small grey label of the second block
     q_timing: "Will the artist release something next year?"  # question of the Timing block, the only place it is shown
-    q_style: "Will the next release bring a new style?"  # question of the Style block
+    q_style: "Will the next release bring a style new to them?"  # question of the Style block
     style_scope: "Next release, whenever it comes. Separate from the question above. New means not used up to {year}."  # grey line of the Style block, {year} is the shown year
     your_prediction: "Your prediction:"  # line of the user answer, Timing block only
     prediction: "Prediction:"  # line of the model prediction
@@ -250,6 +251,7 @@ poc:  # tab 6 mode 1 timeline and panel: texts, colors and sizes shared by tab 6
   sizes:  # sizes in pixels, except the opacity
     card_min_width: 110  # smallest card width, cards grow to fill the line
     card_gap: 4  # gap between cards
+    result_label_w: 92  # width in px of the label cell of a Result line, the same in every row so the marks line up
     card_padding: 6  # padding inside a card
     card_radius: 4  # corner radius
     card_font: 12  # card text size
@@ -294,12 +296,13 @@ route:  # tab 6 mode 2: several artists in one year, read-only table
     cap_note: "At most {n} artists in the table."  # shown under the picker
     col_artist: "Artist"  # table column
     col_timing: "Release next year?"  # header over the prediction and reality columns of the timing prediction
-    col_style: "New style next release?"  # header over the prediction and reality columns of the style prediction
+    col_style: "Style new to the artist next release?"  # header over the prediction and reality columns of the style prediction
     col_style_tip: "About the next release, whenever it comes. Separate from the first question."  # hover text of the style header
     col_prediction: "Prediction"  # second header row
     col_reality: "Reality"  # second header row
     col_result: "Result"  # table column
     year_end_tag: "No release in {year} · prediction from earlier releases"  # small grey line of a year-end row (under the artist in mode 2, on the card and in the side panel of mode 1)
+    result_timing: "Timing"  # small label over the Timing lines of the Result cell, same role as the Style label
     pill_next: "Next year"  # small label of the next-year pill and reality
     pill_two: "Within {n} years"  # small label of the second-horizon pill and reality, {n} from game.second_horizon
     no_history_one: "{n} selected artist has no releases before {year}."  # line under the table, one artist with no history hidden
@@ -326,6 +329,7 @@ style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
   paired_file: results/style_forecast/paired_differences_test.csv  # paired differences (forecast model minus repeat last year, 95% interval) of the test years, copied by hand from the test output; read by the tab 8 Trends chip
   base_years: 3  # years in the base mean the growth is measured against (the panel base of src/style_forecast.py); also hard-coded in src/style_forecast.py build_panel (base line), guarded by scripts/run_style_apptest.py
   headline: "Tested on {first} to {last}: on average {k} of the top {n} styles in reality are in the forecast top {n}."  # one neutral line, always visible, figures computed from the data
+  random_file: results/style_forecast/random_hits_test.csv  # mean top hits of picking styles at random over the counted test years (method, mean, low, high), copied by hand from the test output
   years:  # every target year of the selector, none is hidden
     counted: [2018, 2019, 2020, 2021, 2022]  # final test years, counted in the summary
     flagged: [2023, 2024]  # shown for reference only with the asterisk marks, no summary
@@ -343,6 +347,7 @@ style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
     predict: style_predict  # Predict button
     reveal: style_reveal  # Show reality button
   texts:  # texts of the tab
+    t7_sub: "Each year, we ask the model for the {n} styles it expects to grow most. On average, {hits} of those {n} were really among the {n} that grew most (tested on {y_from}-{y_to}). Picking {n} styles at random would get about {rand} of {n}."  # subtitle of the headline, hits and the years from the data, rand from random_file
     year_label: "Year to forecast"  # year selector label
     flag_counted: "This year is part of the tested results."  # status line of a counted year
     col_rank: "Rank"  # table column
@@ -435,6 +440,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     tab4: [t4_view_method, t4_view_inputs]  # tab 4
     tab5: [t5_view_results, t5_view_years, t5_view_models, t5_view_trust]  # tab 5
   inputs:  # tab 4 inputs view: families of facts per model and the plain label of every non-genre fact (never the code name)
+    row_min: 56  # min height in px of a family row, so the rows of the two cards line up
     genres_name: "Genres"  # family of the 0 / 1 genre columns, in both models
     flags: [is_album_like, is_single_like]  # facts shown as yes / no
     timing:  # Timing families in display order, features are columns of NUMERIC_FEATURES in src/models.py
@@ -475,16 +481,16 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     tab2_columns: [3, 2]  # relative widths of the chart card and the right blocks of tab 2
     dots_side: 10  # circles per side of a grid, the grid shows side x side artists
   hypotheses:  # one entry per hypothesis, in order; the file hypotheses_summary.csv is built from here and from the two bucket files
-    H1: {question: "More releases before, fewer new styles?", result: "Falls from {first} to {last} as an artist's history grows", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 51"}  # rate range from h1_buckets.csv
+    H1: {question: "More releases before, fewer styles new to them?", result: "Falls from {first} to {last} as an artist's history grows", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 51"}  # rate range from h1_buckets.csv
     H2: {question: "Does genre matter?", result: "Yes, but less and less as history grows", test: Chi-square per history group, h0_rejected: "yes", source: "notebook 02 cell 54"}  # qualitative
-    H3: {question: "Does a long gap bring a new style?", result: "More often, but a small effect", test: Mann-Whitney U, h0_rejected: "yes", source: "notebook 02 cell 58"}  # qualitative
-    H4: {question: "More styles already used, more new styles?", result: "Only inside each history group", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 61"}  # qualitative
+    H3: {question: "Does a long gap bring a style new to them?", result: "More often, but a small effect", test: Mann-Whitney U, h0_rejected: "yes", source: "notebook 02 cell 58"}  # qualitative
+    H4: {question: "More styles already used, more styles new to them?", result: "Only inside each history group", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 61"}  # qualitative
     H5: {question: "Do years without a date matter?", result: "The gap is mostly catalogue length", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 64"}  # qualitative
     H6: {question: "Does the gap since the last release predict a release next year?", result: "Falls from {first} to {last} as the gap grows", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 69"}  # rate range from h6_buckets.csv
   texts:  # on-screen texts, placeholders in braces
     t1_headline: "It is {year}. You want to stay ahead of the world's top artists."  # tab 1 headline, year from static_tabs.story.cutoff_year
     t1_q_timing: "Will {artist} release something next year?"  # question under the Timing artist timeline
-    t1_q_style: "Will {artist}'s next release bring a new style?"  # question under the Style artist timeline
+    t1_q_style: "Will {artist}'s next release bring a style new to him?"  # question under the Style artist timeline
     t1_here: "You are here"  # label of the vertical rule at the cutoff year
     t1_tip_year: "year"  # tooltip title of a timeline dot: year
     t1_tip_count: "releases"  # tooltip title of a timeline dot: releases that year
@@ -498,10 +504,10 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t1_s2_sub: "on {tests} predictions for years they never saw"  # muted line of story card 2, tests from the Timing test snapshots
     t1_s3_big: "{k} in {n}"  # big number of each half of story card 3, k of n artists
     t1_s3_blind: "random picks: {b} in {n}"  # muted line of each half, b = positive rate of the holdout as a whole number of n
-    t1_s3_cap_timing: "of its top picks release the next year"  # caption of the Timing half
-    t1_s3_cap_style: "of its top picks bring a new style"  # caption of the Style half
-    t1_s3_tip: "Its top picks are the {s}% of artists with the highest score, the ones the model rates most likely. Random picks means choosing artists with no model: the share is just how common the event is among all artists. Scored on the test years {y_from} to {y_to}, never used to train the models."  # tooltip of story card 3
-    t1_use: "When will they drop something new? Will it bring a new style?"  # tab 1 subtitle
+    t1_s3_cap_timing: "of the artists it rates highest release the next year"  # caption of the Timing half
+    t1_s3_cap_style: "of the artists it rates highest bring a style new to them"  # caption of the Style half
+    t1_s3_tip: "The artists it rates highest are the {s}% of artists with the highest score, the ones the model rates most likely. Random picks means choosing artists with no model: the share is just how common the event is among all artists. Scored on the test years {y_from} to {y_to}, never used to train the models."  # tooltip of story card 3
+    t1_use: "When will they release again? Will the next release bring a style new to them?"  # tab 1 subtitle
     t1_credit: "Photo: {author}, {license}"  # muted credit under the photo, shown when the photo exists and the license is filled and the author is too
     t1_credit_noauthor: "Photo: {license}"  # muted credit under the photo when the author is empty and the license is filled
     t2_source: "Discogs data dump of {date}"  # tab 2 source line
@@ -550,7 +556,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t4i_timing_title: "Timing model"  # left card title
     t4i_style_title: "Style model"  # right card title
     t4i_timing_question: "Will a new release come within a year?"  # left card question
-    t4i_style_question: "Which new style comes next?"  # right card question
+    t4i_style_question: "Which style new to the artist comes next?"  # right card question
     t4i_facts: "{n} facts"  # chip with the number of model inputs
     t4i_yes: "yes"  # value of a 0 / 1 fact equal to 1
     t4i_no: "no"  # value of a 0 / 1 fact equal to 0
@@ -560,19 +566,20 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t5_col_model: "Our model"  # results column
     t8_headline: "What it can do, what to keep in mind, what comes next."  # tab 8 headline
     t8_works_title: "What works"  # card title
-    t8_works_1: "On years the models never saw, Timing is {d1} points better than past habits and Style is {d2} points better."  # item, d1 and d2 equal the tab 5 tags
-    t8_works_2: "Every input is known on the prediction date, and the tests always go forward in time, never backwards."  # item
-    t8_works_3: "Its scores can be trusted: on average they are off by only {gap_style} for Style and {gap_timing} for Timing."  # item, gaps = singular or plural point text from results/calibration/summary.csv (round(100 x ECE))
+    t8_works_tip: "The model gives every artist a score and ranks them from most to least likely. We look at the highest-rated tenth. Picked at random means choosing artists with no model."  # tooltip next to the card title
+    t8_works_1: "It beats past habits on both questions, tested only on years it never saw."  # item, shown only when the model is clearly above past habits on both questions (tab 5 condition)
+    t8_works_2: "Timing: of every {n} artists it rates highest, {t} release the next year. Picked at random, {tb}."  # item, n, t and tb equal the Timing numbers of the tab 1 third card, shown only when the highest-rated artists beat random picking
+    t8_works_3: "Style: of every {n} artists it rates highest, {s} bring a style new to them. Picked at random, {sb}."  # item, n, s and sb equal the Style numbers of the tab 1 third card and the tab 5 dot card, shown only when the highest-rated artists beat random picking
     t8_mind_title: "What to keep in mind"  # card title
     t8_mind_1: "Discogs is a collector database: some releases are missing and recent years are incomplete."  # item
-    t8_mind_2: "\"New style\" is a Discogs style tag, not measured from the sound."  # item
+    t8_mind_2: "\"A style new to them\" means new for that artist, not new to the world. It is a Discogs style tag, not measured from the sound."  # item
     t8_mind_3: "Demo artists are picked to be recognisable, not at random."  # item
-    t8_mind_4: "Style is the harder question: its top picks are right {k} in {n}."  # item, k and n from the Style half of the tab 1 card
+    t8_mind_4: "Style is the harder question: even among the artists it rates highest, {m} in {n} miss."  # item, m = n minus the Style top picks of the tab 1 third card
     t8_close_timing_name: "Timing"  # closing block name
     t8_close_style_name: "Style"  # closing block name
     t8_close_trends_name: "Trends"  # closing block name
     t8_close_timing_q: "When will an artist release again?"  # closing block, Timing question
-    t8_close_style_q: "Will it bring a new style?"  # closing block, Style question
+    t8_close_style_q: "Will it bring a style new to them?"  # closing block, Style question
     t8_close_trends_q: "Which styles will grow?"  # closing block, style forecast question
     t8_close_beats: "Beats past habits"  # status of Timing and Style when the model is clearly above past habits (tab 5 condition per question)
     t8_close_tested: "Tested"  # status of Timing and Style otherwise
@@ -584,8 +591,8 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t8_next_1_plain: "Add new information (labels, credits, collaborations)."  # item 1 otherwise
     t8_next_2: "Predict how long until the next release, and which style comes next."  # item
     t8_next_3: "Retrain and recheck every year, and test it with a real label or platform."  # item
-    t3_headline: "More history means fewer new styles. A longer silence means fewer releases."  # tab 3 headline, shown only when both series decrease in the data
-    t3_card_style: "New style by number of earlier releases"  # Style card title
+    t3_headline: "More history means fewer styles new to them. A longer silence means fewer releases."  # tab 3 headline, shown only when both series decrease in the data
+    t3_card_style: "A style new to them, by number of earlier releases"  # Style card title
     t3_card_timing: "Release next year by years since the last one"  # Timing card title
     t2_view_volume: "Volume"  # tab 2 view label
     t2_view_genres: "Genres"  # tab 2 view label
@@ -619,46 +626,47 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t2g_tip_share: "share of releases"  # tooltip title in the genre chart: share
     t3_view_patterns: "Two patterns"  # tab 3 view label
     t3_view_tests: "Six tests"  # tab 3 view label
-    t3_line_style: "Each step down means fewer new styles."  # muted line under the Style chart
+    t3_line_style: "Each step down means fewer styles new to them."  # muted line under the Style chart
     t3_line_timing: "Each step down means fewer releases."  # muted line under the Timing chart
     t3s_headline: "{label} is the strongest signal."  # Six tests headline, short label of the largest effect
     t3s_line: "Strength of each pattern, from 0 (none) to 1 (perfect). All six are very unlikely to be chance."  # muted line under the headline
-    t3s_tip_honesty: "Rows from the same artist are not independent, so exact p-values are overstated and the strength matters more. These are patterns, not causes. P-values are only indicative because releases of one artist are not independent."  # info tooltip next to the muted line
+    t3s_tip_honesty: "These are patterns, not causes. Releases of the same artist are not independent, so the p-values are only indicative and the strength matters more."  # info tooltip next to the muted line
     t3s_tt_question: "Question"  # tooltip title of the plain question
     t3s_tt_answer: "Answer"  # tooltip title of the plain answer
     t3s_tt_strength: "Strength"  # tooltip title of the effect size and its measure
     t3s_tip_h3: "The pause is far from normal, so a rank test (Mann-Whitney) was used."  # sentence added to the H3 tooltip
-    t3_headline_neutral: "How history relates to new styles and releases"  # tab 3 headline when the data does not support the conclusion
+    t3_headline_neutral: "How history relates to styles new to them and releases"  # tab 3 headline when the data does not support the conclusion
     t5_headline: "Both models beat the past-habits baseline"  # tab 5 headline, shown only when true
     t5_headline_neutral: "Results on years the models never saw"  # tab 5 headline otherwise
     t5_sub: "Test years {first} to {last}, never used to train the models."  # tab 5 subtitle
-    t5_info: "PR-AUC: how well the model finds the artists who do release or do bring a new style. Higher is better. Chance equals the share of yes cases."  # tooltip next to the subtitle
-    t5_line_timing: "Past habits: artists who release often keep releasing."  # visible line under the Timing panel title
-    t5_line_style: "Past habits: the usual rate for artists with a similar history and output."  # visible line under the Style panel title
+    t5_info: "PR-AUC: how well the model finds the artists who do release or do bring a style new to them. Higher is better. Chance equals the share of yes cases."  # tooltip next to the subtitle
+    t5_line_timing: "Past habits: guess that artists who released often will release again."  # visible line under the Timing panel title
+    t5_line_style: "Past habits: assume each artist keeps their usual rate of styles new to them."  # visible line under the Style panel title
     t5_advantage: "+{d} points over past habits"  # tag above the model bar, d = round(100 x (model minus past habits PR-AUC))
     t5_tt_name: "Bar"  # tab 5 bar tooltip: title of the bar name row
     t5_tt_score: "Score"  # tab 5 bar tooltip: title of the score row
     t5_tt_range: "{ci}% range"  # tab 5 bar tooltip: title of the interval row, ci from bootstrap.confidence
     t5_range_fmt: "{lo} to {hi}"  # tab 5 bar tooltip: interval text
     t5_tip_advantage: "Difference between the two scores, multiplied by 100."  # tooltip of the advantage tag
-    t5_caption: "Score: PR-AUC, higher is better."  # caption under the results chart
+    t5_caption: "Score: PR-AUC (0 to 1), higher is better."  # caption under the results chart
+    t5_caption_tip: "PR-AUC rewards a model for ranking the real cases first. 1 is perfect; the by-chance bar shows what random picking scores."  # tooltip next to the caption
     t5_col_rule: "Past habits"  # bar label of the baseline
-    t5_tip_chance: "Always guessing the average share of yes cases."  # tooltip of the By chance label
+    t5_tip_chance: "Always guessing the overall share of cases where the answer is yes."  # tooltip of the By chance label
     t5_tip_rule_timing: "Ranks artists only by how often they released per year of activity so far."  # Past habits, Timing
     t5_tip_rule_style: "Uses only the artist's number of earlier releases and their output this year."  # Past habits, Style
-    t5_tip_model: "Gradient boosting trees trained on each artist's history up to a past date."  # tooltip of the Our model label
+    t5_tip_model: "Gradient-boosted trees: many small decision trees, each one correcting the previous, trained on each artist's history up to a past date."  # tooltip of the Our model label
     t5_dot_left: "Picking at random"  # title of the left grid
-    t5_dot_right: "Its top picks"  # title of the right grid
+    t5_dot_right: "Rated highest"  # title of the right grid
     t5_dot_big: "{k}"  # big number under a grid
-    t5_dot_caption: "of {n} bring a new style"  # caption under the big number
-    t5_dot_head: "Of {n} artists it picks first, {k} bring a new style. Of {n} picked at random, {b}."  # headline above the dot card
-    t5_dot_sort: "The model sorts every artist from most to least likely to bring a new style."  # muted line at the top of the dot card
+    t5_dot_caption: "of {n} bring a style new to them"  # caption under the big number
+    t5_dot_head: "Of {n} artists it rates highest, {k} bring a style new to them. Of {n} picked at random, {b}."  # headline above the dot card
+    t5_dot_sort: "The model sorts every artist from most to least likely to bring a style new to them."  # muted line at the top of the dot card
     t5_strip_most: "Most likely"  # left end label of the strip
     t5_strip_least: "Least likely"  # right end label of the strip
-    t5_strip_top: "Its top picks: the first {s}% of the line"  # label of the highlighted segment
-    t5_dot_yes: "Brings a new style"  # circle state used by the chart
+    t5_strip_top: "Rated highest: the first {s}% of the line"  # label of the highlighted segment
+    t5_dot_yes: "Brings a style new to them"  # circle state used by the chart
     t5_dot_no: "Does not"  # circle state used by the chart
-    t5_dot_tip: "Exact share that bring a new style"  # tooltip title of a circle
+    t5_dot_tip: "Exact share that bring a style new to them"  # tooltip title of a circle
     t5_view_results: "Results"  # tab 5 view label
     t5_view_years: "Year by year"  # tab 5 view label
     t5_view_models: "Models compared"  # tab 5 view label
@@ -666,6 +674,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t5y_headline: "The model stays ahead of past habits in every test year."  # Year by year headline, shown only when true for both questions
     t5y_headline_neutral: "Results for each test year"  # Year by year headline otherwise
     t5y_line: "Each point is one test year, scored separately."  # muted line under the Year by year cards
+    t5y_note: "Style stops one year earlier: its answer is the year of the artist's next release, and releases from {year} on are still being filled in."  # muted note under the Year by year charts, year = last test year plus one
     t5y_tip_year: "Year"  # tooltip title of a point: test year
     t5y_tip_score: "Score"  # tooltip title of a point: score
     t5y_tip_line: "Line"  # tooltip title of a point: which line
@@ -678,19 +687,20 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t5m_tip_model: "Model"  # tooltip title: model name
     t5m_tip_score: "Average score"  # tooltip title: mean score
     t5m_x: "Average score"  # x axis title
+    t5m_chosen: "Highlighted: the model we chose."  # caption under the card title of a dot plot
     t5m_zoom: "The axis is zoomed in: small gaps look bigger than they are."  # muted caption under a dot plot whose axis does not start at zero
-    t5t_headline: "Its scores match how often things really happened."  # Can you trust headline, shown only when the highest Style bin gap is small
-    t5t_sub: "Of {n} artists it rated around {s}%, about {o} really brought a new style."  # subtitle, n from design.calibration.group_size, s and o from the highest Style bin, whole numbers
+    t5t_headline: "Its scores are close to what really happened."  # Can you trust headline, shown only when the highest Style bin gap is small
+    t5t_sub: "Of {n} artists it rated around {s}%, about {o} really brought a style new to them."  # subtitle, n from design.calibration.group_size, s and o from the highest Style bin, whole numbers
     t5t_read_title: "How to read it"  # title of the reading card
     t5t_read: "A forecast of {pct}% rain means it rains on about {days} days in {total}. The same here: group artists by the percentage the model gave them, and that share really happened."  # reading card text, numbers from design.calibration
     t5t_headline_neutral: "How the scores compare with what happened"  # Can you trust headline otherwise
     t5t_title: "Score against what happened"  # card title
-    t5t_tip: "Scores were checked on the test years, with no recalibration."  # tooltip of the card title
+    t5t_tip: "We did not adjust the scores after seeing the test years."  # tooltip of the card title
     t5t_x: "The model's score"  # x axis title
     t5t_y: "How often it really happened"  # y axis title
     t5t_perfect: "Perfect"  # label of the diagonal
     t5t_tip_point: "When the model says {score}%, it happened {observed}%"  # tooltip of a point, whole percentages
-    t5t_line: "Average gap between score and reality: {style} for Style, {timing} for Timing."  # muted line, gaps = singular or plural point text from summary.csv (round(100 x ECE))
+    t5t_gap_title: "Average gap between score and reality"  # title of the gaps card, followed by the Style and Timing gaps as big numbers (singular or plural point text from summary.csv, round(100 x ECE))
     t5t_note: "Timing scores run a little too confident at the extremes."  # second muted line, shown only when the highest Timing bin gap is above design.calibration.note_gap
   tab3_series:  # the two charts of tab 3, in order
     - {key: style, file: h1_buckets, bucket: bucket, rate: new_style_rate, count: transitions, hypothesis: H1, title: t3_card_style, line: t3_line_style}  # Style card
@@ -702,11 +712,11 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     h3_gap_pause: "11+"  # year-gap bucket named in the H3 answer
     h3_gap_none: "0"  # year-gap bucket of no pause
     items:  # per hypothesis: plain question, answer template, effect measure, short label of the chart
-      H1: {question: "Do artists with a long catalogue try fewer new styles?", answer: "Yes. With 3 to 5 earlier releases, {first} bring a new style. With 51 or more, {last}.", measure: "Cramer's V", short_label: "Catalogue size"}  # values from h1_buckets.csv
-      H2: {question: "Does the genre change how often artists try new styles?", answer: "Yes. Among artists with a short history, {a} of electronic artists try a new style, against {b} of folk and country artists.", measure: "Cramer's V", short_label: "Genre"}  # a, b from the 3-5 group of the H2 test
-      H3: {question: "Does a long pause before a release mean a new style?", answer: "A little. After a pause of 11 years or more, {a} bring a new style. With no pause, {b}.", measure: "rank-biserial", short_label: "Pause before a release"}  # a, b from the year-gap buckets
+      H1: {question: "Do artists with a long catalogue try fewer styles new to them?", answer: "Yes. With 3 to 5 earlier releases, {first} bring a style new to them. With 51 or more, {last}.", measure: "Cramer's V", short_label: "Catalogue size"}  # values from h1_buckets.csv
+      H2: {question: "Does the genre change how often artists try styles new to them?", answer: "Yes. Among artists with a short history, {a} of electronic artists try a style new to them, against {b} of folk and country artists.", measure: "Cramer's V", short_label: "Genre"}  # a, b from the 3-5 group of the H2 test
+      H3: {question: "Does a long pause before a release mean a style new to them?", answer: "A little. After a pause of 11 years or more, {a} bring a style new to them. With no pause, {b}.", measure: "rank-biserial", short_label: "Pause before a release"}  # a, b from the year-gap buckets
       H4: {question: "Do artists who already tried many styles keep trying new ones?", answer: "Not by itself. It only shows when we compare artists with a similar number of releases.", measure: "Cramer's V", short_label: "Styles already tried"}  # no placeholders
-      H5: {question: "Do artists with undated releases behave differently?", answer: "They bring fewer new styles ({a} against {b}), but the difference mostly disappears when we compare artists with similar catalogues.", measure: "Cramer's V", short_label: "Undated releases"}  # a undated, b dated
+      H5: {question: "Do artists with undated releases behave differently?", answer: "They bring fewer styles new to them ({a} against {b}), but the difference mostly disappears when we compare artists with similar catalogues.", measure: "Cramer's V", short_label: "Undated releases"}  # a undated, b dated
       H6: {question: "Does a long silence mean no release next year?", answer: "Yes. One year after the last release, {first} release again the next year. After 10 years or more, {last}.", measure: "Cramer's V", short_label: "Silence since the last release"}  # values from h6_buckets.csv
 design:  # visual system of the demo: the only place for colors, type scale and chart settings
   palette:  # hex values; .streamlit/config.toml must equal background, card, text, line, timing (a test checks it)
@@ -721,6 +731,8 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     chance: "#C9C4B8"  # By chance bar
     rule: "#8A8578"  # Past habits bar
     highlight: "#C98A12"  # accent for emphasis
+    style_text: "#B83A20"  # darker Style color for small text only (contrast 5.7 on cards, the plain color is 4.3)
+    highlight_text: "#8A5C00"  # darker highlight for small text only (contrast 5.8 on cards, the plain color is 3.0)
   shadow: "none"  # cards have a thin border and no shadow
   font:  # typefaces, self-hosted; .streamlit/config.toml must name the same two families and files (a test checks it)
     heading: "Fraunces"  # serif headlines and big numbers (weights 500 and 600)
@@ -787,7 +799,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     example_days: 6  # days of rain in the reading card example
     example_total: 10  # days in the reading card example
     note_gap: 0.02  # gap of the top Timing bin above which the "too confident" note is shown
-  photo: {width: 200, height: 206, content_weight: 430, card_height: 262, radius: 4, focus: "50% 20%", name_font: 22, question_font: 16, monogram_font: 64, monogram_opacity: 0.25, credit_font: 10, credit_line: 12, credit_margin: 6, credit_opacity: 1, bottom_pad: 16}  # tab 1 artist card (credit_font, credit_line and credit_margin in px for the one-line credit under the photo, credit_opacity of the muted credit text, bottom_pad px under the credit line, equal to the space above the photo; the photo height is the card content height minus the credit line and margin): photo column width and height, relative width of the content column, card height (px), corner radius (px), object-position of the photo, name and question sizes (px), monogram size (px) and background opacity
+  photo: {width: 200, height: 206, content_weight: 430, card_height: 316, question_extra: 52, radius: 4, focus: "50% 20%", name_font: 22, question_font: 16, monogram_font: 64, monogram_opacity: 0.25, credit_font: 10, credit_line: 12, credit_margin: 6, credit_opacity: 1, bottom_pad: 16}  # tab 1 artist card (credit_font, credit_line and credit_margin in px for the one-line credit under the photo, credit_opacity of the muted credit text, bottom_pad px under the credit line, equal to the space above the photo; the photo height is the card content height minus the credit line and margin): photo column width and height, relative width of the content column, card height (px), corner radius (px), object-position of the photo, name and question sizes (px), monogram size (px) and background opacity
   story:  # tab 1 timeline marker
     big_font: 26  # px of the big "{k} in {n}" of the tab 1 card 3, small enough for "60 in 100" to stay on one line at 1280 px
     marker_below: 6  # px the "You are here" marker continues below the timeline line, so it stops above the year labels
@@ -795,12 +807,13 @@ design:  # visual system of the demo: the only place for colors, type scale and 
   chart:  # Altair settings
     height_years: 260  # Year by year chart height in px
     height_models: 230  # Models compared chart height in px
-    calibration_side: 400  # side of the square reliability chart in px
+    calibration_height: 320  # height of the wide reliability chart in px (the width follows the card, about two to one at 1280 px); the axes stay equal, 0 to 100% both
     point_size: 90  # point area of the depth charts
     thin_line: 1  # thin connecting line and whisker width in px
     axis_pad: 0.15  # share of the value range kept free around the points of the depth charts
     theme_name: demo_paper  # registered theme name
-    height_results: 280  # tab 5 chart height in px
+    height_results: 310  # tab 5 chart height in px, the bars fill the card down to the caption
+    tag_row: 6  # distance of the advantage tag from the top of the plot area in px, one fixed row under the subtitle
     strength_axis_max: 0.5  # Six tests chart axis maximum; all six effect sizes are below it (a test checks it)
     strength_axis_step: 0.1  # Six tests chart axis step, ticks and grid lines sit at multiples of it
     height_strength: 300  # Six tests chart height in px
@@ -821,6 +834,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     tag_dx: 36  # horizontal shift of the advantage tag, px
     tag_dy: 28  # lift of the advantage tag above the value label, px
     y_headroom: 1.15  # share of the top value kept free above the bars
+    subtitle_wrap: 42  # characters per line of a results panel subtitle
     dot_cell: 15  # width and height of one circle cell in px
     dot_fill: 0.7  # circle diameter as a share of its cell
     dot_wrap: 24  # characters per line of a grid title

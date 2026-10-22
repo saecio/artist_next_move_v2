@@ -1,0 +1,3 @@
+# Copied by hand from results/style_forecast/test_20261015_173215.out, lines 9 to 11 (hits@10 mean over the 5 test years 2018 to 2022 and 95% interval, bootstrap over years, 2,000 draws, seed 1, row random). Not produced by code.
+method,mean,low,high
+random,0.42,0.41,0.43

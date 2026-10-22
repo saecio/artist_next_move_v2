@@ -30,8 +30,13 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f".ui-card-title{{font-size:{ty['subtitle']}px;font-weight:600;color:{c['text']};margin-bottom:{b['gap']}px;text-align:left}}",  # card title
         f".ui-big{{font-size:{fluid(ty['big'], 0.64, 5)};font-family:{head_font};letter-spacing:{ty['head_tracking']};font-weight:600;line-height:1.1}}",  # big number
         f".ui-label{{color:{c['muted']}}}",  # label color
+        f"#vg-tooltip-element{{font-family:{body_font} !important;font-size:{ty['label']}px !important;background:{c['card']} !important;color:{c['text']} !important;border:1px solid {c['line']} !important;border-radius:{b['radius']}px !important;box-shadow:none !important}}",  # the hover box of every Altair chart (one shared element)
+        f"#vg-tooltip-element td.key{{vertical-align:top !important;text-align:left !important;padding-right:{b['gap']}px !important;white-space:nowrap !important;color:{c['muted']} !important}}",  # labels: top aligned, left, one line
+        f"#vg-tooltip-element td.value{{vertical-align:top !important;text-align:left !important}}",  # values start at the same line as their label
+        f".ui-read{{font-size:{ty['label']}px;color:{c['text']};line-height:1.5}}",  # sentence-case text in the body font (the reading card of tab 5)
         f".ui-caption{{font-size:{ty['caption']}px;color:{c['muted']}}}",  # caption
         f".ui-kpi{{margin-top:{b['gap']}px}}",  # one number block
+        f".ui-kpi .ui-eyebrow{{min-height:{ty['eyebrow'] * 2}px}}",  # same label line height in the three story cards, with or without the tooltip icon
         f".ui-halves{{display:flex;gap:{cfg['static_tabs']['story']['pair_gap']}px}}",  # the two halves of the third story card
         f".ui-chip{{display:inline-block;max-width:100%;border:{b['border']}px solid;border-radius:{ch['radius']}px;padding:{ch['pad_v']}px {ch['pad_h']}px;font-size:{ch['font']}px;text-transform:uppercase;letter-spacing:{ty['eyebrow_tracking']};color:{c['text']};background:transparent}}",  # rectangular chip, border color inline
         f".ui-chips{{display:flex;flex-wrap:wrap;gap:{b['gap'] // 2}px;margin-top:{b['gap']}px;align-items:center}}",  # row of chips
@@ -52,7 +57,7 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f".ui-strip-top-label{{font-size:{ty['caption']}px;margin-top:{d['strip']['gap']}px}}",  # label of the highlighted segment, color inline
         f".ui-flow{{display:flex;flex-direction:column;align-items:center}}",  # flow card, boxes and arrows in a column
         f".ui-flow-row{{display:flex;gap:{b['gap']}px;width:100%}}",  # the two inputs side by side
-        f".ui-flow-box{{flex:1;box-sizing:border-box;border:{b['border']}px solid;border-radius:{b['radius']}px;padding:{d['flow']['box_pad']}px;text-align:center;background:{c['background']}}}",  # one box, border color inline, centered by design (a diagram)
+        f".ui-flow-box{{flex:1;box-sizing:border-box;border:{b['border']}px solid;border-radius:{b['radius']}px;padding:{d['flow']['box_pad']}px;text-align:center;background:{c['background']};display:flex;flex-direction:column;justify-content:center}}",  # one box, content centred vertically, border color inline, centered by design (a diagram)
         f".ui-flow>.ui-flow-box{{width:60%;flex:none}}",  # single boxes narrower than the input row
         f".ui-flow-count{{font-size:{fluid(d['flow']['count_font'], 0.7, 4)};font-family:{head_font};letter-spacing:{ty['head_tracking']};font-weight:600;line-height:1.2}}",  # count in a box
         f".ui-flow-arrow{{position:relative;width:{d['flow']['arrow_width']}px;height:{d['flow']['arrow_len']}px;background:{c['muted']};margin-bottom:{d['flow']['arrow_head']}px}}",  # arrow shaft
@@ -75,11 +80,21 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f"[data-testid='stAlertContainer']{{border-left:3px solid {c['timing']} !important}}",  # left rule of an info (and success) alert in the Timing color
         f"[data-testid='stAlertContainer']:has([data-testid='stAlertContentWarning']){{border-left-color:{c['highlight']} !important}}",  # warning: highlight color
         f"[data-testid='stAlertContainer']:has([data-testid='stAlertContentError']){{border-left-color:{c['style']} !important}}",  # error: Style color
+        f".st-key-ui-fill [data-testid='stHorizontalBlock']{{align-items:stretch}}",  # keyed row: both columns as tall as the taller one
+        f".st-key-ui-fill [data-testid='stColumn']:last-child [data-testid='stElementContainer'],.st-key-ui-fill [data-testid='stColumn']:last-child [data-testid='stHtml']{{height:100%}}",  # the right blocks can fill the column
+        f".st-key-ui-fill [data-testid='stColumn']:last-child>[data-testid='stVerticalBlock']{{display:flex;flex-direction:column}}",  # the right column is a flex column
+        f".st-key-ui-fill [data-testid='stColumn']:last-child [data-testid='stElementContainer']{{flex:1 1 auto}}",  # its only element grows to the chart card height, so the chip ends on the card bottom edge
+        f".st-key-ui-fill [data-testid='stColumn']{{display:flex;flex-direction:column}}",  # columns as flex columns
+        f".st-key-ui-fill [data-testid='stColumn']>[data-testid='stVerticalBlock']{{flex:1 1 auto}}",  # the column content fills the column
+        f".st-key-ui-fill [data-testid='stColumn']>[data-testid='stVerticalBlock']>*{{flex:1 1 auto}}",  # chart card (left) and funnel card plus chip (right) take the full height
+        f".ui-fill-right>.ui-chips{{margin-top:auto !important;align-self:flex-start}}",  # chip pinned to the bottom edge, left aligned with the funnel card
+        f".ui-fill-right{{display:flex;flex-direction:column;gap:{b['gap']}px;height:100%}}",  # blocks one under the other, the last one at the bottom edge
+        f".ui-fill-right>.ui-card{{flex:1 1 auto}}",  # the card takes the spare height
         f".ui-scroll{{max-width:100%;overflow-x:auto}}",  # tables and schemas scroll inside their own box
         f"[data-testid='stVegaLiteChart'],[data-testid='stArrowVegaLiteChart']{{max-width:100%;overflow-x:auto}}",  # fixed-size charts scroll inside their own box
         f"@media (max-width:1023px){{[data-testid='stMainBlockContainer']{{padding-left:1.5rem !important;padding-right:1.5rem !important}}"  # tablet: less side padding
         f"[data-testid='stHorizontalBlock']{{flex-wrap:wrap}}[data-testid='stColumn']{{flex:1 1 calc(50% - 1rem) !important;min-width:calc(50% - 1rem) !important}}"  # tablet: at most two columns
-        f".ui-row{{flex-wrap:wrap}}.ui-row>.ui-card{{flex:1 1 calc(50% - {b['gap']}px)}}"  # tablet: at most two cards per row
+        f".ui-row{{flex-wrap:wrap}}.ui-row>.ui-card{{flex:1 1 calc(50% - {b['gap']}px)}}.ui-fill-right{{height:auto}}"  # tablet: at most two cards per row
         f".ui-halves{{flex-direction:column}}.ui-m-row{{grid-template-columns:{d['method']['label_w'] * 2 // 3}px 1fr}}}}",  # tablet: story halves stack, narrower run labels
         f"@media (max-width:639px){{[data-testid='stMainBlockContainer']{{padding-left:1rem !important;padding-right:1rem !important}}"  # phone: smallest side padding
         f"[data-testid='stColumn']{{flex:1 1 100% !important;min-width:100% !important}}"  # phone: one column

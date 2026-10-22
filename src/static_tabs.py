@@ -1,6 +1,7 @@
 """Static tabs 1 to 5 and 8: cached file loaders and the HTML of each tab. Texts and settings come from the static_tabs config."""
 
 import base64  # photo as a data URI
+from datetime import datetime  # dump date parsing
 import html  # escape of artist names
 import io  # in-memory image file
 import json  # result files of the Timing model and the stored card values
@@ -123,7 +124,7 @@ def credit_html(cfg: dict, name: str) -> str:  # credit line under the photo
         return ""  # no credit
     t, ph, pal = cfg["static_tabs"]["texts"], cfg["design"]["photo"], cfg["design"]["palette"]  # texts, photo settings and palette
     text = t["t1_credit"].format(author=row["author"], license=row["license"]) if filled("author") else t["t1_credit_noauthor"].format(license=row["license"])  # with or without the author
-    return f"<div class='ui-credit' title='{html.escape(text, quote=True)}' style='margin-top:{ph['credit_margin']}px;height:{ph['credit_line']}px;line-height:{ph['credit_line']}px;font-size:{ph['credit_font']}px;font-weight:400;color:{pal['muted']};opacity:{ph['credit_opacity']};white-space:nowrap;overflow:hidden;text-overflow:ellipsis'>{html.escape(text)}</div>"  # one line with ellipsis, left aligned
+    return f"<div class='ui-credit' title='{html.escape(text, quote=True)}' style='margin-top:{ph['credit_margin']}px;min-height:{ph['credit_line']}px;line-height:{ph['credit_line']}px;font-size:{ph['credit_font']}px;font-weight:400;color:{pal['muted']};opacity:{ph['credit_opacity']};overflow-wrap:anywhere'>{html.escape(text)}</div>"  # wraps instead of truncating, left aligned
 
 
 def tab1_panels(cfg: dict) -> list:  # the two story cards
@@ -153,10 +154,11 @@ def tab1_kpis_html(cfg: dict) -> str:  # story strip of tab 1
     one = kpi_card(t["t1_s1_label"], t["t1_s1_big"].format(millions=f"{int(fig['works']) / 1e6:.1f}"), t["t1_s1_sub"].format(artists=f"{int(fig['artists']):,}", y0=years.min(), y1=years.max()), pal["highlight"], t["t1_s1_tip"].format(date=sc["dump_date"]))  # Works card
     two = kpi_card(t["t1_s2_label"], str(len(sc["models_compared"])), t["t1_s2_sub"].format(tests=f"{int(tests):,}"), pal["highlight"], t["t1_tip_models"].format(names=", ".join(sc["models_compared"])))  # models card
     halves = story_halves(cfg)  # Timing and Style numbers
+    small = {pal["style"]: pal["style_text"], pal["highlight"]: pal["highlight_text"]}  # darker variants for small text
     n = sc["sizes"]["dots_side"] ** 2  # artists per group
     cards = [one, two]  # always shown
     if all(k > b for _, _, _, k, b in halves):  # model above random in both halves
-        half = lambda lab, color, cap, k, b, tip="": f"<div style='flex:1;min-width:0'><div class='ui-label' style='color:{color}'>{html.escape(lab)}{tip}</div><div class='ui-big' style='color:{color};font-size:clamp({round(cfg['design']['story']['big_font'] * 0.75)}px,2.2vw,{cfg['design']['story']['big_font']}px);white-space:nowrap'>{html.escape(t['t1_s3_big'].format(k=k, n=n))}</div><div class='ui-caption' style='color:{color}'>{html.escape(cap)}</div><div class='ui-caption'>{html.escape(t['t1_s3_blind'].format(b=b, n=n))}</div></div>"  # one half
+        half = lambda lab, color, cap, k, b, tip="": f"<div style='flex:1;min-width:0'><div class='ui-label ui-eyebrow' style='color:{small.get(color, color)}'>{html.escape(lab)}{tip}</div><div class='ui-big' style='color:{color};font-size:clamp({round(cfg['design']['story']['big_font'] * 0.75)}px,2.2vw,{cfg['design']['story']['big_font']}px);white-space:nowrap'>{html.escape(t['t1_s3_big'].format(k=k, n=n))}</div><div class='ui-caption' style='color:{small.get(color, color)}'>{html.escape(cap)}</div><div class='ui-caption'>{html.escape(t['t1_s3_blind'].format(b=b, n=n))}</div></div>"  # one half
         cards.append(f"<div class='ui-kpi'><div class='ui-halves'>{''.join(half(*h, tip=info(t['t1_s3_tip'].format(s=top_share(cfg)[1], y_from=y['holdout_start'], y_to=y['holdout_end'])) if i == 0 else "") for i, h in enumerate(halves))}</div></div>")  # parallel halves, the tooltip sits by the label of the first half
     return "<div class='ui-row'>" + "".join(card(c) for c in cards) + "</div>"  # two or three equal cards
 
@@ -170,11 +172,16 @@ def tab2_headline_text(cfg: dict) -> str:  # headline text of tab 2
         return t["t2_headline"].format(peak_year=int(peak["year"]))  # conclusion
     return t["t2_headline_neutral"]  # fallback
 
+def dump_date_text(cfg: dict) -> str:  # dump date with the month name
+    """The dump date of the config (day-month-year) as "1 September 2026"."""
+    d = datetime.strptime(cfg["static_tabs"]["dump_date"], "%d-%m-%Y")  # parsed date
+    return f"{d.day} {d.strftime('%B')} {d.year}"  # day, English month name, year
+
 def tab2_head_html(cfg: dict) -> str:  # headline of tab 2
     """Headline and the dump date subtitle with its tooltip."""
     sc = cfg["static_tabs"]  # settings
     t = sc["texts"]  # texts
-    return headline(tab2_headline_text(cfg), t["t2_source"].format(date=sc["dump_date"]), t["t2_tip_sub"])  # block
+    return headline(tab2_headline_text(cfg), t["t2_source"].format(date=dump_date_text(cfg)), t["t2_tip_sub"])  # block
 
 def works_per_year(cfg: dict) -> pd.DataFrame:  # chart table of tab 2
     """Dated cleaned Works per year, from works_per_year.csv."""
@@ -194,7 +201,7 @@ def tab2_right_html(cfg: dict) -> str:  # right blocks of tab 2
     counts = {"master": f"{int(fig[rw['metric_master']]):,}", "standalone": f"{int(fig[rw['metric_standalone']]):,}", "works": f"{int(fig['works']):,}", "artists": f"{int(fig['artists']):,}"}  # flow numbers
     undated = int(load_csv(static_path(sc, "data_quality")).set_index("metric").loc["works_undated", "value"])  # Works without a year
     pct = f"{undated / int(fig['works']) * 100:.1f}"  # share in percent
-    return "<div class='ui-stack'>" + card(clean_flow(cfg, t, n, counts)) + "<div class='ui-chips' style='margin:0'>" + chip(t["t2_undated"].format(pct=pct), pal["muted"], t["t2_tip_undated"]) + "</div></div>"  # flow and chip
+    return "<div class='ui-fill-right'>" + card(clean_flow(cfg, t, n, counts)) + "<div class='ui-chips' style='margin:0'>" + chip(t["t2_undated"].format(pct=pct), pal["muted"], t["t2_tip_undated"]) + "</div></div>"  # flow and chip
 
 def final_models(cfg: dict) -> list:  # the three final-model tags of tab 4
     """Texts "Timing: X", "Style: X", "Style forecast (tab 7): X"; X is the models_compared entry that matches the name of the code building each final model."""
@@ -220,19 +227,19 @@ def tab8_html(cfg: dict) -> str:  # limits and next steps
     """Closing slide: three equal cards with a marker, a title and up to four items; numbers come from the tab 5 tags, the tab 1 card and the tab 7 test years."""
     from depth_views import models_data, trees_tie  # imported here because depth_views imports this module
     t, p = cfg["static_tabs"]["texts"], cfg["poc"]["texts"]  # texts and Timing / Style labels
-    v = validation_figures(cfg)  # tab 7 tested years: first, last, years
-    y = CONFIG["years"]  # test years
-    res = results_data(cfg)  # the table of tab 5, its advantage values are the tag numbers
-    d = res[res["d"].notna()].set_index("panel")["d"]  # advantage per panel, as shown in the tags
-    ct = cfg["static_tabs"]["calibration_targets"]  # summary target of each question
-    values = {"d1": d[p["label_timing"]], "d2": d[p["label_style"]], "ci": round(CONFIG["bootstrap"]["confidence"] * 100), "n": v["years"], "first": v["first"], "last": v["last"], "test_first": y["holdout_start"], "test_last": y["holdout_end"], "gap_style": cfg["poc"]["gap_text"][ct["style"]], "gap_timing": cfg["poc"]["gap_text"][ct["timing"]], "k": story_halves(cfg)[1][3], "n": cfg["static_tabs"]["sizes"]["dots_side"] ** 2}  # every placeholder of the items, the gaps come from the calibration summary
+    res = results_data(cfg)  # the table of tab 5, read by the closing block
+    tim, sty = story_halves(cfg)  # Timing and Style numbers of the tab 1 third card: label, color, caption, top picks, random
+    n = cfg["static_tabs"]["sizes"]["dots_side"] ** 2  # artists per group
+    values = {"n": n, "t": tim[3], "tb": tim[4], "s": sty[3], "sb": sty[4], "m": n - sty[3]}  # every placeholder of the items
+    supported = {("works", 1): bool(panel_beats_rule(res, cfg).all()), ("works", 2): tim[3] > tim[4], ("works", 3): sty[3] > sty[4]}  # line 1 needs the model clearly above past habits, lines 2 and 3 the highest-rated artists above random picking
     cards = ""  # html of the three cards
     for key in ("works", "mind", "next"):  # left to right
-        texts = [t[f"t8_{key}_{i}"].format(**values) for i in range(1, 5) if f"t8_{key}_{i}" in t]  # items, as many as the config has (up to four)
+        texts = [t[f"t8_{key}_{i}"].format(**values) for i in range(1, 5) if f"t8_{key}_{i}" in t and supported.get((key, i), True)]  # items, as many as the config has (up to four)
         if key == "next" and not trees_tie(models_data(cfg), cfg):  # the tie claim is not supported by the data
             texts[0] = t["t8_next_1_plain"]  # first item without the tie clause
         items = "".join(f"<div class='ui-close-item'>{html.escape(x)}</div>" for x in texts)  # one-line items
-        cards += card(f"<div class='ui-close-title'><span class='ui-close-dot'></span>{html.escape(t[f't8_{key}_title'])}</div>{items}")  # one card
+        tip = info(t["t8_works_tip"]) if key == "works" else ""  # the What works title explains "highest rated" and "random"
+        cards += card(f"<div class='ui-close-title'><span class='ui-close-dot'></span>{html.escape(t[f't8_{key}_title'])}{tip}</div>{items}")  # one card
     return close_css(cfg) + "<div class='ui-stack'>" + headline(t["t8_headline"]) + f"<div class='ui-row'>{cards}</div>" + closing_html(cfg, res) + "</div>"  # page
 
 
@@ -391,7 +398,8 @@ def cards_table(cfg: dict) -> pd.DataFrame:  # rows of the Six tests chart
     d = d.sort_values("effect_size", ascending=False).reset_index(drop=True)  # strongest first
     d["answer_text"] = [a.format(**json.loads(v)) for a, v in zip(d["answer"], d["values"])]  # placeholders filled
     d["strength_text"] = [f"{e:.2f} ({m})" + (" " + sc["texts"]["t3s_tip_h3"] if i == "H3" else "") for e, m, i in zip(d["effect_size"], d["effect_measure"], d["id"])]  # strength with its measure, H3 adds the rank test sentence
-    d["color"] = [pal["timing" if i == "H6" else "style"] for i in d["id"]]  # timing color for H6, style color for the others
+    d["color"] = pal["muted"]  # every bar neutral
+    d.loc[0, "color"] = pal["highlight"]  # the strongest bar (first row) in the highlight color
     return d  # one row per hypothesis
 
 def tab3s_head_html(cfg: dict) -> str:  # headline and muted line of the Six tests view

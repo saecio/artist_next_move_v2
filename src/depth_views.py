@@ -8,7 +8,7 @@ import pandas as pd  # tables
 from config import CONFIG  # project settings
 from static_charts import register_theme  # shared light paper theme
 from static_tabs import load_csv, load_json, static_path  # cached readers
-from ui_components import card_title, chip, headline  # design system helpers
+from ui_components import card, card_title, chip, headline  # design system helpers
 
 
 def pad_domain(values: pd.Series, pad: float) -> list:  # axis range around the data
@@ -143,7 +143,7 @@ def models_charts(d: pd.DataFrame, cfg: dict) -> list:  # one dot plot per quest
         dots["color"] = [color if m == sc["final_model"] else pal["rule"] for m in dots["model"]]  # final model highlighted
         rule = part[part["model"] == t["t5_col_rule"]]  # past habits row
         dom = models_domain(part, cfg)  # x range
-        x = alt.X("mean_score:Q", title=t["t5m_x"], scale=alt.Scale(domain=dom))  # score axis
+        x = alt.X("mean_score:Q", title=t["t5m_x"], scale=alt.Scale(domain=dom), axis=alt.Axis(tickCount=5))  # score axis
         tip = [alt.Tooltip("model:N", title=t["t5m_tip_model"]), alt.Tooltip("score_txt:N", title=t["t5m_tip_score"]), alt.Tooltip("range_txt:N", title=t["t5_tt_range"].format(ci=round(100 * CONFIG["bootstrap"]["confidence"])))]  # model, mean score, range
         points = alt.Chart(dots).mark_point(filled=True, size=ch["point_size"], opacity=1).encode(x=x, y=alt.Y("model:N", sort=list(dots["model"]), title=None), color=alt.Color("color:N", scale=None), tooltip=tip)  # one dot per model
         line = alt.Chart(rule).mark_rule(strokeDash=[4, 4], color=pal["rule"], strokeWidth=ch["line_width"]).encode(x=x, tooltip=[alt.Tooltip("model:N", title=t["t5m_tip_model"]), alt.Tooltip("score_txt:N", title=t["t5m_tip_score"])])  # dashed past habits line
@@ -191,18 +191,41 @@ def trust_read_html(cfg: dict) -> str:  # title and text of the reading card
     """Reading card content: the weather example, numbers from design.calibration."""
     t, cal = cfg["static_tabs"]["texts"], cfg["design"]["calibration"]  # texts, example numbers
     text = t["t5t_read"].format(pct=cal["example_pct"], days=cal["example_days"], total=cal["example_total"])  # example sentence
-    return f"<div class='ui-card-title'>{html.escape(t['t5t_read_title'])}</div><div class='ui-label'>{html.escape(text)}</div>"  # title and text
+    return f"<div class='ui-card-title'>{html.escape(t['t5t_read_title'])}</div><div class='ui-read'>{html.escape(text)}</div>"  # title and text in body style
 
 
-def trust_lines_html(cfg: dict, d: pd.DataFrame) -> str:  # muted lines of the calibration view
-    """Average gap line, and the Timing note when the highest Timing bin gap is above design.calibration.note_gap."""
+def trust_right_html(cfg: dict, d: pd.DataFrame) -> str:  # the three blocks of the right column
+    """How to read it, the two average gaps as big numbers (Style, Timing) and, when the highest Timing bin gap is above design.calibration.note_gap, the Timing note; stacked, filling the height of the chart card."""
     t, p, gaps = cfg["static_tabs"]["texts"], cfg["poc"]["texts"], cfg["poc"]["gap_text"]  # texts, labels, gap texts
-    targets = cfg["static_tabs"]["calibration_targets"]  # question -> summary target
-    lines = [t["t5t_line"].format(style=gaps[targets["style"]], timing=gaps[targets["timing"]])]  # average gap line
+    targets, pal = cfg["static_tabs"]["calibration_targets"], cfg["design"]["palette"]  # question -> summary target, palette
+    big = lambda target, label, color: f"<div class='ui-trust-gap'><div class='ui-big' style='color:{color}'>{html.escape(gaps[targets[target]])}</div><div class='ui-label'>{html.escape(label)}</div></div>"  # one gap with its word under it
+    blocks = [f"<div class='ui-card'>{trust_read_html(cfg)}</div>", card(f"<div class='ui-trust-gaps'>{big('style', p['label_style'], pal['style'])}{big('timing', p['label_timing'], pal['timing'])}</div>", t["t5t_gap_title"])]  # reading card, gaps card
     if bin_gap(top_bin(d, p["label_timing"])) > cfg["design"]["calibration"]["note_gap"]:  # Timing runs off at the top
-        lines.append(t["t5t_note"])  # second line
-    return "".join(f"<div class='ui-caption'>{html.escape(x)}</div>" for x in lines)  # muted lines
+        blocks.append(f"<div class='ui-card ui-trust-note'><div class='ui-read'>{html.escape(t['t5t_note'])}</div></div>")  # note card
+    return f"<div class='ui-trust-right'>{''.join(blocks)}</div>"  # three stacked blocks
 
+def trust_css(cfg: dict) -> str:  # style rules of the Can you trust view
+    """Rules prefixed ui-trust-: equal height columns, the chart as wide as its card (about two to one), the right blocks stacked; below 1024 px the right blocks go under the chart."""
+    d = cfg["design"]  # design settings
+    c, b, ch = d["palette"], d["box"], d["chart"]  # palette, box and chart settings
+    rules = [  # one rule per element
+        f".st-key-ui-trust [data-testid='stHorizontalBlock']{{align-items:stretch}}",  # both columns as tall as the taller one
+        f".st-key-ui-trust [data-testid='stColumn']:last-child [data-testid='stElementContainer'],.st-key-ui-trust [data-testid='stColumn']:last-child [data-testid='stHtml']{{height:100%}}",  # the right blocks can fill the column
+        f".ui-trust-right{{display:flex;flex-direction:column;gap:{b['gap']}px;height:100%}}",  # three blocks with a gap
+        f".st-key-ui-trust [data-testid='stColumn']{{display:flex;flex-direction:column}}",  # columns as flex columns
+        f".st-key-ui-trust [data-testid='stColumn']>[data-testid='stVerticalBlock']{{flex:1 1 auto}}",  # the column content fills the column
+        f".st-key-ui-trust [data-testid='stColumn']>[data-testid='stVerticalBlock']>*{{flex:1 1 auto}}",  # the card (left) and the blocks (right) take the full height, so both end on the same edge
+        f".ui-trust-right>.ui-card{{flex:1 1 auto}}",  # the blocks share the height
+        f".st-key-ui-trust [data-testid='stColumn']:last-child>[data-testid='stVerticalBlock']{{display:flex;flex-direction:column}}",  # the right column is a flex column
+        f".st-key-ui-trust [data-testid='stColumn']:last-child [data-testid='stElementContainer']{{flex:1 1 auto}}",  # its only element grows to the chart card height
+        f".ui-trust-gaps{{display:flex;justify-content:space-around;gap:{b['gap'] * 2}px;flex-wrap:wrap}}",  # the two big numbers side by side
+        f".ui-trust-gap{{text-align:center}}",  # a number with its word under it
+        f".ui-trust-note{{border-left:3px solid {c['highlight']}}}",  # note card with a left rule in the highlight color
+        f".st-key-ui-trust-chart [data-testid='stVegaLiteChart']{{width:100%;height:min({ch['calibration_height']}px,calc(100vh - 430px)) !important;min-height:220px}}",  # wide plot that fills the card width
+        f".st-key-ui-trust-chart .vega-embed{{width:100%;height:100%}}",  # the chart fills its box
+        f"@media (max-width:1023px){{.st-key-ui-trust [data-testid='stColumn']{{flex:1 1 100% !important;min-width:100% !important}}.ui-trust-right{{height:auto}}}}",  # tablet and phone: the right blocks under the chart
+    ]
+    return "<style>" + "".join(rules) + "</style>"  # the style element
 
 def trust_legend_html(cfg: dict) -> str:  # chips of the reliability chart
     """Timing, Style and Perfect chips."""
@@ -212,7 +235,7 @@ def trust_legend_html(cfg: dict) -> str:  # chips of the reliability chart
 
 
 def trust_chart(d: pd.DataFrame, cfg: dict) -> alt.LayerChart:  # reliability chart
-    """Dashed diagonal, per question a thin line through ten points with Wilson whiskers; equal axes from 0 to 1."""
+    """Dashed diagonal, per question a thin line through ten points with Wilson whiskers; equal axes from 0 to 1 in a wide plot."""
     register_theme(cfg)  # shared theme
     t, pal, ch = cfg["static_tabs"]["texts"], cfg["design"]["palette"], cfg["design"]["chart"]  # texts, palette, chart settings
     scale = alt.Scale(domain=[0, 1])  # same range on both axes
@@ -226,8 +249,7 @@ def trust_chart(d: pd.DataFrame, cfg: dict) -> alt.LayerChart:  # reliability ch
     line = base.mark_line(strokeWidth=ch["thin_line"]).encode(detail="question:N", order="bin:Q")  # thin connecting line
     whisk = base.mark_rule(strokeWidth=ch["thin_line"]).encode(y=alt.Y("ci_low:Q", scale=scale), y2="ci_high:Q", tooltip=tip)  # Wilson interval
     points = base.mark_point(filled=True, size=ch["point_size"], opacity=1).encode(tooltip=tip)  # the ten points
-    side = ch["calibration_side"]  # square size
-    return alt.layer(diag, line, whisk, points).properties(width=side, height=side)  # chart
+    return alt.layer(diag, line, whisk, points).properties(width="container", height="container")  # chart that fills its square box
 
 
 def trust_title_html(cfg: dict) -> str:  # card title with the tooltip

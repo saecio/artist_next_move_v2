@@ -146,7 +146,9 @@ def inputs_css(cfg: dict) -> str:  # style rules of the tab 4 inputs view
     rules = [  # one rule per element
         f".ui-in-top{{display:flex;flex-wrap:wrap;align-items:center;gap:{b['gap']}px}}",  # chip next to the question
         f".ui-in-q{{font-size:{ty['label']}px;color:{c['muted']}}}",  # question line under the card title
-        f".ui-in-row{{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:{b['gap']}px;align-items:center;padding:{b['gap'] // 2}px 0;border-top:1px solid {c['line']}}}",  # family and its example values
+        f".ui-in-row{{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:{b['gap']}px;align-items:center;padding:{b['gap'] // 2}px 0;min-height:{cfg['static_tabs']['inputs']['row_min']}px;box-sizing:border-box;border-top:1px solid {c['line']}}}",  # family and its example values
+        ".ui-row:has(.ui-in-row)>.ui-card{display:flex;flex-direction:column}",  # the two cards have the same height, the row of a card fills it
+        ".ui-in-row{flex:1 1 0}",  # family rows share the card height equally, so each row has the same height in both cards
         f".ui-in-fam{{display:flex;align-items:center;gap:{b['gap'] // 2}px;font-weight:600}}",  # family name and its count chip
         f".ui-in-vals{{font-size:{ty['caption']}px;color:{c['muted']};min-width:0}}",  # example values
         f"@media (max-width:639px){{.ui-in-row{{grid-template-columns:minmax(0,1fr)}}}}",  # phone: values under the family

@@ -330,7 +330,7 @@ def check_year_end() -> None:  # test 11
     cells_by_artist = artist_cells(at)  # artist cells after Predict
     for _, r in ref.iterrows():  # every artist with a row
         row = rows1[r["name"]]  # its row
-        assert row.count(html.escape(tx["pill_two"].format(n=g["second_horizon"]))) == int(r["show2"]) and row.count(html.escape(tx["pill_next"])) == 1, f"{r['name']}: the 2-year pill must show only when the next year or the 2-year verdict is No"  # cascade rule
+        assert row.count(html.escape(tx["pill_two"].format(n=g["second_horizon"]))) == int(r["show2"]) and row.count(html.escape(tx["pill_next"])) == 0, f"{r['name']}: the 2-year pill must show only when the next year or the 2-year verdict is No"  # cascade rule
         cell = cells_by_artist[r["name"]]  # artist cell of the row
         assert (tag_text(rt["year"]) in cell) == bool(r["is_year_end"]) and ("poc-sub" in cell) == bool(r["is_year_end"]) and (not r["is_year_end"] or (cfg["poc"]["texts"]["likely"] in row or cfg["poc"]["texts"]["not_likely"] in row) == (ye_state(r["artist_id"], rt["year"]) != "needs_three")), f"{r['name']}: the year-end tag belongs to year-end rows only and a year-end row has a WHAT pill exactly when it has a stored score"  # tag under the artist and WHAT pill
     at = go(at, "reveal")  # Show reality
@@ -346,7 +346,7 @@ def check_year_end() -> None:  # test 11
             assert want_cell in html.unescape(row), f"{r['name']}: the WHAT reality carries the title and the year of the release: {want_cell}"  # year of the release
         n_marks = len(re.findall(r"<span class='poc-mark ", row))  # marks of the row
         assert n_marks == 1 + int(r["show2"]) + 1, f"{r['name']}: one mark per pill shown plus the WHAT mark, got {n_marks}"  # marks count
-        assert row.count(html.escape(tx["pill_two"].format(n=g["second_horizon"]))) == 2 * int(r["show2"]), f"{r['name']}: the 2-year reality follows the 2-year pill"  # same structure in the reality cell
+        assert row.count(html.escape(tx["pill_two"].format(n=g["second_horizon"]))) == 3 * int(r["show2"]), f"{r['name']}: the 2-year reality and the 2-year result line follow the 2-year pill"  # prediction, reality and result cells
     table = pd.read_csv(ROOT / "results/demo/route_table_year_end.csv")  # extended route table
     t = table[(table["year"] == rt["year"]) & table["artist_id"].isin(rt["artists"])]  # the prepared artists in the route year
     show2 = (t["verdict_1y"] == "no") | (t["verdict_2y"] == "no")  # rows with the second pill
@@ -383,7 +383,7 @@ def check_titles() -> None:  # test 13
     first = re.findall(r"<th[^>]*>(.*?)</th>", rows_head[0])  # first header row: artist, two group headers, result
     second = re.findall(r"<th>(.*?)</th>", rows_head[1])  # second header row: prediction and reality twice
     assert first == [html.escape(tx[c]) for c in ("col_artist", "col_timing", "col_style", "col_result")] and second == [html.escape(tx[c]) for c in ("col_prediction", "col_reality") * 2], f"the two header rows are not the expected ones: {first} {second}"  # new wording
-    assert (tx["col_timing"], tx["col_style"]) == ("Release next year?", "New style next release?"), "header words"  # requested wording
+    assert (tx["col_timing"], tx["col_style"]) == ("Release next year?", "Style new to the artist next release?"), "header words"  # requested wording
     assert f"title='{html.escape(tx['col_style_tip'], quote=True)}'" in table_html(at) and tx["col_style_tip"] == "About the next release, whenever it comes. Separate from the first question.", "the style header has its tooltip"  # header tooltip
     assert "Release" not in first + second and "col_release" not in tx, "the Release column must be gone"  # no Release column
     limit, shown_title, shown_cut = rt["title_max_chars"], 0, 0  # title limit and counters

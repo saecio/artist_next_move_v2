@@ -14,13 +14,13 @@ from app_data import (  # noqa: E402  data access functions
 )  # close the import
 from app_live import artist_timeline, load_tables  # noqa: E402  live data layer
 from config import CONFIG  # noqa: E402  project settings
-from style_tab import forecast_table, mark_for, style_summary, style_years, validation_figures, with_reality, year_status  # noqa: E402  tab 7 logic
+from style_tab import style_subtitle, forecast_table, mark_for, style_summary, style_years, validation_figures, with_reality, year_status  # noqa: E402  tab 7 logic
 from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reliability_lines, route_for_year, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
 from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, open_year_text, star_in_row, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
 from static_charts import results_chart, strength_chart, works_chart  # noqa: E402  Altair charts of tabs 2, 3 and 5
 from static_tabs import dots_html, dots_panels, strip_html, results_data, tab1_head_html, tab1_kpis_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2c_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab4i_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
-from depth_views import legend_html, models_charts, models_data, models_head_html, models_note_html, models_title_html, reliability_data, trust_chart, trust_head_html, trust_legend_html, trust_read_html, trust_lines_html, trust_title_html, year_data, years_charts, years_head_html  # noqa: E402  depth views of tab 5
-from ui_components import accent_key, base_css, header_html, headline  # noqa: E402  design system
+from depth_views import legend_html, models_charts, models_data, models_head_html, models_note_html, models_title_html, reliability_data, trust_chart, trust_head_html, trust_legend_html, trust_css, trust_right_html, trust_title_html, year_data, years_charts, years_head_html  # noqa: E402  depth views of tab 5
+from ui_components import accent_key, base_css, header_html, headline, info  # noqa: E402  design system
 from demo_game import (  # noqa: E402  pure game functions
     hidden_counts, new_state, next_year, scored_years, scoreboard, session_total,  # imported names
 )  # close the import
@@ -85,7 +85,7 @@ with tabs[0]:  # Problem and question
         with col, st.container(border=True, height=cfg["design"]["photo"]["card_height"], key=accent_key(q, "t1")):  # card of equal height
             pic, body = st.columns([cfg["design"]["photo"]["width"], cfg["design"]["photo"]["content_weight"]])  # photo column and content
             pic.html(panel["photo"])  # photo or monogram, the hero
-            body = body.container(height=cfg["design"]["photo"]["height"], border=False)  # right column exactly as tall as the photo, so the question ends on the photo bottom line
+            body = body.container(height=cfg["design"]["photo"]["height"] + cfg["design"]["photo"]["question_extra"], border=False)  # right column as tall as the photo plus room for a second question line, so the question is never clipped
             body.html(panel["title"])  # artist name in the question color
             body.altair_chart(panel["chart"], theme=None, width="stretch")  # releases up to the cutoff
             body.html(panel["question"])  # the question of this artist
@@ -108,11 +108,12 @@ def render_tab2() -> None:  # body of the tab with view pills
                 st.html(parts["note"])  # years not shown
         else:  # Volume view
             st.html(tab2_head_html(cfg))  # headline and dump date
-            left, right = st.columns(sct["sizes"]["tab2_columns"])  # chart card and right blocks
-            with left, st.container(border=True):  # chart card
-                st.html(tab2_chart_title_html(cfg))  # title with tooltip
-                st.altair_chart(works_chart(works_per_year(cfg), cfg["design"]["incomplete_from_year"], {"incomplete": sct["texts"]["t2_incomplete"], "peak": sct["texts"]["t2_peak"], "band_tip": sct["texts"]["t2_band_tip"]}, cfg), theme=None, width="stretch")  # Works per year
-            right.html(tab2_right_html(cfg))  # numbers and cleaning schema
+            with st.container(key="ui-fill"):  # keyed row, the css matches it
+                left, right = st.columns(sct["sizes"]["tab2_columns"])  # chart card and right blocks
+                with left, st.container(border=True):  # chart card
+                    st.html(tab2_chart_title_html(cfg))  # title with tooltip
+                    st.altair_chart(works_chart(works_per_year(cfg), cfg["design"]["incomplete_from_year"], {"incomplete": sct["texts"]["t2_incomplete"], "peak": sct["texts"]["t2_peak"], "band_tip": sct["texts"]["t2_band_tip"]}, cfg), theme=None, width="stretch")  # Works per year
+                right.html(tab2_right_html(cfg))  # numbers and cleaning schema, stretched to the chart card
 
 with tabs[1]:  # Data and cleaning
     render_tab2()  # fragment of this tab
@@ -167,28 +168,30 @@ def render_tab5() -> None:  # body of the tab with view pills
             for col, chart, q in zip(st.columns(2), years_charts(years, cfg), ("timing", "style")):  # Timing and Style side by side
                 with col, st.container(border=True, key=accent_key(q, "t5y")):  # card
                     st.altair_chart(chart, theme=None, width="stretch")  # one line chart
-            st.html(f"<div class='ui-caption'>{html.escape(t5['t5y_line'])}</div>")  # muted line
+            st.html(f"<div class='ui-caption'>{html.escape(t5['t5y_line'])}</div><div class='ui-caption'>{html.escape(t5['t5y_note'].format(year=CONFIG['years']['holdout_end'] + 1))}</div>")  # muted line and the note on the shorter Style line
         elif view5 == t5["t5_view_models"]:  # Models compared view
             models = models_data(cfg)  # stored table
             st.html(models_head_html(cfg, models))  # headline, only when true
             for col, q, (question, chart) in zip(st.columns(2), ("timing", "style"), zip(models["question"].unique(), models_charts(models, cfg))):  # Timing and Style side by side
                 with col, st.container(border=True, key=accent_key(q, "t5m")):  # card
                     st.html(models_title_html(cfg, question))  # title with tooltip
+                    st.html(f"<div class='ui-caption'>{html.escape(t5['t5m_chosen'])}</div>")  # which dot is the chosen model
                     st.altair_chart(chart, theme=None, width="stretch")  # dot plot
                     if models_note_html(cfg, models, question):  # only when the axis does not start at zero
                         st.html(models_note_html(cfg, models, question))  # zoom caption
         elif view5 == t5["t5_view_trust"]:  # Can you trust the score? view
             rel = reliability_data(cfg)  # ten bins per question
             st.html(trust_head_html(cfg, rel))  # headline, only when true
-            left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_trust_columns"])  # chart card and the muted lines
-            with left, st.container(border=True):  # card
-                st.html(trust_title_html(cfg))  # title with tooltip
-                st.html(trust_legend_html(cfg))  # Timing, Style and Perfect chips
-                st.altair_chart(trust_chart(rel, cfg), theme=None, width="content")  # reliability chart
-            with right:  # reading card and muted lines
-                with st.container(border=True):  # card
-                    st.html(trust_read_html(cfg))  # how to read it
-                st.html(trust_lines_html(cfg, rel))  # muted lines
+            st.html(trust_css(cfg))  # layout rules of this view
+            with st.container(key="ui-trust"):  # keyed row, the css matches it
+                left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_trust_columns"])  # chart card and the three blocks
+                with left, st.container(border=True):  # card
+                    st.html(trust_title_html(cfg))  # title with tooltip
+                    st.html(trust_legend_html(cfg))  # Timing, Style and Perfect chips
+                    with st.container(key="ui-trust-chart"):  # square box that follows the card width
+                        st.altair_chart(trust_chart(rel, cfg), theme=None, width="stretch")  # reliability chart
+                with right:  # reading card, gaps card and note
+                    st.html(trust_right_html(cfg, rel))  # three stacked blocks as tall as the chart card
         else:  # Results view, the original content
             results = results_data(cfg)  # one row per bar
             st.html(tab5_head_html(cfg, results))  # headline and subtitle
@@ -198,7 +201,7 @@ def render_tab5() -> None:  # body of the tab with view pills
                 st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
                 for col, panel in zip(st.columns(2), results_chart(results, cfg)):  # Timing and Style panels share the width equally
                     col.altair_chart(panel, theme=None, width="stretch")  # one panel
-                st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}</div>")  # what the score is
+                st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}{info(cfg['static_tabs']['texts']['t5_caption_tip'])}</div>")  # what the score is, with its tooltip
             dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
             dtx = cfg["static_tabs"]["texts"]  # texts of the dot card
             with right, st.container(border=True, height=card_h):  # dot card, same height and top as the chart card
@@ -304,12 +307,13 @@ with tabs[5]:  # Time Machine demo
         chips_slot.html(chips_html(chips, poc))  # scoreboard chips, one wrapping line under the bar
         if state["year"] is not None and open_year:  # asterisk legend near the scoreboard
             st.caption(open_year_text(poc["texts"]))  # same sentence as the tooltip
+    st.caption(cfg["game"]["t6_disclaimer"])  # disclaimer at the very bottom of the tab, both modes
 
 with tabs[6]:  # Global style forecast
     stt = cfg["style_tab"]  # tab 7 settings
     sk, sx = stt["keys"], stt["texts"]  # widget keys and texts
     figures = validation_figures(cfg)  # years and hits of the tested years, from the data
-    st.html(headline(notes["style_notice"], stt["headline"].format(**figures)))  # the question as headline, the tested figures as subtitle
+    st.html(headline(notes["style_notice"], style_subtitle(cfg)))  # the question as headline, the tested figures as subtitle
     with st.expander(sx["validation_label"], expanded=False):  # closed, on the page from the start
         st.caption(stt["validation_text"].format(**figures))  # one text: tested years, hits, repeat_last, ranges, few years
     year7 = st.selectbox(sx["year_label"], style_years(cfg), key=sk["year"])  # every target year, none hidden
