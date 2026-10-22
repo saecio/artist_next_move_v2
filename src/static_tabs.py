@@ -132,19 +132,31 @@ def tab1_panels(cfg: dict) -> list:  # the two story cards
     return [{"photo": artist_photo_html(cfg, name, color), "title": artist_name_html(cfg, name, color), "chart": timeline_chart(timeline_data(cfg, name), st_["cutoff_year"], st_["future_years"], color, t, cfg), "question": f"<div style='font-size:{cfg['design']['photo']['question_font']}px;color:{pal['text']}'>{html.escape(q.format(artist=name))}</div>", } for name, color, q in cards]  # two cards
 
 
-def tab1_kpis_html(cfg: dict) -> str:  # strip of four numbers
-    """Hypotheses tested, models compared, predictions tested on unseen years, final exam years."""
+def story_halves(cfg: dict) -> list:  # numbers of story card 3
+    """Per question (label, color, caption, k, b): top 10% rate and positive rate as whole numbers of n. Style reuses the dot chart panels of tab 5, Timing takes the last of the equal bins of the reliability file and the positive rate of the Timing holdout (the By chance bar)."""
+    sc, pal, p = cfg["static_tabs"], cfg["design"]["palette"], cfg["poc"]["texts"]  # settings, palette and labels
+    t, n = sc["texts"], sc["sizes"]["dots_side"] ** 2  # texts and artists per group
+    style = dots_panels(cfg)[1]  # left grid is the random pick, right grid the top group
+    rel = load_csv(sc["paths"]["calibration_timing"])  # ten bins of equal size
+    top = rel.sort_values("bin").iloc[-1]  # highest-score bin
+    chance = load_json(sc["paths"]["when_model"])["positive_rate"]  # same value as the By chance bar of tab 5
+    return [(p["label_timing"], pal["timing"], t["t1_s3_cap_timing"].format(s=top_share(cfg)[1]), round(n * top["observed_rate"]), round(n * chance)), (p["label_style"], pal["style"], t["t1_s3_cap_style"].format(s=top_share(cfg)[1]), style[1]["k"], style[0]["k"])]  # Timing then Style
+
+def tab1_kpis_html(cfg: dict) -> str:  # story strip of tab 1
+    """Three cards: Works analysed, models tested, and the top 10% rate against picking at random (only when the model is above random in both halves)."""
     sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
-    t, y = sc["texts"], CONFIG["years"]  # texts and split years
-    names = sc["models_compared"]  # compared models
+    t, y, p = sc["texts"], CONFIG["years"], cfg["poc"]["texts"]  # texts, split years and Timing / Style labels
+    fig, years = figure_values(cfg), works_per_year(cfg)["year"]  # counts and years of the Works chart
     tests = load_json(sc["paths"]["when_tests"])["test_rows"]  # test snapshots
-    cards = [  # label, value, tooltip
-        (t["t1_kpi_hyp"], str(len(load_csv(static_path(sc, "hypotheses")))), t["t1_tip_hyp"]),  # hypotheses
-        (t["t1_kpi_models"], str(len(names)), t["t1_tip_models"].format(names=", ".join(names))),  # models
-        (t["t1_kpi_tests"], f"{int(tests):,}", t["t1_tip_tests"]),  # predictions
-        (t["t1_kpi_years"], t["t1_years_value"].format(first=y["holdout_start"], last=y["holdout_end"]), t["t1_tip_years"]),  # test years
-    ]
-    return "<div class='ui-row'>" + "".join(card(kpi_card(lab, val, "", pal["highlight"], tip)) for lab, val, tip in cards) + "</div>"  # four cards
+    one = kpi_card(t["t1_s1_label"], t["t1_s1_big"].format(millions=f"{int(fig['works']) / 1e6:.1f}"), t["t1_s1_sub"].format(artists=f"{int(fig['artists']):,}", y0=years.min(), y1=years.max()), pal["highlight"], t["t1_s1_tip"].format(date=sc["dump_date"]))  # Works card
+    two = kpi_card(t["t1_s2_label"], str(len(sc["models_compared"])), t["t1_s2_sub"].format(tests=f"{int(tests):,}"), pal["highlight"], t["t1_tip_models"].format(names=", ".join(sc["models_compared"])))  # models card
+    halves = story_halves(cfg)  # Timing and Style numbers
+    n = sc["sizes"]["dots_side"] ** 2  # artists per group
+    cards = [one, two]  # always shown
+    if all(k > b for _, _, _, k, b in halves):  # model above random in both halves
+        half = lambda lab, color, cap, k, b: f"<div style='flex:1'><div class='ui-label' style='color:{color}'>{html.escape(lab)}</div><div class='ui-big' style='color:{color}'>{html.escape(t['t1_s3_big'].format(k=k, n=n))}</div><div class='ui-caption' style='color:{color}'>{html.escape(cap)}</div><div class='ui-caption'>{html.escape(t['t1_s3_blind'].format(b=b, n=n))}</div></div>"  # one half
+        cards.append(f"<div class='ui-kpi'><div style='display:flex;gap:{sc['story']['pair_gap']}px'>{''.join(half(*h) for h in halves)}</div><div class='ui-caption'>{info(t['t1_s3_tip'].format(s=top_share(cfg)[1], first=y['holdout_start'], last=y['holdout_end']))}</div></div>")  # parallel halves with the tooltip
+    return "<div class='ui-row'>" + "".join(card(c) for c in cards) + "</div>"  # two or three equal cards
 
 def tab2_head_html(cfg: dict) -> str:  # headline of tab 2
     """Headline and the dump date subtitle with its tooltip."""

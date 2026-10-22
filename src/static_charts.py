@@ -142,7 +142,7 @@ def timeline_chart(df: pd.DataFrame, cutoff: int, future: int, color: str, texts
     future_line = alt.Chart(pd.DataFrame({"x0": [cutoff], "x1": [end - 0.5], "lane": [0.5]})).mark_rule(color=color, strokeDash=[5, 5], strokeWidth=ch["whisker_width"]).encode(x=alt.X("x0:Q", scale=dom, axis=None), x2="x1:Q", y=y)  # dashed line into the unknown
     mark = alt.Chart(pd.DataFrame({"x": [end], "text": ["?"], "lane": [0.5]})).mark_text(color=color, fontSize=ch["story_glyph_font"], fontWeight="bold").encode(x=alt.X("x:Q", scale=dom, axis=None), y=y, text="text:N")  # large question mark
     years = sorted({int(df["year"].min()), cutoff})  # first data year and the marker year only, the last data year would overlap the marker label
-    ticks = alt.Chart(pd.DataFrame({"x": years, "text": [str(v) for v in years], "lane": 0.25})).mark_text(color=c["muted"], fontSize=ch["axis_font"]).encode(x=alt.X("x:Q", scale=dom, axis=None), y=y, text="text:N")  # muted years below the line
+    ticks = alt.Chart(pd.DataFrame({"x": years, "text": [str(v) for v in years], "lane": 0.25})).mark_text(color=c["muted"], fontSize=ch["axis_font"], dy=cfg["design"]["story"]["label_dy"]).encode(x=alt.X("x:Q", scale=dom, axis=None), y=y, text="text:N")  # muted years below the line, lowered by label_dy
     return alt.layer(line, here, here_label, future_line, dots, mark, ticks).properties(height=ch["height_story"])  # chart
 
 

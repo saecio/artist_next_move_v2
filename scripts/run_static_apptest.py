@@ -90,11 +90,36 @@ for chart, name in ((chart_a, st_["timing_artist"]), (chart_b, st_["style_artist
     assert any(r.get("text") == t["t1_here"] for r in chart) and any(r.get("text") == "?" for r in chart), "cutoff label and question mark"  # annotations
     year_labels = sorted(int(r["text"]) for r in chart if r.get("text", "").isdigit())  # muted year labels under the line
     assert year_labels == sorted({min(expected_counts), cutoff}) and str(max(expected_counts)) not in [r.get("text") for r in chart], f"year labels of {name}: first data year and the marker year only, no last-data-year label"  # equal to the files
-kpi_values = [str(len(hyp)), str(len(sc["models_compared"])), f"{int(tests_rows):,}", t["t1_years_value"].format(first=y["holdout_start"], last=y["holdout_end"])]  # four numbers from the files and config
-for number, label in zip(kpi_values, (t["t1_kpi_hyp"], t["t1_kpi_models"], t["t1_kpi_tests"], t["t1_kpi_years"])):  # four numbers
-    assert number in n1 and label in n1, f"tab 1 KPI {label}"  # equal to the files and the config list
-assert not {f"{int(fig['works']):,}", f"{int(fig['artists']):,}"} & set(kpi_values) and f"{int(fig['works']):,}" not in n1 and f"{int(fig['artists']):,}" not in n1, "tab 1 repeats no Works or artist count"  # no figure shared with tab 2
-assert raws[0].count("class='ui-card'") == 4, "four KPI cards, no schema card"  # card count
+wpy = pd.read_csv(folder / pa["works_per_year"])["year"]  # years of the Works chart file
+import static_tabs  # module whose results_data the strip calls
+nn = sc["sizes"]["dots_side"] ** 2  # artists per group
+rel_t = pd.read_csv(ROOT / pa["calibration_timing"]).sort_values("bin")  # Timing reliability bins
+assert rel_t["n"].max() - rel_t["n"].min() <= 1, "the ten Timing bins hold equal row counts"  # equal bins, so the last one is the top 10%
+rel_s = pd.read_csv(ROOT / pa["calibration_style"])  # Style reliability bins
+assert rel_s["n"].max() - rel_s["n"].min() <= 1, "the ten Style bins hold equal row counts"  # equal bins
+k_t, b_t = round(nn * rel_t["observed_rate"].iloc[-1]), round(nn * json.load(open(ROOT / pa["when_model"]))["positive_rate"])  # Timing top bin rate and By chance rate
+k_s, b_s = round(nn * top["precision_top"]), round(nn * top["holdout_positive_rate"])  # Style top group rate and positive rate, as the dot chart
+pl = cfg["poc"]["texts"]  # Timing and Style labels
+story = [  # the three cards: big number, label, muted line
+    (t["t1_s1_big"].format(millions=f"{int(fig['works']) / 1e6:.1f}"), t["t1_s1_label"], t["t1_s1_sub"].format(artists=f"{int(fig['artists']):,}", y0=wpy.min(), y1=wpy.max())),  # Works
+    (str(len(sc["models_compared"])), t["t1_s2_label"], t["t1_s2_sub"].format(tests=f"{int(tests_rows):,}")),  # models
+    (t["t1_s3_big"].format(k=k_t, n=nn), pl["label_timing"], t["t1_s3_blind"].format(b=b_t, n=nn)),  # Timing half
+    (t["t1_s3_big"].format(k=k_s, n=nn), pl["label_style"], t["t1_s3_blind"].format(b=b_s, n=nn)),  # Style half
+]
+assert k_t > b_t and k_s > b_s and t["t1_s3_cap_timing"].format(s=round(100 * top["selected_share"])) in n1 and t["t1_s3_cap_style"].format(s=round(100 * top["selected_share"])) in n1, "both halves above random, captions shown"  # card 3 shown
+for number, label, line in story:  # three cards
+    assert number in n1 and label in n1 and line in n1, f"tab 1 story card {label}"  # equal to the files and the config
+assert t["t1_s1_tip"].format(date=sc["dump_date"]) in html.unescape(raws[0]) and t["t1_tip_models"].format(names=", ".join(sc["models_compared"])) in html.unescape(raws[0]) and t["t1_s3_tip"].format(s=round(100 * top["selected_share"]), first=y["holdout_start"], last=y["holdout_end"]) in html.unescape(raws[0]), "tab 1 tooltips"  # tooltips from the config
+assert raws[0].count("class='ui-card'") == 3 and pl["label_timing"] in n1 and pl["label_style"] in n1, "three story cards"  # card count
+for gone in ("t1_kpi_hyp", "t1_kpi_years", "t1_tip_hyp", "t1_tip_years", "t1_s3_plus", "t1_s3_label"):  # dropped keys
+    assert gone not in t, f"{gone} removed from the config"  # no leftover
+orig_res = static_tabs.story_halves  # real function
+static_tabs.story_halves = lambda c: [(*h[:3], h[4], h[4]) if i else h for i, h in enumerate(orig_res(c))]  # Style k equal to b, not above random
+try:  # always restore
+    two_cards = plain("".join(x.value for x in AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=120).run().tabs[0].get("html")))  # fresh run, tab 1 html
+finally:  # restore
+    static_tabs.story_halves = orig_res  # restore
+assert t["t1_s3_cap_style"].format(s=round(100 * top["selected_share"])) not in norm(two_cards) and t["t1_s3_cap_timing"].format(s=round(100 * top["selected_share"])) not in norm(two_cards) and t["t1_s1_label"] in norm(two_cards) and t["t1_s2_label"] in norm(two_cards), "fallback: only cards 1 and 2"  # two cards
 assert "<svg" not in raws[0] and len(at.tabs[0].get("vega_lite_chart")) == 2, "tab 1 has no inline svg and two timelines"  # no svg
 print("tab 1 ok")  # result
 
@@ -190,7 +215,7 @@ for r_ in rows5:  # tooltip texts of every bar
 chart5 = json.dumps([e.proto.spec for e in at.tabs[4].get("vega_lite_chart")])  # specs sent to the browser
 assert t["t5_line_timing"] in chart5 and t["t5_line_style"] in chart5, "visible past habits line under each panel title"  # chart subtitles
 assert t["t5_caption"] in raws[4] and t["t5_headline"] in raws[4], "caption and headline"  # on screen
-old_dot = ("the 100 the model ranks highest", "ranks highest", "artists picked at random", "Picking at random", "Picking with our model")  # removed wording
+old_dot = ("the 100 the model ranks highest", "ranks highest", "artists picked at random", "Picking with our model", "Guessing blindly", "guessing blindly")  # removed wording
 assert not any(w_ in texts[4] or w_ in cfg_text for w_ in old_dot), "old dot chart wording is gone"  # no trace
 share = float(top["selected_share"])  # share of the top group from the file
 s_ = round(100 * share)  # whole percent
@@ -551,6 +576,8 @@ assert photo["height"] + photo["credit_margin"] + photo["credit_line"] + photo["
 assert raws[0].count(f"padding-bottom:{photo['bottom_pad']}px") == len(have) and photo["card_height"] == 262 and photo["height"] + photo["credit_line"] + photo["credit_margin"] == 224, "bottom padding on the question, photo shortened by the same amount"  # padding
 marker = re.findall(r'"y2Offset":\s*(\d+)', "".join(e.proto.spec for e in at.tabs[0].get("vega_lite_chart")))  # marker offset sent to the browser
 assert marker and all(int(v) == cfg["design"]["story"]["marker_below"] for v in marker), "marker ends a configured number of pixels below the timeline line"  # marker height proxy
+labels_dy = re.findall(r'"dy":\s*(\d+)', "".join(e.proto.spec for e in at.tabs[0].get("vega_lite_chart")))  # label offset sent to the browser
+assert str(cfg["design"]["story"]["label_dy"]) in labels_dy, "year labels lowered by the configured offset"  # label offset
 bb_ = sc["story"]["style_artist"]  # Bad Bunny
 assert ((ROOT / pa["artist_photos"] / cr.loc[bb_, "file"]).is_file() and f"alt='{bb_}'" in raws[0]) or (">BB<" in raws[0] and "ui-mono" in raws[0]), "Bad Bunny shows its photo when the file exists, else the monogram"
 orig_cr = static_tabs.credit_row  # keep the real function
