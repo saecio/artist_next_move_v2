@@ -480,7 +480,20 @@ pill(vk["tab5"]).set_value(t["t5_view_results"]).run()  # back to Results
 assert len(at.tabs[4].get("vega_lite_chart")) == 3 and t["t5_headline"] in plain(tab_text(4)), "Results view returns unchanged"  # switch back
 print("tab 5 views ok")  # result
 # design pass 8: alignment, gap wording, zoom caption, reading card, plural, tab 1 hook and photos
-cols5 = list([x for x in at.tabs[4].children.values() if x.type == "flex_container"][0].children.values())  # chart column and dot column of the Results view (the row under the pill and the headline)
+def find_columns(node):  # the container whose children are the two columns of the Results view
+    """Depth-first search for the first container that holds columns, through the fragment and the slot."""
+    kids = list(node.children.values())  # direct children
+    if kids and all(k.type == "column" for k in kids):  # the row of columns
+        return kids  # found
+    for k in kids:  # go deeper
+        if hasattr(k, "children"):  # containers only
+            hit = find_columns(k)  # search below
+            if hit:  # found below
+                return hit  # pass it up
+    return []  # none here
+
+
+cols5 = find_columns(at.tabs[4])  # chart column and dot column of the Results view
 cards5 = [next(iter(c.children.values())) for c in cols5]  # the two bordered cards
 assert [int(re.search(r"pixel_height: (\d+)", str(c.proto)).group(1)) for c in cards5] == [sc["sizes"]["tab5_card_height"]] * 2, "both Results cards have the configured height"  # same top and bottom
 dot_line_html = [x.value for x in cards5[1].children.values() if x.type == "html"][0]  # first html element of the dot card
@@ -569,6 +582,12 @@ m_raw0 = "".join(x.value for x in miss.tabs[0].get("html"))  # tab 1 html withou
 assert not miss.exception and "<img" not in m_raw0 and m_raw0.count("ui-mono") == 2 and ">TS<" in m_raw0 and "Photo:" not in plain(m_raw0), "monograms and no credit when the photo file is missing"  # fallback
 assert "<svg" not in raws[0] and not re.search(r"\bWHEN\b|\bWHAT\b", raws[0]), "tab 1: no svg, no WHEN or WHAT"  # clean
 print("tab 1 hook and photos ok")  # result
+fresh = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=120).run()  # first load, fragments in place
+assert not fresh.exception and [fresh.segmented_control(key=vk[k]).value for k in ("tab2", "tab3", "tab5")] == [t["t2_view_volume"], t["t3_view_patterns"], t["t5_view_results"]], "fragments keep the defaults Volume, Two patterns and Results on first load"  # defaults
+for k_, v_ in (("tab2", "t2_view_genres"), ("tab3", "t3_view_tests"), ("tab5", "t5_view_years")):  # switch each pill
+    fresh.segmented_control(key=vk[k_]).set_value(t[v_]).run()  # click inside the fragment
+    assert not fresh.exception and fresh.segmented_control(key=vk[k_]).value == t[v_], f"{k_}: the pill switches the view without an exception"  # view chosen
+print("fragments ok")  # result
 placeholder = re.compile(r"\{[^}]*\}")  # a placeholder in braces
 bad = {k: v for k, v in t.items() if k not in ("t3s_line", "t4_final_forecast", "t5_tip_advantage") and re.search(r"\d", placeholder.sub("", v))}  # texts with a digit outside a placeholder, except the 0 to 1 scale of the muted line, the tab number of the forecast tag and the factor 100 of the advantage tooltip
 assert not bad, f"digits outside placeholders: {bad}"  # none, no exception was needed

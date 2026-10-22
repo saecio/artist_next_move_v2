@@ -91,90 +91,108 @@ with tabs[0]:  # Problem and question
             body.html(panel["question"])  # the question of this artist
     st.html(tab1_kpis_html(cfg))  # four numbers
 
-with tabs[1]:  # Data and cleaning
+@st.fragment  # a click on a view pill reruns only this tab
+def render_tab2() -> None:  # body of the tab with view pills
+    """Draw the view chosen with the pills of this tab."""
     sct = cfg["static_tabs"]  # static tabs settings
     view2 = view_selector(cfg, "tab2")  # Volume or Genres
-    if view2 == sct["texts"]["t2_view_genres"]:  # Genres view
-        st.html(tab2g_head_html(cfg))  # headline from the data and subtitle
-        parts = tab2g_parts(cfg)  # card title, chart and note
-        with st.container(border=True):  # card
-            st.html(parts["title"])  # title with tooltip
-            st.altair_chart(parts["chart"], theme=None, width="stretch")  # genre shares by year
-            st.html(parts["note"])  # years not shown
-    else:  # Volume view
-        st.html(tab2_head_html(cfg))  # headline and dump date
-        left, right = st.columns(sct["sizes"]["tab2_columns"])  # chart card and right blocks
-        with left, st.container(border=True):  # chart card
-            st.html(tab2_chart_title_html(cfg))  # title with tooltip
-            st.altair_chart(works_chart(works_per_year(cfg), cfg["design"]["incomplete_from_year"], {"incomplete": sct["texts"]["t2_incomplete"], "peak": sct["texts"]["t2_peak"], "band_tip": sct["texts"]["t2_band_tip"]}, cfg), theme=None, width="stretch")  # Works per year
-        right.html(tab2_right_html(cfg))  # numbers and cleaning schema
+    with st.empty().container():  # one slot: the old view disappears as soon as the new one starts drawing
+        if view2 == sct["texts"]["t2_view_genres"]:  # Genres view
+            st.html(tab2g_head_html(cfg))  # headline from the data and subtitle
+            parts = tab2g_parts(cfg)  # card title, chart and note
+            with st.container(border=True):  # card
+                st.html(parts["title"])  # title with tooltip
+                st.altair_chart(parts["chart"], theme=None, width="stretch")  # genre shares by year
+                st.html(parts["note"])  # years not shown
+        else:  # Volume view
+            st.html(tab2_head_html(cfg))  # headline and dump date
+            left, right = st.columns(sct["sizes"]["tab2_columns"])  # chart card and right blocks
+            with left, st.container(border=True):  # chart card
+                st.html(tab2_chart_title_html(cfg))  # title with tooltip
+                st.altair_chart(works_chart(works_per_year(cfg), cfg["design"]["incomplete_from_year"], {"incomplete": sct["texts"]["t2_incomplete"], "peak": sct["texts"]["t2_peak"], "band_tip": sct["texts"]["t2_band_tip"]}, cfg), theme=None, width="stretch")  # Works per year
+            right.html(tab2_right_html(cfg))  # numbers and cleaning schema
+
+with tabs[1]:  # Data and cleaning
+    render_tab2()  # fragment of this tab
 
 for i, build in ((3, tab4_html), (7, tab8_html)):  # static tabs with one HTML block, the headline is the only title
     with tabs[i]:  # open the tab
         st.html(build(cfg))  # the tab content
 
-with tabs[2]:  # Data exploration
+@st.fragment  # a click on a view pill reruns only this tab
+def render_tab3() -> None:  # body of the tab with view pills
+    """Draw the view chosen with the pills of this tab."""
     view3 = view_selector(cfg, "tab3")  # Two patterns or Six tests
-    if view3 == cfg["static_tabs"]["texts"]["t3_view_tests"]:  # Six tests view
-        st.html(tab3s_head_html(cfg))  # headline from the strongest pattern
-        with st.container(border=True):  # card
-            st.altair_chart(strength_chart(cards_table(cfg), cfg), theme=None, width="stretch")  # one bar per hypothesis
-    else:  # Two patterns view
-        st.html(tab3_head_html(cfg))  # headline, only the conclusion the data supports
-        for col, panel in zip(st.columns(2), tab3_panels(cfg)):  # Style card and Timing card
-            with col, st.container(border=True):  # card
-                st.html(f"<div class='ui-card-title'>{panel['title']}</div>")  # card title
-                st.altair_chart(panel["chart"], theme=None, width="stretch")  # five bars
-                st.html(panel["line"])  # muted one-liner
+    with st.empty().container():  # one slot: the old view disappears as soon as the new one starts drawing
+        if view3 == cfg["static_tabs"]["texts"]["t3_view_tests"]:  # Six tests view
+            st.html(tab3s_head_html(cfg))  # headline from the strongest pattern
+            with st.container(border=True):  # card
+                st.altair_chart(strength_chart(cards_table(cfg), cfg), theme=None, width="stretch")  # one bar per hypothesis
+        else:  # Two patterns view
+            st.html(tab3_head_html(cfg))  # headline, only the conclusion the data supports
+            for col, panel in zip(st.columns(2), tab3_panels(cfg)):  # Style card and Timing card
+                with col, st.container(border=True):  # card
+                    st.html(f"<div class='ui-card-title'>{panel['title']}</div>")  # card title
+                    st.altair_chart(panel["chart"], theme=None, width="stretch")  # five bars
+                    st.html(panel["line"])  # muted one-liner
+
+with tabs[2]:  # Data exploration
+    render_tab3()  # fragment of this tab
+
+@st.fragment  # a click on a view pill reruns only this tab
+def render_tab5() -> None:  # body of the tab with view pills
+    """Draw the view chosen with the pills of this tab."""
+    view5 = view_selector(cfg, "tab5")  # Results, Year by year, Models compared or Can you trust the score?
+    with st.empty().container():  # one slot: the old view disappears as soon as the new one starts drawing
+        t5 = cfg["static_tabs"]["texts"]  # texts of the tab 5 views
+        if view5 == t5["t5_view_years"]:  # Year by year view
+            years = year_data(cfg)  # one row per question, line and test year
+            st.html(years_head_html(cfg, years))  # headline, only when true
+            st.html(legend_html(cfg, ("t5_col_rule", "t5_col_model")))  # the two line names with their tooltips
+            for col, chart in zip(st.columns(2), years_charts(years, cfg)):  # Timing and Style side by side
+                with col, st.container(border=True):  # card
+                    st.altair_chart(chart, theme=None, width="stretch")  # one line chart
+            st.html(f"<div class='ui-caption'>{html.escape(t5['t5y_line'])}</div>")  # muted line
+        elif view5 == t5["t5_view_models"]:  # Models compared view
+            models = models_data(cfg)  # stored table
+            st.html(models_head_html(cfg, models))  # headline, only when true
+            for col, (question, chart) in zip(st.columns(2), zip(models["question"].unique(), models_charts(models, cfg))):  # Timing and Style side by side
+                with col, st.container(border=True):  # card
+                    st.html(models_title_html(cfg, question))  # title with tooltip
+                    st.altair_chart(chart, theme=None, width="stretch")  # dot plot
+                    if models_note_html(cfg, models, question):  # only when the axis does not start at zero
+                        st.html(models_note_html(cfg, models, question))  # zoom caption
+        elif view5 == t5["t5_view_trust"]:  # Can you trust the score? view
+            rel = reliability_data(cfg)  # ten bins per question
+            st.html(trust_head_html(cfg, rel))  # headline, only when true
+            left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_trust_columns"])  # chart card and the muted lines
+            with left, st.container(border=True):  # card
+                st.html(trust_title_html(cfg))  # title with tooltip
+                st.html(trust_legend_html(cfg))  # Timing, Style and Perfect chips
+                st.altair_chart(trust_chart(rel, cfg), theme=None, width="content")  # reliability chart
+            with right:  # reading card and muted lines
+                with st.container(border=True):  # card
+                    st.html(trust_read_html(cfg))  # how to read it
+                st.html(trust_lines_html(cfg, rel))  # muted lines
+        else:  # Results view, the original content
+            results = results_data(cfg)  # one row per bar
+            st.html(tab5_head_html(cfg, results))  # headline and subtitle
+            left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_columns"])  # chart card and dot card
+            card_h = cfg["static_tabs"]["sizes"]["tab5_card_height"]  # one height for both cards
+            with left, st.container(border=True, height=card_h):  # chart card
+                st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
+                for col, panel in zip(st.columns(2), results_chart(results, cfg)):  # Timing and Style panels share the width equally
+                    col.altair_chart(panel, theme=None, width="stretch")  # one panel
+                st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}</div>")  # what the score is
+            dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
+            dtx = cfg["static_tabs"]["texts"]  # texts of the dot card
+            with right, st.container(border=True, height=card_h):  # dot card, same height and top as the chart card
+                st.html(f"<div class='ui-card-title'>{dot_line}</div>")  # headline line, first line of the card
+                st.html(strip_html(cfg))  # sorted-artists strip
+                st.altair_chart(dots_chart(dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"yes": dtx["t5_dot_yes"], "no": dtx["t5_dot_no"], "tip": dtx["t5_dot_tip"]}, cfg), theme=None, width="stretch")  # two grids
 
 with tabs[4]:  # Results
-    view5 = view_selector(cfg, "tab5")  # Results, Year by year, Models compared or Can you trust the score?
-    t5 = cfg["static_tabs"]["texts"]  # texts of the tab 5 views
-    if view5 == t5["t5_view_years"]:  # Year by year view
-        years = year_data(cfg)  # one row per question, line and test year
-        st.html(years_head_html(cfg, years))  # headline, only when true
-        st.html(legend_html(cfg, ("t5_col_rule", "t5_col_model")))  # the two line names with their tooltips
-        for col, chart in zip(st.columns(2), years_charts(years, cfg)):  # Timing and Style side by side
-            with col, st.container(border=True):  # card
-                st.altair_chart(chart, theme=None, width="stretch")  # one line chart
-        st.html(f"<div class='ui-caption'>{html.escape(t5['t5y_line'])}</div>")  # muted line
-    elif view5 == t5["t5_view_models"]:  # Models compared view
-        models = models_data(cfg)  # stored table
-        st.html(models_head_html(cfg, models))  # headline, only when true
-        for col, (question, chart) in zip(st.columns(2), zip(models["question"].unique(), models_charts(models, cfg))):  # Timing and Style side by side
-            with col, st.container(border=True):  # card
-                st.html(models_title_html(cfg, question))  # title with tooltip
-                st.altair_chart(chart, theme=None, width="stretch")  # dot plot
-                if models_note_html(cfg, models, question):  # only when the axis does not start at zero
-                    st.html(models_note_html(cfg, models, question))  # zoom caption
-    elif view5 == t5["t5_view_trust"]:  # Can you trust the score? view
-        rel = reliability_data(cfg)  # ten bins per question
-        st.html(trust_head_html(cfg, rel))  # headline, only when true
-        left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_trust_columns"])  # chart card and the muted lines
-        with left, st.container(border=True):  # card
-            st.html(trust_title_html(cfg))  # title with tooltip
-            st.html(trust_legend_html(cfg))  # Timing, Style and Perfect chips
-            st.altair_chart(trust_chart(rel, cfg), theme=None, width="content")  # reliability chart
-        with right:  # reading card and muted lines
-            with st.container(border=True):  # card
-                st.html(trust_read_html(cfg))  # how to read it
-            st.html(trust_lines_html(cfg, rel))  # muted lines
-    else:  # Results view, the original content
-        results = results_data(cfg)  # one row per bar
-        st.html(tab5_head_html(cfg, results))  # headline and subtitle
-        left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_columns"])  # chart card and dot card
-        card_h = cfg["static_tabs"]["sizes"]["tab5_card_height"]  # one height for both cards
-        with left, st.container(border=True, height=card_h):  # chart card
-            st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
-            for col, panel in zip(st.columns(2), results_chart(results, cfg)):  # Timing and Style panels share the width equally
-                col.altair_chart(panel, theme=None, width="stretch")  # one panel
-            st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}</div>")  # what the score is
-        dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
-        dtx = cfg["static_tabs"]["texts"]  # texts of the dot card
-        with right, st.container(border=True, height=card_h):  # dot card, same height and top as the chart card
-            st.html(f"<div class='ui-card-title'>{dot_line}</div>")  # headline line, first line of the card
-            st.html(strip_html(cfg))  # sorted-artists strip
-            st.altair_chart(dots_chart(dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"yes": dtx["t5_dot_yes"], "no": dtx["t5_dot_no"], "tip": dtx["t5_dot_tip"]}, cfg), theme=None, width="stretch")  # two grids
+    render_tab5()  # fragment of this tab
 
 with tabs[5]:  # Time Machine demo
     st.header(cfg["tabs"][5])  # tab title
