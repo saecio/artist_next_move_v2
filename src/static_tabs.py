@@ -11,12 +11,14 @@ from PIL import Image, ImageOps  # artist photo crop and resize
 import streamlit as st  # cache decorator
 
 from ui_components import card, card_title, chip, headline, info, kpi_card  # design system helpers
-from static_diagrams import clean_flow, close_css, final_models_html, method_card, method_chips, method_css, method_legend  # HTML and CSS schemas of tabs 2, 4 and 8
+from static_diagrams import clean_flow, close_css, final_models_html, dots_html, funnel_css, funnel_flow, inputs_card, inputs_css, method_card, method_chips, method_css, method_legend  # HTML and CSS schemas of tabs 2, 4 and 8
 
 from config import CONFIG, ROOT  # project settings and root
 from static_charts import genre_chart, steps_chart, strength_chart, timeline_chart  # Altair charts of tabs 3, 2 and 1
 from backtesting import method_spans  # fold and final split years
-from models import make_what_xgboost, make_xgboost  # builders of the Timing and Style final models (their names give the model names)
+from models import GENRES, NUMERIC_FEATURES, WHAT_FEATURES, make_what_xgboost, make_xgboost  # builders of the Timing and Style final models (their names give the model names), and their input lists
+from what_target import ABLATION_GROUPS  # Style input families
+from app_data import all_artists  # demo artists, for the name of the example artist
 from style_forecast import FINAL_MODEL  # final model of the style forecast
 from style_tab import forecast_beats_repeat, validation_figures  # tab 7 test years, reused for tab 8 (read only)
 
@@ -235,14 +237,14 @@ def tab8_html(cfg: dict) -> str:  # limits and next steps
 
 
 def closing_html(cfg: dict, res: pd.DataFrame) -> str:  # closing block of tab 8
-    """Three chips (Timing, Style, Trends) with a status each, then one sentence; res is the tab 5 table."""
+    """Three blocks (Timing, Style, Trends) with a name, a question and a verdict chip each, then one sentence; res is the tab 5 table."""
     t, p, pal = cfg["static_tabs"]["texts"], cfg["poc"]["texts"], cfg["design"]["palette"]  # texts, Timing / Style labels, palette
     beats = panel_beats_rule(res, cfg)  # per question: model clearly above past habits
     status = lambda ok, yes: t[yes] if ok else t["t8_close_tested"]  # the positive status only when the data supports it
     trend = t["t8_close_trend_beats"] if forecast_beats_repeat(cfg) else t["t8_close_first"]  # forecast against repeating last year
-    chips = [(t["t8_close_timing_q"], status(beats[p["label_timing"]], "t8_close_beats"), pal["timing"]), (t["t8_close_style_q"], status(beats[p["label_style"]], "t8_close_beats"), pal["style"]), (t["t8_close_trends_q"], trend, pal["highlight"])]  # question, status, color
-    row = "".join(chip(t["t8_close_chip"].format(question=q, status=s), c) for q, s, c in chips)  # one chip each
-    return f"<div class='ui-band'><div class='ui-chips'>{row}</div><div class='ui-close-item'>{html.escape(t['t8_close_line'])}</div></div>"  # band with the chips and the final sentence
+    blocks = [("timing", status(beats[p["label_timing"]], "t8_close_beats"), pal["timing"]), ("style", status(beats[p["label_style"]], "t8_close_beats"), pal["style"]), ("trends", trend, pal["highlight"])]  # key, status, color
+    row = "".join(f"<div class='ui-close-block'><div class='ui-close-name'>{html.escape(t[f't8_close_{k}_name'])}</div><div class='ui-close-q'>{html.escape(t[f't8_close_{k}_q'])}</div>{chip(s, c)}</div>" for k, s, c in blocks)  # name, question and verdict chip each
+    return f"<div class='ui-band'><div class='ui-close-blocks'>{row}</div><div class='ui-close-item'>{html.escape(t['t8_close_line'])}</div></div>"  # band with the chips and the final sentence
 
 
 def results_data(cfg: dict) -> pd.DataFrame:  # chart table of tab 5
@@ -397,3 +399,61 @@ def tab3s_head_html(cfg: dict) -> str:  # headline and muted line of the Six tes
     t = cfg["static_tabs"]["texts"]  # texts
     line = f"<div class='ui-caption'>{html.escape(t['t3s_line'])}{info(t['t3s_tip_honesty'])}</div>"  # muted line and info tooltip
     return headline(t["t3s_headline"].format(label=cards_table(cfg).loc[0, "short_label"])) + line  # block
+
+@st.cache_data  # cache the table
+def load_funnel(path: str) -> pd.DataFrame:  # cleaning_funnel.csv
+    """Read the hand-typed funnel file (its first line is a # comment) given by a path relative to the project root."""
+    return pd.read_csv(ROOT / path, comment="#")  # step, lane, rows_in, rows_out, source_line
+
+def tab2c_html(cfg: dict) -> str:  # Cleaning view of tab 2
+    """Headline, the two-lane cleaning flow, the chip with the releases without a year and the source line; every number comes from cleaning_funnel.csv."""
+    sc = cfg["static_tabs"]  # settings
+    t = sc["texts"]  # texts
+    out = load_funnel(static_path(sc, "funnel")).set_index("step")["rows_out"]  # step -> rows left
+    v = {k: f"{int(n):,}" for k, n in out.items()}  # counts with thousands separators
+    flow = card(funnel_flow(cfg, t, v))  # flow card
+    undated = chip(t["t2c_undated"].format(n=v["undated"]), cfg["design"]["palette"]["muted"])  # releases without a year
+    return funnel_css(cfg) + "<div class='ui-stack'>" + headline(t["t2c_headline"], html.escape(t["t2c_sub"])) + flow + f"<div class='ui-chips' style='margin:0'>{undated}</div><div class='ui-caption'>{html.escape(t['t2c_source'])}</div></div>"  # page
+
+@st.cache_data  # cache the row
+def example_row(path: str, artist_id: int, year: int, year_col: str, order: str) -> dict:  # one example row of a feature file
+    """Last row (by `order`) of one artist and year as a dict; empty when the file, the columns or the row are missing."""
+    try:  # a missing file or column only removes the example values
+        df = pd.read_csv(ROOT / path)  # feature file
+        rows = df[(df["artist_id"] == artist_id) & (df[year_col] == year)]  # the artist in the year
+        return rows.sort_values(order).iloc[-1].to_dict() if not rows.empty else {}  # last row
+    except (OSError, KeyError, ValueError):  # no file, no column, unreadable
+        return {}  # cards without example values
+
+def input_value(t: dict, flags: list, name: str, x: float) -> str:  # one example value as text
+    """yes / no for the 0 / 1 facts, else a whole number with separators or two decimals."""
+    if name in flags:  # a 0 / 1 fact
+        return t["t4i_yes"] if x == 1 else t["t4i_no"]  # yes or no
+    return f"{int(x):,}" if float(x).is_integer() else f"{x:.2f}"  # whole number or two decimals
+
+def input_rows(cfg: dict, families: list, row: dict) -> list:  # (family, count, values) per family
+    """Family name, number of facts and up to three "label: value" examples (genres: the names that are on); `families` is a list of (name, features)."""
+    ic, t = cfg["static_tabs"]["inputs"], cfg["static_tabs"]["texts"]  # input settings and texts
+    rows = []  # one tuple per family
+    for name, feats in families:  # in display order
+        shown = [f"{ic['labels'][f]}: {input_value(t, ic['flags'], f, row[f])}" for f in feats if f in row and not pd.isna(row[f])][:3]  # up to three examples
+        rows.append((name, str(len(feats)), " \u00b7 ".join(shown)))  # family row
+    on = [g for g in GENRES if row.get(f"genre_{g}") == 1]  # genres that are on
+    rows.append((ic["genres_name"], str(len(GENRES)), " \u00b7 ".join(on)))  # genres row
+    return rows  # all families
+
+def tab4i_html(cfg: dict) -> str:  # "What the model sees" view of tab 4
+    """Headline, the example line and two cards (Timing, Style) with their families; the example is the first artist and the year of the tab 6 default."""
+    sc = cfg["static_tabs"]  # settings
+    t, ic, pal = sc["texts"], sc["inputs"], cfg["design"]["palette"]  # texts, input settings, palette
+    aid, year = int(cfg["route"]["artists"][0]), int(cfg["route"]["year"])  # tab 6 default artist and year
+    artist = next(a["name"] for a in all_artists(cfg) if int(a["discogs_id"]) == aid)  # its name
+    live = cfg["live"]  # stored feature files
+    when = example_row(f"{live['folder']}/{live['when_features']}", aid, year, "snapshot_year", "works_so_far_this_year")  # last release of the year
+    what = example_row(f"{live['folder']}/{live['what_features']}", aid, year, "year", "year")  # the artist-year
+    timing = [(f["name"], f["features"]) for f in ic["timing"]]  # Timing families
+    style = [(f["name"], ABLATION_GROUPS[f["group"]]) for f in ic["style"]]  # Style families
+    left = inputs_card(pal["timing"], t["t4i_timing_title"], t["t4i_facts"].format(n=len(NUMERIC_FEATURES) + len(GENRES)), t["t4i_timing_question"], input_rows(cfg, timing, when))  # Timing card
+    right = inputs_card(pal["style"], t["t4i_style_title"], t["t4i_facts"].format(n=len(WHAT_FEATURES)), t["t4i_style_question"], input_rows(cfg, style, what))  # Style card
+    example = f"<div class='ui-caption'>{html.escape(t['t4i_example'].format(artist=artist, year=year))}</div>"  # example line
+    return inputs_css(cfg) + "<div class='ui-stack'>" + headline(t["t4i_headline"], html.escape(t["t4i_sub"])) + example + f"<div class='ui-row'>{left}{right}</div><div class='ui-caption'>{html.escape(t['t4i_caption'])}</div></div>"  # page

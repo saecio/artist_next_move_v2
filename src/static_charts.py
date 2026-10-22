@@ -1,7 +1,6 @@
 """Altair charts of the static tabs. Data comes from files, colors and sizes from the design section of the demo config."""
 
 import altair as alt  # charts, ships with Streamlit
-import textwrap  # grid title wrapping
 
 from config import CONFIG  # project settings (bootstrap level)
 
@@ -86,28 +85,6 @@ def steps_chart(df: pd.DataFrame, bucket: str, rate: str, count: str, color: str
     bars = base.mark_bar(color=color, cornerRadiusTopLeft=ch["bar_corner"], cornerRadiusTopRight=ch["bar_corner"])  # bars
     text = base.mark_text(dy=-8, baseline="bottom", color=cfg["design"]["palette"]["text"], fontSize=ch["label_font"]).encode(text="rate_label:N")  # rate on each bar
     return alt.layer(bars, text).properties(height=ch["height_steps"])  # chart
-
-
-def dots_chart(panels: list, side: int, texts: dict, cfg: dict) -> alt.HConcatChart:  # two grids of circles
-    """One side x side grid per panel; the first k circles use the Style color, the rest the chance color; a big number and a caption sit under each grid."""
-    register_theme(cfg)  # shared theme
-    c, ch = cfg["design"]["palette"], cfg["design"]["chart"]  # palette and chart settings
-    cell, n = ch["dot_cell"], side * side  # cell size in px and circles per grid
-    yes, no = texts["yes"], texts["no"]  # legend-free state names
-    depth = side + 3.5  # grid rows plus the two text lines
-    charts = []  # one chart per panel
-    for p in panels:  # in the given order
-        grid = pd.DataFrame({"col": [i % side + 1 for i in range(n)], "row": [i // side + 1 for i in range(n)], "state": [yes if i < p["k"] else no for i in range(n)], "rate": p["rate_text"]})  # reading order, first k filled
-        x = alt.X("col:Q", axis=None, scale=alt.Scale(domain=[0.5, side + 0.5]))  # hidden columns axis
-        y = alt.Y("row:Q", axis=None, scale=alt.Scale(domain=[0.5, depth], reverse=True))  # hidden rows axis, row 1 on top
-        dots = alt.Chart(grid).mark_circle(size=(cell * ch["dot_fill"]) ** 2, opacity=1).encode(x=x, y=y, color=alt.Color("state:N", scale=alt.Scale(domain=[yes, no], range=[c["style"], c["chance"]]), legend=None), tooltip=[alt.Tooltip("rate:N", title=texts["tip"])])  # circles
-        mid = (side + 1) / 2  # horizontal center
-        big = alt.Chart(pd.DataFrame({"x": [mid], "y": [side + 1.6], "text": [p["big"]]})).mark_text(fontSize=ch["dot_big_font"], fontWeight="bold", color=c["style"]).encode(x=alt.X("x:Q", axis=None, scale=alt.Scale(domain=[0.5, side + 0.5])), y=alt.Y("y:Q", axis=None, scale=alt.Scale(domain=[0.5, depth], reverse=True)), text="text:N")  # big number
-        cap = alt.Chart(pd.DataFrame({"x": [mid], "y": [side + 2.9], "text": [p["caption"]]})).mark_text(fontSize=ch["dot_caption_font"], color=c["muted"]).encode(x=alt.X("x:Q", axis=None, scale=alt.Scale(domain=[0.5, side + 0.5])), y=alt.Y("y:Q", axis=None, scale=alt.Scale(domain=[0.5, depth], reverse=True)), text="text:N")  # caption
-        title = alt.TitleParams(textwrap.wrap(p["title"], ch["dot_wrap"]), color=c["text"], fontSize=ch["axis_font"] + 1, anchor="middle")  # wrapped grid title
-        layers = [dots, big, cap]  # grid, big number, caption
-        charts.append(alt.layer(*layers).properties(title=title, width=cell * side, height=cell * depth))  # one grid
-    return alt.hconcat(*charts)  # side by side
 
 
 def works_chart(df: pd.DataFrame, incomplete_from: int, texts: dict, cfg: dict) -> alt.LayerChart:  # Works per year

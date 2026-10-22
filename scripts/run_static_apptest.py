@@ -191,18 +191,18 @@ print("tab 4 ok")  # result
 
 m, b = hl.loc[sc["rows"]["what_model"]], hl.loc[sc["rows"]["what_rule"]]  # Style rows
 expected = [(wm["positive_rate"], None, None), (wb["pr_auc"], wb["pr_auc_lo"], wb["pr_auc_hi"]), (wm["pr_auc"], wm["pr_auc_lo"], wm["pr_auc_hi"]), (m["positive_rate"], None, None), (b["pr_auc"], b["pr_auc_lo"], b["pr_auc_hi"]), (m["pr_auc"], m["pr_auc_lo"], m["pr_auc_hi"])]  # chart rows from the files
-rows_timing, rows_style, rows_dots = spec_rows(4)  # the two tab 5 panels and the dot chart
+rows_timing, rows_style = spec_rows(4)  # the two tab 5 panels
 rows5 = rows_timing + rows_style  # all six bars
 got = [(r["value"], *(None if r[k] is None or r[k] != r[k] else r[k] for k in ("lo", "hi"))) for r in rows5]  # chart rows, a missing interval (null or NaN) is None
 assert got == expected, "tab 5 chart data equals the files"  # exact file values
 assert t["t5_headline"] in texts[4] and t["t5_sub"].format(first=first, last=last) in texts[4], "tab 5 headline and subtitle"  # true case
 n_dots = sc["sizes"]["dots_side"] ** 2  # circles per grid
 ks = [round(n_dots * top["holdout_positive_rate"]), round(n_dots * top["precision_top"])]  # expected filled circles, left and right
-grids = [r for r in rows_dots if "state" in r]  # circle rows of both grids
-assert len(grids) == 2 * n_dots, "two grids of circles"  # 2 x n
-for g, k, rate in zip((grids[:n_dots], grids[n_dots:]), ks, (top["holdout_positive_rate"], top["precision_top"])):  # left then right
-    assert sum(r["state"] == t["t5_dot_yes"] for r in g) == k, "filled circles equal round(n x rate)"  # from the files
-    assert {r["rate"] for r in g} == {f"{rate * 100:.1f}%"}, "exact rate in the tooltip"  # from the files
+grids = re.findall(r"<div class='ui-dots-grid' style='[^']*' title='([^']*)'>(.*?)</div></div><div class='ui-dots-big'", raws[4])  # tooltip and cells of both grids
+assert len(grids) == 2 and all(g[1].count("ui-dots-dot") == n_dots for g in grids), "two grids of circles"  # 2 x n
+for g, k, rate in zip(grids, ks, (top["holdout_positive_rate"], top["precision_top"])):  # left then right
+    assert g[1].count("ui-dots-dot on") == k, "filled circles equal round(n x rate)"  # from the files
+    assert f"{rate * 100:.1f}%" in g[0], "exact rate in the tooltip"  # from the files
 assert t["t5_col_rule"] == "Past habits" and t["t5_col_rule"] in texts[4], "Past habits label on screen"  # renamed
 cfg_text = open(ROOT / "app/demo_config.yaml").read()  # config file text
 assert all(w_ not in texts[4] and w_ not in cfg_text and all(r["label"] != w_ for r in rows5) for w_ in ("Rule of thumb", "rule of thumb", "History only", "Simple rule")), "old names are gone"  # no trace
@@ -211,7 +211,7 @@ for key in ("t5_tip_chance", "t5_tip_rule_timing", "t5_tip_rule_style", "t5_tip_
 tags = {r["panel"]: r["tag"] for r in rows5 if r.get("tag")}  # advantage tags by panel
 assert tags == {poc["label_timing"]: t["t5_advantage"].format(d=round(100 * (wm["pr_auc"] - wb["pr_auc"]))), poc["label_style"]: t["t5_advantage"].format(d=round(100 * (m["pr_auc"] - b["pr_auc"])))}, "advantage tags are whole points, model minus past habits from the files"  # computed
 spec5 = "".join(e.proto.spec for e in at.tabs[4].get("vega_lite_chart")[:2])  # the two panel specs
-assert len(at.tabs[4].get("vega_lite_chart")) == 3 and re.search(r'"width":\s*"container"', spec5) and all(f in spec5 for f in ("score_txt", "range_txt", "tag_tip")), "two panels fill their equal columns, friendly tooltip fields"  # layout and tooltips
+assert len(at.tabs[4].get("vega_lite_chart")) == 2 and re.search(r'"width":\s*"container"', spec5) and all(f in spec5 for f in ("score_txt", "range_txt", "tag_tip")), "two panels fill their equal columns, friendly tooltip fields"  # layout and tooltips
 assert all(x in spec5 for x in (t["t5_tt_name"], t["t5_tt_score"], t["t5_tt_range"].format(ci=round(CONFIG["bootstrap"]["confidence"] * 100)))) and not re.search(r'"title": "(value|lo|hi)"', spec5) and t["t5_tip_advantage"] in json.dumps(rows5), "tooltip titles come from the config, no internal field names"  # tooltips
 for r_ in rows5:  # tooltip texts of every bar
     assert r_["score_txt"] == f"{r_['value']:.3f}", "score with three decimals"  # score
@@ -224,12 +224,12 @@ assert not any(w_ in texts[4] or w_ in cfg_text for w_ in old_dot), "old dot cha
 share = float(top["selected_share"])  # share of the top group from the file
 s_ = round(100 * share)  # whole percent
 assert s_ == round(100 * share) and t["t5_dot_head"].format(s=s_, n=n_dots, b=ks[0], k=ks[1]) in norm(texts[4]), "headline with s, k and b from the files"  # computed line
-assert t["t5_dot_left"] in chart5 and t["t5_dot_right"].format(s=s_) in chart5, "grid titles"  # titles in the specs
+assert t["t5_dot_left"] in texts[4] and t["t5_dot_right"].format(s=s_) in texts[4], "grid titles"  # titles on screen
 assert t["t5_strip_top"].format(s=s_) in texts[4] and t["t5_strip_most"] in texts[4] and t["t5_strip_least"] in texts[4] and t["t5_dot_sort"] in texts[4], "strip labels and sort line"  # strip texts
 wd = re.search(r"class='ui-strip-top' style='width:([\d.]+)%", raws[4])  # width of the highlighted segment
 assert wd and abs(float(wd.group(1)) - share * 100) < 0.01 and "<svg" not in raws[4], "strip segment width equals selected_share, no svg"  # width from the file
 assert ks[1] > ks[0], "right grid is the top segment, better than blind"  # statement stays true
-assert sum(r.get("text") == t["t5_dot_caption"].format(n=n_dots) for r in rows_dots) >= 1, "caption under each big number"  # captions
+assert texts[4].count(t["t5_dot_caption"].format(n=n_dots)) == 2, "caption under each big number"  # captions
 import static_tabs  # the module the app uses
 data5 = static_tabs.results_data(cfg)  # chart table
 assert static_tabs.models_beat_rule(data5, cfg), "true case"  # data supports it
@@ -266,15 +266,16 @@ for tie, want in ((True, t["t8_next_1"]), (False, t["t8_next_1_plain"])):  # the
     depth_views.trees_tie = lambda d, c, tie=tie: tie  # forced condition (restored below)
     assert want in html.unescape(static_tabs.tab8_html(cfg)), f"tab 8 first next item with tie {tie}"  # item follows the condition
 depth_views.trees_tie = trees_tie  # real condition back
-chip_text = lambda q, st_: t["t8_close_chip"].format(question=q, status=st_)  # closing chip as shown
+chip_text = lambda k, st_: bool(re.search(rf"ui-close-name'>{re.escape(t[f't8_close_{k}_name'])}</div><div class='ui-close-q'>{re.escape(t[f't8_close_{k}_q'])}</div><span class='ui-chip'[^>]*>{re.escape(st_)}", page_now))  # closing block as shown: name, question, verdict chip
 real = (static_tabs.panel_beats_rule, static_tabs.forecast_beats_repeat)  # real conditions, restored below
 for ok in (True, False):  # the closing block both ways
     static_tabs.panel_beats_rule = lambda d, c, ok=ok: pd.Series({poc["label_timing"]: ok, poc["label_style"]: ok})  # forced advantage flags
     static_tabs.forecast_beats_repeat = lambda c, ok=ok: ok  # forced forecast verdict
     page = html.unescape(static_tabs.tab8_html(cfg))  # closing slide with forced conditions
     sure = t["t8_close_beats"] if ok else t["t8_close_tested"]  # Timing and Style status
-    assert chip_text(t["t8_close_timing_q"], sure) in page and chip_text(t["t8_close_style_q"], sure) in page, f"closing chips Timing and Style with {ok}"  # statuses
-    assert chip_text(t["t8_close_trends_q"], t["t8_close_trend_beats"] if ok else t["t8_close_first"]) in page, f"closing chip Trends with {ok}"  # trends status
+    page_now = page  # page the checker reads
+    assert chip_text("timing", sure) and chip_text("style", sure), f"closing blocks Timing and Style with {ok}"  # statuses
+    assert chip_text("trends", t["t8_close_trend_beats"] if ok else t["t8_close_first"]), f"closing block Trends with {ok}"  # trends status
     assert t["t8_close_line"] in page and page.count("class='ui-chip'") == 3, f"closing sentence and three chips with {ok}"  # sentence and chip count
 static_tabs.panel_beats_rule, static_tabs.forecast_beats_repeat = real  # real conditions back
 import copy  # copy of the config for the missing-file case
@@ -282,7 +283,8 @@ import tempfile  # temporary interval files
 paired = pd.read_csv(ROOT / cfg["style_tab"]["paired_file"], comment="#")  # stored interval, read independently of the app
 low = paired[(paired["model"] == FINAL_MODEL) & (paired["metric"] == f"hits@{cfg['style_tab']['top_n']}")]["ci_low"].iloc[0]  # lower bound of the forecast model
 want_trend = t["t8_close_trend_beats"] if low > 0 else t["t8_close_first"]  # chip text follows the sign of ci_low
-assert static_tabs.forecast_beats_repeat(cfg) == (low > 0) and chip_text(t["t8_close_trends_q"], want_trend) in html.unescape(static_tabs.tab8_html(cfg)), "Trends chip follows the sign of ci_low in the stored file"  # real data
+page_now = html.unescape(static_tabs.tab8_html(cfg))  # real closing slide
+assert static_tabs.forecast_beats_repeat(cfg) == (low > 0) and chip_text("trends", want_trend), "Trends chip follows the sign of ci_low in the stored file"  # real data
 for lo, expected in ((0.3, True), (-0.4, False), (0.0, False)):  # lower bound above, below and at zero
     with tempfile.TemporaryDirectory() as tmp:  # scratch folder
         fake = Path(tmp) / "paired.csv"  # interval file with one chosen lower bound
@@ -471,7 +473,7 @@ def tab5_html(app) -> str:  # raw html of tab 5
 
 
 assert pill(vk["tab5"]).options == [t[k] for k in sc["views"]["tab5"]] and len(pill(vk["tab5"]).options) == 4, "tab 5 pill has four views"  # options from the config
-assert pill(vk["tab5"]).value == t["t5_view_results"] and len(at.tabs[4].get("vega_lite_chart")) == 3, "default is the Results view, unchanged"  # default
+assert pill(vk["tab5"]).value == t["t5_view_results"] and len(at.tabs[4].get("vega_lite_chart")) == 2, "default is the Results view, unchanged"  # default
 q_t, q_s = poc["label_timing"], poc["label_style"]  # question labels
 pal_ = cfg["design"]["palette"]  # palette
 
@@ -564,7 +566,7 @@ assert cfg["poc"]["gap_points"] == gap_pts, "the loader's gaps equal round(100 x
 assert "{gap}" in cfg["poc"]["texts"]["score_tip"] and "not a probability" not in cfg["poc"]["texts"]["score_tip"], "tab 6 tooltip uses the gap and no longer denies calibration"  # tooltip pattern
 assert not any(re.search(r"not a probability|not calibrated|not been calibrated|calibration was not", v, re.I) for v in list(t.values()) + list(cfg["poc"]["texts"].values()) + list(cfg["notices"].values()) if isinstance(v, str)), "no on-screen text denies the calibration"  # texts
 pill(vk["tab5"]).set_value(t["t5_view_results"]).run()  # back to Results
-assert len(at.tabs[4].get("vega_lite_chart")) == 3 and t["t5_headline"] in plain(tab_text(4)), "Results view returns unchanged"  # switch back
+assert len(at.tabs[4].get("vega_lite_chart")) == 2 and t["t5_headline"] in plain(tab_text(4)), "Results view returns unchanged"  # switch back
 print("tab 5 views ok")  # result
 # design pass 8: alignment, gap wording, zoom caption, reading card, plural, tab 1 hook and photos
 def find_columns(node):  # the container whose children are the two columns of the Results view
@@ -677,7 +679,29 @@ for k_, v_ in (("tab2", "t2_view_genres"), ("tab3", "t3_view_tests"), ("tab5", "
     fresh.segmented_control(key=vk[k_]).set_value(t[v_]).run()  # click inside the fragment
     assert not fresh.exception and fresh.segmented_control(key=vk[k_]).value == t[v_], f"{k_}: the pill switches the view without an exception"  # view chosen
 print("fragments ok")  # result
+from models import GENRES, NUMERIC_FEATURES, WHAT_FEATURES  # real input lists of the two models
 placeholder = re.compile(r"\{[^}]*\}")  # a placeholder in braces
+page = lambda i: "".join(x.value for x in fresh.tabs[i].get("html"))  # raw html of one tab of the fresh run
+tab4_pill = fresh.segmented_control(key=vk["tab4"])  # pill of tab 4
+assert len(tab4_pill.options) == 2 and tab4_pill.value == t["t4_view_method"], "tab 4 has two pills and opens on the Method view"  # two pills
+fresh.segmented_control(key=vk["tab4"]).set_value(t["t4_view_inputs"]).run()  # open What the model sees
+raw4, text4 = page(3), plain(page(3))  # new view, raw and visible
+assert not fresh.exception and t["t4i_facts"].format(n=len(NUMERIC_FEATURES) + len(GENRES)) in text4 and t["t4i_facts"].format(n=len(WHAT_FEATURES)) in text4, "the n facts of both models equal the real list lengths"  # counts
+assert all(f["name"] in text4 for f in sc["inputs"]["style"]) and "Release counts" in text4 and "Activity pattern" in text4 and "Career so far" not in text4, "Style families show their renamed names"  # family names
+codes = {f for f in NUMERIC_FEATURES + WHAT_FEATURES} | {f"genre_{g}" for g in GENRES}  # every code name
+assert not [c for c in codes if c in raw4], "no feature code name in the rendered html"  # plain labels only
+fresh.segmented_control(key=vk["tab4"]).set_value(t["t4_view_method"]).run()  # back to Method
+fund = pd.read_csv(folder / pa["funnel"], comment="#").set_index("step")["rows_out"]  # hand-typed funnel
+seen = ""  # visible text of the three views of tab 2
+for v_ in ("t2_view_volume", "t2_view_genres", "t2_view_cleaning"):  # every view of tab 2
+    fresh.segmented_control(key=vk["tab2"]).set_value(t[v_]).run()  # open the view
+    seen += plain(page(1))  # its visible text
+    if v_ == "t2_view_cleaning":  # the new view
+        assert t["t2c_before"] in plain(page(1)) and t["t2c_after"] in plain(page(1)) and t["t2c_releases"] in plain(page(1)) and t["t2c_artists"] in plain(page(1)) and page(1).count("ui-chip'") == 1 and all(f"{int(fund[k]):,}" in plain(page(1)) for k in ("standalone_nomaster", "combined", "final_table", "final_artists", "undated")), "Cleaning shows the no-master, combined, final releases, artists and undated numbers of the csv"  # numbers
+assert not re.search(r"\bWorks?\b", seen + text4), "no on-screen text of tab 2 or the new tab 4 view contains Works"  # one word for the unit
+new_keys = [k for k in t if k.startswith(("t4i_", "t2c_"))]  # texts of the two new views
+assert new_keys and not [k for k in new_keys if re.search(r"\d", placeholder.sub("", t[k]))], "no digit outside a placeholder in the new texts"  # digits
+print("tab 4 inputs view and tab 2 cleaning view ok")  # result
 bad = {k: v for k, v in t.items() if k not in ("t3s_line", "t4_final_forecast", "t5_tip_advantage") and re.search(r"\d", placeholder.sub("", v))}  # texts with a digit outside a placeholder, except the 0 to 1 scale of the muted line, the tab number of the forecast tag and the factor 100 of the advantage tooltip
 assert not bad, f"digits outside placeholders: {bad}"  # none, no exception was needed
 print("static_tabs texts: no digit outside a placeholder (only the 0 to 1 scale in t3s_line)")  # result

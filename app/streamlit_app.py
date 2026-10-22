@@ -17,8 +17,8 @@ from config import CONFIG  # noqa: E402  project settings
 from style_tab import forecast_table, mark_for, style_summary, style_years, validation_figures, with_reality, year_status  # noqa: E402  tab 7 logic
 from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reliability_lines, route_for_year, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
 from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, open_year_text, star_in_row, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
-from static_charts import dots_chart, results_chart, strength_chart, works_chart  # noqa: E402  Altair charts of tabs 2, 3 and 5
-from static_tabs import dots_panels, strip_html, results_data, tab1_head_html, tab1_kpis_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
+from static_charts import results_chart, strength_chart, works_chart  # noqa: E402  Altair charts of tabs 2, 3 and 5
+from static_tabs import dots_html, dots_panels, strip_html, results_data, tab1_head_html, tab1_kpis_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2c_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab4i_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
 from depth_views import legend_html, models_charts, models_data, models_head_html, models_note_html, models_title_html, reliability_data, trust_chart, trust_head_html, trust_legend_html, trust_read_html, trust_lines_html, trust_title_html, year_data, years_charts, years_head_html  # noqa: E402  depth views of tab 5
 from ui_components import accent_key, base_css, header_html, headline  # noqa: E402  design system
 from demo_game import (  # noqa: E402  pure game functions
@@ -97,7 +97,9 @@ def render_tab2() -> None:  # body of the tab with view pills
     sct = cfg["static_tabs"]  # static tabs settings
     view2 = view_selector(cfg, "tab2")  # Volume or Genres
     with st.empty().container():  # one slot: the old view disappears as soon as the new one starts drawing
-        if view2 == sct["texts"]["t2_view_genres"]:  # Genres view
+        if view2 == sct["texts"]["t2_view_cleaning"]:  # Cleaning view
+            st.html(tab2c_html(cfg))  # headline, two-lane flow, chip and source line
+        elif view2 == sct["texts"]["t2_view_genres"]:  # Genres view
             st.html(tab2g_head_html(cfg))  # headline from the data and subtitle
             parts = tab2g_parts(cfg)  # card title, chart and note
             with st.container(border=True):  # card
@@ -115,7 +117,20 @@ def render_tab2() -> None:  # body of the tab with view pills
 with tabs[1]:  # Data and cleaning
     render_tab2()  # fragment of this tab
 
-for i, build in ((3, tab4_html), (7, tab8_html)):  # static tabs with one HTML block, the headline is the only title
+@st.fragment  # a click on a view pill reruns only this tab
+def render_tab4() -> None:  # body of the tab with view pills
+    """Draw the view chosen with the pills of this tab."""
+    view4 = view_selector(cfg, "tab4")  # Method or What the model sees
+    with st.empty().container():  # one slot: the old view disappears as soon as the new one starts drawing
+        if view4 == cfg["static_tabs"]["texts"]["t4_view_inputs"]:  # What the model sees view
+            st.html(tab4i_html(cfg))  # headline, example and the two model cards
+        else:  # Method view
+            st.html(tab4_html(cfg))  # the tab as it was
+
+with tabs[3]:  # Method
+    render_tab4()  # fragment of this tab
+
+for i, build in ((7, tab8_html),):  # static tab with one HTML block, the headline is the only title
     with tabs[i]:  # open the tab
         st.html(build(cfg))  # the tab content
 
@@ -189,7 +204,7 @@ def render_tab5() -> None:  # body of the tab with view pills
             with right, st.container(border=True, height=card_h):  # dot card, same height and top as the chart card
                 st.html(f"<div class='ui-card-title'>{dot_line}</div>")  # headline line, first line of the card
                 st.html(strip_html(cfg))  # sorted-artists strip
-                st.altair_chart(dots_chart(dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"yes": dtx["t5_dot_yes"], "no": dtx["t5_dot_no"], "tip": dtx["t5_dot_tip"]}, cfg), theme=None, width="stretch")  # two grids
+                st.html(dots_html(cfg, dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"tip": dtx["t5_dot_tip"]}))  # two grids that fit the card
 
 with tabs[4]:  # Results
     render_tab5()  # fragment of this tab

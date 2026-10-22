@@ -1,0 +1,11 @@
+# Typed by hand from docs/work_definition.md lines 5 and 84 to 113 (final table at line 5), and the undated figure from results/demo/static/data_quality.csv (works_undated)
+step,lane,rows_in,rows_out,source_line
+masters_read,masters,,2589349,docs/work_definition.md:84
+masters_kept,masters,2589349,2015417,docs/work_definition.md:85-90
+standalone_nomaster,standalone,,8076985,docs/work_definition.md:92
+standalone_kept,standalone,8076985,4218546,docs/work_definition.md:93-95
+combined,both,,6233963,docs/work_definition.md:96
+after_duplicates,both,6233963,6114920,docs/work_definition.md:98
+final_table,both,6114920,5949217,docs/work_definition.md:5 and 112
+final_artists,both,,1034756,docs/work_definition.md:5
+undated,both,,510364,results/demo/static/data_quality.csv (works_undated)

@@ -101,8 +101,103 @@ def close_css(cfg: dict) -> str:  # style rules of the tab 8 closing cards and b
         f".ui-close-title{{display:flex;align-items:center;gap:{b['gap']}px;font-size:{ty['subtitle']}px;font-weight:700;color:{c['text']};margin-bottom:{b['gap'] * 2}px}}",  # marker and card title
         f".ui-close-dot{{width:{d['method']['dot']}px;height:{d['method']['dot']}px;border-radius:50%;background:{c['highlight']};flex:none}}",  # round marker in the highlight color
         f".ui-close-item{{font-size:{ty['label']}px;color:{c['text']};line-height:1.45;margin-bottom:{b['gap']}px;text-align:left}}",  # one item
-        f".ui-band{{background:{c['tint']};border-top:{b['border']}px solid {c['line']};border-bottom:{b['border']}px solid {c['line']};padding:{b['pad']}px 0;text-align:left}}",  # closing band, paper tint between two thin rules
-        f".ui-band .ui-chips{{margin:0 0 {b['gap']}px 0;flex-wrap:wrap}}",  # the three chips in a row, wrapping on small screens
+        f".ui-band{{background:{c['tint']};border-top:{b['border']}px solid {c['line']};border-bottom:{b['border']}px solid {c['line']};padding:{b['pad']}px 0 {round(ty['subtitle'] * 1.5)}px;text-align:left}}",  # closing band, paper tint between two thin rules
+        f".ui-close-blocks{{display:flex;gap:{b['gap'] * 2}px;margin-bottom:{round(ty['subtitle'] * 1.5)}px}}",  # the three blocks side by side, one text line above the closing sentence
+        f".ui-close-block{{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:{b['gap'] // 2}px}}",  # name, question and verdict chip, left aligned
+        f".ui-close-name{{font-family:'{d['font']['heading']}',Georgia,serif;font-size:{ty['subtitle']}px;font-weight:600;color:{c['text']}}}",  # block name in the serif
+        f".ui-close-q{{font-size:{ty['caption']}px;color:{c['muted']}}}",  # muted question line
+        f"@media (max-width:1023px){{.ui-close-blocks{{flex-direction:column}}}}",  # tablet and phone: blocks stacked
         f".ui-band>.ui-close-item{{font-family:'{d['font']['heading']}',Georgia,serif;font-size:clamp({round(ty['subtitle'] * 1.1)}px,1.6vw + 10px,{round(ty['subtitle'] * 1.5)}px);line-height:1.35;margin-bottom:0}}",  # the sentence in the serif
     ]
     return "<style>" + "".join(rules) + "</style>"  # the style element
+
+def dots_css(cfg: dict) -> str:  # style rules of the two dot grids of tab 5
+    """Rules prefixed ui-dots-; the grids shrink with their panel (columns share the width, dots keep a square cell), sizes from design.chart."""
+    d = cfg["design"]  # design settings
+    c, ch, b = d["palette"], d["chart"], d["box"]  # palette, chart sizes and box sizes
+    rules = [  # one rule per element
+        f".ui-dots{{display:flex;gap:{b['gap']}px;width:100%}}",  # the two grids side by side
+        f".ui-dots-col{{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center}}",  # one grid with its title, number and caption
+        f".ui-dots-title{{font-size:{d['type']['label']}px;color:{c['text']};margin-bottom:{b['gap'] // 2}px;overflow-wrap:anywhere}}",  # grid title
+        f".ui-dots-grid{{display:grid;grid-template-columns:repeat(var(--side),minmax(0,1fr));width:100%;max-width:calc(var(--side) * {ch['dot_cell']}px)}}",  # circles, never wider than the desktop size
+        f".ui-dots-cell{{aspect-ratio:1/1;display:flex}}",  # square cell
+        f".ui-dots-dot{{margin:auto;width:{round(ch['dot_fill'] * 100)}%;height:{round(ch['dot_fill'] * 100)}%;border-radius:50%;background:{c['chance']}}}",  # circle, share of its cell
+        f".ui-dots-dot.on{{background:{c['style']}}}",  # filled circle in the Style color
+        f".ui-dots-big{{font-size:clamp(18px,3vw,{ch['dot_big_font']}px);font-weight:700;color:{c['style']};margin-top:{b['gap'] // 2}px}}",  # big number
+        f".ui-dots-cap{{font-size:{ch['dot_caption_font']}px;color:{c['muted']};overflow-wrap:anywhere}}",  # caption
+        f"@media (max-width:639px){{.ui-dots{{flex-direction:column}}}}",  # phone: grids stacked
+    ]
+    return "<style>" + "".join(rules) + "</style>"  # the style element
+
+def dots_html(cfg: dict, panels: list, side: int, texts: dict) -> str:  # two grids of circles
+    """One side x side grid per panel; the first k circles use the Style color; a big number and a caption sit under each grid."""
+    n = side * side  # circles per grid
+    cols = []  # one column per panel
+    for p in panels:  # in the given order
+        cells = "".join(f"<div class='ui-dots-cell'><i class='ui-dots-dot{' on' if i < p['k'] else ''}'></i></div>" for i in range(n))  # reading order, first k filled
+        tip = html.escape(f"{texts['tip']}: {p['rate_text']}", quote=True)  # tooltip of the grid with the exact share
+        cols.append(f"<div class='ui-dots-col'><div class='ui-dots-title'>{html.escape(p['title'])}</div><div class='ui-dots-grid' style='--side:{side}' title='{tip}'>{cells}</div><div class='ui-dots-big'>{html.escape(p['big'])}</div><div class='ui-dots-cap'>{html.escape(p['caption'])}</div></div>")  # title, grid, number, caption
+    return dots_css(cfg) + f"<div class='ui-dots'>{''.join(cols)}</div>"  # both grids
+
+def inputs_css(cfg: dict) -> str:  # style rules of the tab 4 inputs view
+    """Rules prefixed ui-in-; colors from the palette, gaps from design.box."""
+    d = cfg["design"]  # design settings
+    c, ty, b = d["palette"], d["type"], d["box"]  # palette, type scale and box sizes
+    rules = [  # one rule per element
+        f".ui-in-top{{display:flex;flex-wrap:wrap;align-items:center;gap:{b['gap']}px}}",  # chip next to the question
+        f".ui-in-q{{font-size:{ty['label']}px;color:{c['muted']}}}",  # question line under the card title
+        f".ui-in-row{{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:{b['gap']}px;align-items:center;padding:{b['gap'] // 2}px 0;border-top:1px solid {c['line']}}}",  # family and its example values
+        f".ui-in-fam{{display:flex;align-items:center;gap:{b['gap'] // 2}px;font-weight:600}}",  # family name and its count chip
+        f".ui-in-vals{{font-size:{ty['caption']}px;color:{c['muted']};min-width:0}}",  # example values
+        f"@media (max-width:639px){{.ui-in-row{{grid-template-columns:minmax(0,1fr)}}}}",  # phone: values under the family
+    ]
+    return "<style>" + "".join(rules) + "</style>"  # the style element
+
+def inputs_card(color: str, title: str, facts: str, question: str, rows: list) -> str:  # one model card of the inputs view
+    """Title, a chip with the number of facts and the question; rows holds (family, count, values) as text."""
+    top = f"<div class='ui-in-top'>{chip(facts, color)}<span class='ui-in-q'>{html.escape(question)}</span></div>"  # chip and question
+    body = "".join(f"<div class='ui-in-row'><div class='ui-in-fam'>{html.escape(f)}{chip(n, color)}</div><div class='ui-in-vals'>{html.escape(v)}</div></div>" for f, n, v in rows)  # one row per family
+    return card(top + body, title)  # card
+
+def funnel_css(cfg: dict) -> str:  # style rules of the tab 2 Cleaning view
+    """Rules prefixed ui-fx-; the boxes reuse the ui-flow-box rules."""
+    d = cfg["design"]  # design settings
+    c, ty, b, f = d["palette"], d["type"], d["box"], d["flow"]  # palette, type scale, box and flow sizes
+    rules = [  # one rule per element
+        f".ui-fx{{display:flex;align-items:center;gap:{b['gap']}px}}",  # stages left to right
+        f".ui-fx>.ui-flow-box{{flex:1 1 0;min-width:0}}",  # equal boxes that never push past the card
+        f".ui-fx-lanes{{display:flex;flex-direction:column;gap:{b['gap']}px;flex:2 1 0;min-width:0}}",  # the two lanes, one above the other
+        f".ui-fx-lane-title{{font-size:{ty['label']}px;font-weight:600;margin-bottom:{b['gap'] // 2}px}}",  # lane name
+        f".ui-fx-pair{{display:flex;align-items:center;gap:{b['gap']}px}}",  # Read and Cleaned side by side
+        f".ui-fx-pair>.ui-flow-box{{flex:1 1 0;min-width:0}}",  # equal boxes inside a lane
+        f".ui-fx-count{{font-size:clamp(14px,2vw,{f['count_font'] * 4 // 5}px);font-weight:600;line-height:1.3;white-space:nowrap;font-variant-numeric:tabular-nums}}",  # count in a box, smaller than the tab 2 flow, never broken across lines
+        f".ui-fx-reason{{font-size:{ty['caption']}px;color:{c['muted']};margin-top:{b['gap'] // 2}px}}",  # muted reason line
+        f".ui-fx-arrow{{position:relative;flex:none;width:{f['arrow_len']}px;height:{f['arrow_width']}px;background:{c['muted']}}}",  # arrow shaft
+        f".ui-fx-arrow::after{{content:'';position:absolute;right:-1px;top:50%;transform:translateY(-50%);border-top:{f['arrow_head']}px solid transparent;border-bottom:{f['arrow_head']}px solid transparent;border-left:{f['arrow_head']}px solid {c['muted']}}}",  # arrow head
+        f".ui-fx-sub{{font-size:{ty['caption']}px;color:{c['muted']}}}",  # small muted label over a number
+        f".ui-fx-down{{position:relative;width:{f['arrow_width']}px;height:{f['arrow_len'] // 2}px;background:{c['muted']};margin:{b['gap'] // 2}px auto {f['arrow_head']}px}}",  # short arrow between two numbers of a box, shaft
+        f".ui-fx-down::after{{content:'';position:absolute;left:50%;bottom:-{f['arrow_head']}px;transform:translateX(-50%);border-left:{f['arrow_head']}px solid transparent;border-right:{f['arrow_head']}px solid transparent;border-top:{f['arrow_head']}px solid {c['muted']}}}",  # arrow head pointing down
+        f".ui-fx-chips{{display:flex;flex-wrap:wrap;justify-content:center;gap:{b['gap'] // 2}px;margin-top:{b['gap'] // 2}px}}",  # releases and artists chips
+        f"@media (max-width:1100px){{.ui-fx{{flex-direction:column;align-items:stretch}}.ui-fx>.ui-flow-box{{flex:none;width:auto}}.ui-fx>.ui-fx-arrow{{align-self:center;transform:rotate(90deg);margin:{f['arrow_len'] // 2}px 0}}.ui-fx-lanes{{flex:none;width:100%}}.ui-fx-count{{font-size:clamp(14px,3.2vw,{f['count_font'] * 4 // 5}px)}}}}",  # below 1100 px: lanes, Combined, duplicates, table stacked at full row width, arrows point down, numbers sized by the viewport
+    ]
+    return "<style>" + "".join(rules) + "</style>"  # the style element
+
+def _fx_box(label: str, counts: list, color: str, reason: str = "", chips: list = (), under: bool = False) -> str:  # one box of the Cleaning view
+    """A flow box with a label, one count per line, an optional muted reason and optional chips; the label of a (label, count) pair goes over the count, or under it when `under`."""
+    one = lambda n: f"<div class='ui-fx-count' style='color:{color}'>{html.escape(n)}</div>"  # one count line
+    nums = "".join("<div class='ui-fx-down'></div>" if n is None else (one(n[1]) + f"<div class='ui-fx-sub'>{html.escape(n[0])}</div>" if under else f"<div class='ui-fx-sub'>{html.escape(n[0])}</div>" + one(n[1])) if isinstance(n, tuple) else one(n) for n in counts)  # a count, a (label, count) pair or None for the arrow
+    why = f"<div class='ui-fx-reason'>{html.escape(reason)}</div>" if reason else ""  # reason line
+    tags = f"<div class='ui-fx-chips'>{''.join(chips)}</div>" if chips else ""  # chips under the counts
+    return f"<div class='ui-flow-box' style='border-color:{color}'><div class='ui-label'>{html.escape(label)}</div>{nums}{why}{tags}</div>"  # box
+
+def funnel_flow(cfg: dict, t: dict, v: dict) -> str:  # tab 2 Cleaning flow
+    """Two lanes (Read, Cleaned) that merge into Combined, then the duplicates box (releases before and after) and the modelling table; v holds the counts as text."""
+    color = cfg["design"]["palette"]["highlight"]  # box color
+    arrow = "<div class='ui-fx-arrow'></div>"  # arrow between two boxes
+    def lane(title: str, first: str, read: str, kept: str, reason: str) -> str:  # one lane, `first` is the label of its first box
+        pair = _fx_box(first, [read], color) + arrow + _fx_box(t["t2c_cleaned"], [kept], color)  # Read, arrow, Cleaned
+        return f"<div><div class='ui-fx-lane-title'>{html.escape(title)}</div><div class='ui-fx-pair'>{pair}</div><div class='ui-fx-reason'>{html.escape(reason)}</div></div>"  # lane
+    lanes = lane(t["t2c_masters"], t["t2c_read"], v["masters_read"], v["masters_kept"], t["t2c_masters_reason"]) + lane(t["t2c_standalone"], t["t2c_nomaster"], v["standalone_nomaster"], v["standalone_kept"], t["t2c_standalone_reason"])  # both lanes
+    final = _fx_box(t["t2c_final"], [(t["t2c_releases"], v["final_table"]), (t["t2c_artists"], v["final_artists"])], color, under=True)  # each number with its own label under it
+    stages = f"<div class='ui-fx-lanes'>{lanes}</div>" + arrow + _fx_box(t["t2c_combined"], [v["combined"]], color) + arrow + _fx_box(t["t2c_noise"], [(t["t2c_before"], v["combined"]), None, (t["t2c_after"], v["final_table"])], color, t["t2c_noise_reason"]) + arrow + final  # whole flow
+    return f"<div class='ui-fx'>{stages}</div>"  # flow

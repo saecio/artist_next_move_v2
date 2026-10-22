@@ -69,6 +69,12 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f"[data-testid='stBaseButton-primary']:hover:not(:disabled) p{{color:{c['background']}}}",  # primary hover label
         f"[data-testid='stBaseButton-secondary']{{background:transparent;{box};color:{c['text']}}}",  # secondary: thin border, no fill
         f"[data-testid='stBaseButton-secondary'] p{{font-weight:{bt['weight']}}}",  # secondary label weight
+        f"[data-testid='stAlert'],[data-testid='stAlertContainer']{{background:{c['tint']} !important;border:1px solid {c['line']} !important;border-radius:{b['radius']}px !important;color:{c['text']} !important}}",  # every Streamlit alert: paper tint, thin line, flat corners, ink text
+        f"[data-testid='stAlert'] *{{color:{c['text']} !important}}",  # alert text and icon in the ink color, no tint
+        f"[data-testid='stAlert'] svg{{fill:{c['text']} !important}}",  # icon without the alert color
+        f"[data-testid='stAlertContainer']{{border-left:3px solid {c['timing']} !important}}",  # left rule of an info (and success) alert in the Timing color
+        f"[data-testid='stAlertContainer']:has([data-testid='stAlertContentWarning']){{border-left-color:{c['highlight']} !important}}",  # warning: highlight color
+        f"[data-testid='stAlertContainer']:has([data-testid='stAlertContentError']){{border-left-color:{c['style']} !important}}",  # error: Style color
         f".ui-scroll{{max-width:100%;overflow-x:auto}}",  # tables and schemas scroll inside their own box
         f"[data-testid='stVegaLiteChart'],[data-testid='stArrowVegaLiteChart']{{max-width:100%;overflow-x:auto}}",  # fixed-size charts scroll inside their own box
         f"@media (max-width:1023px){{[data-testid='stMainBlockContainer']{{padding-left:1.5rem !important;padding-right:1.5rem !important}}"  # tablet: less side padding

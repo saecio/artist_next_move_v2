@@ -371,6 +371,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     h1_buckets: h1_buckets.csv  # bucket, transitions, new_style_rate
     h6_buckets: h6_buckets.csv  # bucket, artist_years, release_next_year_rate
     data_figures: data_figures.csv  # metric, value
+    funnel: cleaning_funnel.csv  # step, lane, rows_in, rows_out, source_line, typed by hand from docs/work_definition.md (Cleaning view of tab 2)
     hypotheses: hypotheses_summary.csv  # id, question, result, test, h0_rejected, source
     when_model: results/holdout_ci95/xgboost_final_next_1y.json  # Timing model, holdout, next_1y
     when_baseline: results/holdout_ci95/baseline_next_1y.json  # Timing past habits, holdout, next_1y
@@ -427,11 +428,46 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
   final_model: XGBoost  # the model highlighted in the Models compared dot plots
   style_rule_label: Baseline (c)  # label of the past habits block in the Style comparison table
   calibration_targets: {timing: next_1y, style: what}  # summary.csv target of each question in the Results depth views and the closing slide
-  view_keys: {tab2: tab2_view, tab3: tab3_view, tab5: tab5_view}  # widget keys of the two view selectors
+  view_keys: {tab2: tab2_view, tab3: tab3_view, tab4: tab4_view, tab5: tab5_view}  # widget keys of the view selectors
   views:  # view selectors: label texts (keys of static_tabs.texts), first one is the default
-    tab2: [t2_view_volume, t2_view_genres]  # tab 2
+    tab2: [t2_view_volume, t2_view_genres, t2_view_cleaning]  # tab 2
     tab3: [t3_view_patterns, t3_view_tests]  # tab 3
+    tab4: [t4_view_method, t4_view_inputs]  # tab 4
     tab5: [t5_view_results, t5_view_years, t5_view_models, t5_view_trust]  # tab 5
+  inputs:  # tab 4 inputs view: families of facts per model and the plain label of every non-genre fact (never the code name)
+    genres_name: "Genres"  # family of the 0 / 1 genre columns, in both models
+    flags: [is_album_like, is_single_like]  # facts shown as yes / no
+    timing:  # Timing families in display order, features are columns of NUMERIC_FEATURES in src/models.py
+      - {name: "This year so far", features: [works_so_far_this_year, albums_so_far_this_year, singles_so_far_this_year]}
+      - {name: "Release format", features: [is_album_like, is_single_like]}
+      - {name: "Career history", features: [history_count, years_since_last, years_active_so_far, historical_rate]}
+    style:  # Style families in display order, group is a key of ABLATION_GROUPS in src/what_target.py
+      - {name: "Release counts", group: table_inputs}
+      - {name: "Style vocabulary", group: vocabulary}
+      - {name: "Novelty", group: novelty}
+      - {name: "Activity pattern", group: timing_format}
+    labels:  # plain label of each fact, at most four words
+      works_so_far_this_year: "Releases so far"
+      albums_so_far_this_year: "Albums so far"
+      singles_so_far_this_year: "Singles so far"
+      is_album_like: "Is an album"
+      is_single_like: "Is a single"
+      history_count: "Earlier releases"
+      years_since_last: "Years since last release"
+      years_active_so_far: "Years active"
+      historical_rate: "Releases per year"
+      n_works_year: "Releases this year"
+      n_styles_seen: "Styles used so far"
+      n_styles_year: "Styles this year"
+      n_new_styles_year: "New styles this year"
+      styles_per_work: "Styles per release"
+      new_style_rate_so_far: "New-style rate so far"
+      years_since_new_style: "Years since new style"
+      years_since_prev_active_year: "Break before this year"
+      top_style_share: "Share of favourite style"
+      n_genres_seen: "Genres used so far"
+      albums_share_year: "Albums share this year"
+      singles_share_year: "Singles share this year"
   sizes:  # pixel sizes of the static tabs (a later design pass restyles them)
     tab5_trust_columns: [3, 2]  # relative widths of the reliability chart card and the muted lines of the Can you trust view
     tab5_columns: [2, 1]  # relative widths of the chart card and the dot card of tab 5
@@ -506,23 +542,38 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t4_final_style: "Style: {model}"  # tag, model name from the code that builds the Style final model
     t4_final_forecast: "Style forecast (tab 7): {model}"  # tag, model name from the style forecast final model
     t4_final_flag: "Final model"  # flag over the last model chip
+    t4_view_method: "How we test"  # tab 4 view label
+    t4_view_inputs: "What the model sees"  # tab 4 view label
+    t4i_headline: "What the model sees"  # inputs view headline
+    t4i_sub: "For each prediction the model gets a short list of facts about the artist, all taken from the past. Here is one real example."  # inputs view subtitle
+    t4i_example: "Example: {artist}, {year}"  # line under the subtitle, artist and year of the tab 6 default
+    t4i_timing_title: "Timing model"  # left card title
+    t4i_style_title: "Style model"  # right card title
+    t4i_timing_question: "Will a new release come within a year?"  # left card question
+    t4i_style_question: "Which new style comes next?"  # right card question
+    t4i_facts: "{n} facts"  # chip with the number of model inputs
+    t4i_yes: "yes"  # value of a 0 / 1 fact equal to 1
+    t4i_no: "no"  # value of a 0 / 1 fact equal to 0
+    t4i_caption: "Every value is computed only from releases before the prediction. Nothing from the future gets in."  # under the cards
     t4_chips_tip: "The three tree models tied on the practice runs, within the margin of error. We use XGBoost because it works with missing values without filling them in and was the one we tuned the most."  # tooltip of the chip row
     t5_col_chance: "By chance"  # results column
     t5_col_model: "Our model"  # results column
     t8_headline: "What it can do, what to keep in mind, what comes next."  # tab 8 headline
     t8_works_title: "What works"  # card title
-    t8_works_1: "Beats past habits on both questions, on unseen years: +{d1} Timing, +{d2} Style points."  # item, d1 and d2 equal the tab 5 tags
-    t8_works_2: "Inputs known at the prediction date, tested forward in time."  # item
-    t8_works_3: "Scores match real rates: {gap_style} off for Style, {gap_timing} for Timing."  # item, gaps = singular or plural point text from results/calibration/summary.csv (round(100 x ECE))
+    t8_works_1: "On years the models never saw, Timing is {d1} points better than past habits and Style is {d2} points better."  # item, d1 and d2 equal the tab 5 tags
+    t8_works_2: "Every input is known on the prediction date, and the tests always go forward in time, never backwards."  # item
+    t8_works_3: "Its scores can be trusted: on average they are off by only {gap_style} for Style and {gap_timing} for Timing."  # item, gaps = singular or plural point text from results/calibration/summary.csv (round(100 x ECE))
     t8_mind_title: "What to keep in mind"  # card title
     t8_mind_1: "Discogs is a collector database: some releases are missing and recent years are incomplete."  # item
     t8_mind_2: "\"New style\" is a Discogs style tag, not measured from the sound."  # item
     t8_mind_3: "Demo artists are picked to be recognisable, not at random."  # item
     t8_mind_4: "Style is the harder question: its top picks are right {k} in {n}."  # item, k and n from the Style half of the tab 1 card
-    t8_close_timing_q: "Timing: When will an artist release again?"  # closing chip, Timing question
-    t8_close_style_q: "Style: Will it bring a new style?"  # closing chip, Style question
-    t8_close_trends_q: "Trends: Which styles will grow?"  # closing chip, style forecast question
-    t8_close_chip: "{question} ({status})"  # closing chip text
+    t8_close_timing_name: "Timing"  # closing block name
+    t8_close_style_name: "Style"  # closing block name
+    t8_close_trends_name: "Trends"  # closing block name
+    t8_close_timing_q: "When will an artist release again?"  # closing block, Timing question
+    t8_close_style_q: "Will it bring a new style?"  # closing block, Style question
+    t8_close_trends_q: "Which styles will grow?"  # closing block, style forecast question
     t8_close_beats: "Beats past habits"  # status of Timing and Style when the model is clearly above past habits (tab 5 condition per question)
     t8_close_tested: "Tested"  # status of Timing and Style otherwise
     t8_close_first: "A first step"  # status of Trends when the forecast is not clearly better than repeating last year
@@ -538,6 +589,26 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t3_card_timing: "Release next year by years since the last one"  # Timing card title
     t2_view_volume: "Volume"  # tab 2 view label
     t2_view_genres: "Genres"  # tab 2 view label
+    t2_view_cleaning: "Cleaning"  # tab 2 view label
+    t2c_headline: "From raw files to the modelling table"  # Cleaning view headline
+    t2c_sub: "Each step removes records that would mislead the models. The numbers are releases left after each step."  # Cleaning view subtitle
+    t2c_masters: "Masters"  # title of the first lane
+    t2c_standalone: "Standalone releases"  # title of the second lane
+    t2c_read: "Read"  # first box of the Masters lane
+    t2c_nomaster: "Without a master"  # first box of the Standalone lane
+    t2c_cleaned: "Cleaned"  # second box of a lane
+    t2c_masters_reason: "Placeholder artists, non-music, classical and compilations out"  # muted line under the Masters lane
+    t2c_standalone_reason: "Fewer than three releases per artist, same filters, compilations out"  # muted line under the Standalone lane
+    t2c_combined: "Combined"  # box where the two lanes merge
+    t2c_noise: "Duplicates and noise out"  # box after the merge
+    t2c_before: "Before"  # small label over the combined releases number in the duplicates box
+    t2c_after: "After"  # small label over the final table releases number in the duplicates box
+    t2c_noise_reason: "Exact and near duplicates, reissues, live, remixes and similar titles out"  # muted line inside the noise box
+    t2c_final: "Modelling table"  # last box
+    t2c_releases: "releases"  # chip of the releases number
+    t2c_artists: "artists"  # chip of the artists number
+    t2c_undated: "No year on record: {n}, left out of the Timing table"  # chip beside the flow, n from data_quality.csv
+    t2c_source: "Source: Discogs data dump."  # caption under the flow
     t2g_headline: "Music keeps changing: {genre} went from {a}% of releases in {y0} to {b}% in {y1}."  # Genres view headline, genre and numbers from genre_share_by_year.csv
     t2g_sub: "That is why we always test on later years, never on a random split."  # Genres view subtitle
     t2g_title: "Share of releases by genre"  # title of the genre chart card
