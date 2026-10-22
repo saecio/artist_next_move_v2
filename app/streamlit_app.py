@@ -20,7 +20,7 @@ from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_tab
 from static_charts import dots_chart, results_chart, strength_chart, works_chart  # noqa: E402  Altair charts of tabs 2, 3 and 5
 from static_tabs import dots_panels, strip_html, results_data, tab1_head_html, tab1_kpis_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
 from depth_views import legend_html, models_charts, models_data, models_head_html, models_note_html, models_title_html, reliability_data, trust_chart, trust_head_html, trust_legend_html, trust_read_html, trust_lines_html, trust_title_html, year_data, years_charts, years_head_html  # noqa: E402  depth views of tab 5
-from ui_components import base_css, header_html  # noqa: E402  design system
+from ui_components import accent_key, base_css, header_html  # noqa: E402  design system
 from demo_game import (  # noqa: E402  pure game functions
     hidden_counts, new_state, next_year, scored_years, scoreboard, session_total,  # imported names
 )  # close the import
@@ -81,8 +81,8 @@ tabs = st.tabs(cfg["tabs"])  # one tab per title, in config order
 
 with tabs[0]:  # Problem and question
     st.html(tab1_head_html(cfg))  # story headline and use sentence
-    for col, panel in zip(st.columns(2), tab1_panels(cfg)):  # Timing card and Style card
-        with col, st.container(border=True, height=cfg["design"]["photo"]["card_height"]):  # card of equal height
+    for col, panel, q in zip(st.columns(2), tab1_panels(cfg), ("timing", "style")):  # Timing card and Style card
+        with col, st.container(border=True, height=cfg["design"]["photo"]["card_height"], key=accent_key(q, "t1")):  # card of equal height
             pic, body = st.columns([cfg["design"]["photo"]["width"], cfg["design"]["photo"]["content_weight"]])  # photo column and content
             pic.html(panel["photo"])  # photo or monogram, the hero
             body = body.container(height=cfg["design"]["photo"]["height"], border=False)  # right column exactly as tall as the photo, so the question ends on the photo bottom line
@@ -131,7 +131,7 @@ def render_tab3() -> None:  # body of the tab with view pills
         else:  # Two patterns view
             st.html(tab3_head_html(cfg))  # headline, only the conclusion the data supports
             for col, panel in zip(st.columns(2), tab3_panels(cfg)):  # Style card and Timing card
-                with col, st.container(border=True):  # card
+                with col, st.container(border=True, key=accent_key(panel["key"], "t3")):  # card
                     st.html(f"<div class='ui-card-title'>{panel['title']}</div>")  # card title
                     st.altair_chart(panel["chart"], theme=None, width="stretch")  # five bars
                     st.html(panel["line"])  # muted one-liner
@@ -149,15 +149,15 @@ def render_tab5() -> None:  # body of the tab with view pills
             years = year_data(cfg)  # one row per question, line and test year
             st.html(years_head_html(cfg, years))  # headline, only when true
             st.html(legend_html(cfg, ("t5_col_rule", "t5_col_model")))  # the two line names with their tooltips
-            for col, chart in zip(st.columns(2), years_charts(years, cfg)):  # Timing and Style side by side
-                with col, st.container(border=True):  # card
+            for col, chart, q in zip(st.columns(2), years_charts(years, cfg), ("timing", "style")):  # Timing and Style side by side
+                with col, st.container(border=True, key=accent_key(q, "t5y")):  # card
                     st.altair_chart(chart, theme=None, width="stretch")  # one line chart
             st.html(f"<div class='ui-caption'>{html.escape(t5['t5y_line'])}</div>")  # muted line
         elif view5 == t5["t5_view_models"]:  # Models compared view
             models = models_data(cfg)  # stored table
             st.html(models_head_html(cfg, models))  # headline, only when true
-            for col, (question, chart) in zip(st.columns(2), zip(models["question"].unique(), models_charts(models, cfg))):  # Timing and Style side by side
-                with col, st.container(border=True):  # card
+            for col, q, (question, chart) in zip(st.columns(2), ("timing", "style"), zip(models["question"].unique(), models_charts(models, cfg))):  # Timing and Style side by side
+                with col, st.container(border=True, key=accent_key(q, "t5m")):  # card
                     st.html(models_title_html(cfg, question))  # title with tooltip
                     st.altair_chart(chart, theme=None, width="stretch")  # dot plot
                     if models_note_html(cfg, models, question):  # only when the axis does not start at zero

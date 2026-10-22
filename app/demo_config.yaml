@@ -459,10 +459,10 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t1_s2_label: "models tested"  # label of story card 2
     t1_s2_sub: "on {tests} predictions for years they never saw"  # muted line of story card 2, tests from the Timing test snapshots
     t1_s3_big: "{k} in {n}"  # big number of each half of story card 3, k of n artists
-    t1_s3_blind: "picking artists at random: {b} in {n}"  # muted line of each half, b = positive rate of the holdout as a whole number of n
-    t1_s3_cap_timing: "of its top {s}% predictions release the next year"  # caption of the Timing half
-    t1_s3_cap_style: "of its top {s}% predictions bring a new style"  # caption of the Style half
-    t1_s3_tip: "Each artist gets a score. The top {s}% highest scores are its most confident predictions. Picking at random means choosing artists with no model: the share is just how common the event is among all artists. Scored on the test years {first} to {last}, never used to train the models."  # tooltip of story card 3
+    t1_s3_blind: "random picks: {b} in {n}"  # muted line of each half, b = positive rate of the holdout as a whole number of n
+    t1_s3_cap_timing: "of its top picks release the next year"  # caption of the Timing half
+    t1_s3_cap_style: "of its top picks bring a new style"  # caption of the Style half
+    t1_s3_tip: "Its top picks are the {s}% of artists with the highest score, the ones the model rates most likely. Random picks means choosing artists with no model: the share is just how common the event is among all artists. Scored on the test years {y_from} to {y_to}, never used to train the models."  # tooltip of story card 3
     t1_use: "When will they drop something new? Will it sound different?"  # tab 1 subtitle
     t1_credit: "Photo: {author}, {license}"  # muted credit under the photo, shown when the photo exists and the license is filled and the author is too
     t1_credit_noauthor: "Photo: {license}"  # muted credit under the photo when the author is empty and the license is filled
@@ -563,14 +563,14 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t5_tip_rule_style: "Uses only the artist's number of earlier releases and their output this year."  # Past habits, Style
     t5_tip_model: "Gradient boosting trees trained on each artist's history up to a past date."  # tooltip of the Our model label
     t5_dot_left: "Picking at random"  # title of the left grid
-    t5_dot_right: "Top {s}% predictions"  # title of the right grid, s from top10_lift.csv selected_share
+    t5_dot_right: "Its top picks"  # title of the right grid
     t5_dot_big: "{k}"  # big number under a grid
     t5_dot_caption: "of {n} bring a new style"  # caption under the big number
-    t5_dot_head: "Its top {s}% predictions are right {k} times in {n}. Picking at random: {b} in {n}."  # headline above the dot card
+    t5_dot_head: "Of {n} artists it picks first, {k} bring a new style. Of {n} picked at random, {b}."  # headline above the dot card
     t5_dot_sort: "The model sorts every artist from most to least likely to bring a new style."  # muted line at the top of the dot card
     t5_strip_most: "Most likely"  # left end label of the strip
     t5_strip_least: "Least likely"  # right end label of the strip
-    t5_strip_top: "Top {s}%: its most confident predictions"  # label of the highlighted segment
+    t5_strip_top: "Its top picks: the first {s}% of the line"  # label of the highlighted segment
     t5_dot_yes: "Brings a new style"  # circle state used by the chart
     t5_dot_no: "Does not"  # circle state used by the chart
     t5_dot_tip: "Exact share that bring a new style"  # tooltip title of a circle
@@ -635,13 +635,23 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     chance: "#3A4060"  # By chance bar
     rule: "#7C86A8"  # Past habits bar
     highlight: "#FFB547"  # accent for emphasis
-  shadow: "0 4px 18px rgba(0,0,0,0.35)"  # soft card shadow
+  shadow: "none"  # cards have a border and no shadow
+  font:  # typefaces, self-hosted; .streamlit/config.toml must name the same two families and files (a test checks it)
+    heading: "Space Grotesk"  # headlines, big numbers and tab labels
+    body: "Inter"  # everything else
+    fallback: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"  # system fonts used until the files load
+    tab_weight: 600  # weight of the tab labels
+  rule: {height: 2, gap: 8}  # gradient rule between the header and the tabs: height and space above it in px
   type:  # type scale in px
     headline: 28  # page headline
     subtitle: 15  # line under the headline
     big: 44  # big number
     label: 13  # label
     caption: 12  # caption
+    eyebrow: 11  # small uppercase card label
+    head_tracking: "-0.01em"  # letter spacing of headlines and big numbers
+    eyebrow_tracking: "0.06em"  # letter spacing of the uppercase card labels
+    line: 1.45  # body text line height
   box: {radius: 12, border: 1, pad: 18, gap: 12}  # card radius, border width, padding and gap in px
   method_axis_start: 1985  # first year of the tab 4 time axis (the last year is the last test year of the final exam)
   method_tick_every: 10  # tab 4 axis: a year label every this many years
@@ -693,6 +703,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     note_gap: 0.02  # gap of the top Timing bin above which the "too confident" note is shown
   photo: {width: 200, height: 206, content_weight: 430, card_height: 262, radius: 12, focus: "50% 20%", name_font: 22, question_font: 16, monogram_font: 64, monogram_opacity: 0.25, credit_font: 10, credit_line: 12, credit_margin: 6, credit_opacity: 0.6, bottom_pad: 16}  # tab 1 artist card (credit_font, credit_line and credit_margin in px for the one-line credit under the photo, credit_opacity of the muted credit text, bottom_pad px under the credit line, equal to the space above the photo; the photo height is the card content height minus the credit line and margin): photo column width and height, relative width of the content column, card height (px), corner radius (px), object-position of the photo, name and question sizes (px), monogram size (px) and background opacity
   story:  # tab 1 timeline marker
+    big_font: 26  # px of the big "{k} in {n}" of the tab 1 card 3, small enough for "60 in 100" to stay on one line at 1280 px
     marker_below: 6  # px the "You are here" marker continues below the timeline line, so it stops above the year labels
     label_dy: 14  # px the year labels sit lower than the lane position, so the marker never touches them
   chart:  # Altair settings

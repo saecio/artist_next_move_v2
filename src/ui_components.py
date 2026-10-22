@@ -8,13 +8,24 @@ def base_css(cfg: dict) -> str:  # one-time style block
     d = cfg["design"]  # design settings
     c, ty, b, ch = d["palette"], d["type"], d["box"], d["chip"]  # palette, type scale, box and chip sizes
     hd, bt = d["header"], d["button"]  # header sizes and button style
+    fo, ru = d["font"], d["rule"]  # typefaces and gradient rule
+    head_font = f"'{fo['heading']}',{fo['fallback']}"  # heading stack with system fallbacks
+    body_font = f"'{fo['body']}',{fo['fallback']}"  # body stack with system fallbacks
     rules = [  # one rule per element
-        f".ui-headline{{font-size:{ty['headline']}px;font-weight:700;color:{c['text']};line-height:1.2;margin:0}}",  # headline
+        f".stApp{{font-family:{body_font};line-height:{ty['line']}}}",  # body font and line height everywhere
+        f"[data-testid='stTab'],[data-testid='stTab'] p{{font-family:{head_font};font-weight:{fo['tab_weight']}}}",  # tab labels in the heading font
+        f".ui-big,.ui-flow-count,table,td,th{{font-variant-numeric:tabular-nums}}",  # figures of equal width
+        f".ui-eyebrow{{font-size:{ty['eyebrow']}px;text-transform:uppercase;letter-spacing:{ty['eyebrow_tracking']}}}",  # small uppercase card label
+        f".ui-eyebrow .ui-info{{text-transform:none;letter-spacing:normal}}",  # the tooltip icon and bubble keep normal case
+        f"[class*='st-key-ui-accent-timing']{{border-top:3px solid {c['timing']} !important}}",  # card of the Timing question only
+        f"[class*='st-key-ui-accent-style']{{border-top:3px solid {c['style']} !important}}",  # card of the Style question only
+        f".ui-rule{{height:{ru['height']}px;margin-top:{ru['gap']}px;background:linear-gradient(90deg,{c['timing']},{c['style']})}}",  # the one gradient of the app
+        f".ui-headline{{font-family:{head_font};letter-spacing:{ty['head_tracking']};font-size:{ty['headline']}px;font-weight:700;color:{c['text']};line-height:1.2;margin:0}}",  # headline
         f".ui-sub{{font-size:{ty['subtitle']}px;color:{c['muted']};margin-top:6px}}",  # subtitle
         f".ui-head{{margin:0 0 {b['gap']}px 0}}",  # headline block
         f".ui-card{{background:{c['card']};border:{b['border']}px solid {c['line']};border-radius:{b['radius']}px;padding:{b['pad']}px;box-shadow:{d['shadow']};color:{c['text']};box-sizing:border-box}}",  # card
         f".ui-card-title{{font-size:{ty['subtitle']}px;font-weight:600;color:{c['text']};margin-bottom:{b['gap']}px}}",  # card title
-        f".ui-big{{font-size:{ty['big']}px;font-weight:700;line-height:1.1}}",  # big number
+        f".ui-big{{font-size:{ty['big']}px;font-family:{head_font};letter-spacing:{ty['head_tracking']};font-weight:700;line-height:1.1}}",  # big number
         f".ui-label{{font-size:{ty['label']}px;color:{c['muted']}}}",  # label
         f".ui-caption{{font-size:{ty['caption']}px;color:{c['muted']}}}",  # caption
         f".ui-kpi{{margin-top:{b['gap']}px}}",  # one number block
@@ -26,7 +37,9 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f"[data-testid='stBaseButton-segmented_controlActive']{{background:{c['timing']};border-color:{c['timing']};color:{c['background']}}}",  # selected view pill
         f"[data-testid='stBaseButton-segmented_controlActive'] p{{color:{c['background']};font-weight:{bt['weight']}}}",  # selected view pill label
         f".ui-row{{display:flex;gap:{b['gap']}px;align-items:stretch}}",  # cards side by side
-        f".ui-row>.ui-card{{flex:1}}",  # equal cards in a row
+        f".ui-row>.ui-card{{flex:1;min-width:0}}",  # equal cards in a row that never push past the page edge
+        f"[data-testid='stColumn']{{min-width:0}}",  # columns (artist cards) shrink instead of overflowing
+        f".ui-strip,.ui-strip-labels{{max-width:100%}}",  # the strip stays inside its card
         f".ui-strip{{display:flex;height:{d['strip']['height']}px;border-radius:{d['strip']['height']}px;overflow:hidden;background:{c['chance']}}}",  # sorted artists strip, muted rest
         f".ui-strip-top{{height:100%}}",  # highlighted first segment, width and color inline
         f".ui-strip-labels{{display:flex;justify-content:space-between;font-size:{ty['caption']}px;color:{c['muted']};margin-top:{d['strip']['gap']}px}}",  # end labels
@@ -35,11 +48,11 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f".ui-flow-row{{display:flex;gap:{b['gap']}px;width:100%}}",  # the two inputs side by side
         f".ui-flow-box{{flex:1;box-sizing:border-box;border:{b['border']}px solid;border-radius:{b['radius'] // 2}px;padding:{d['flow']['box_pad']}px;text-align:center;background:{c['background']}}}",  # one box, border color inline
         f".ui-flow>.ui-flow-box{{width:60%;flex:none}}",  # single boxes narrower than the input row
-        f".ui-flow-count{{font-size:{d['flow']['count_font']}px;font-weight:700;line-height:1.2}}",  # count in a box
+        f".ui-flow-count{{font-size:{d['flow']['count_font']}px;font-family:{head_font};letter-spacing:{ty['head_tracking']};font-weight:700;line-height:1.2}}",  # count in a box
         f".ui-flow-arrow{{position:relative;width:{d['flow']['arrow_width']}px;height:{d['flow']['arrow_len']}px;background:{c['muted']};margin-bottom:{d['flow']['arrow_head']}px}}",  # arrow shaft
         f".ui-flow-arrow::after{{content:'';position:absolute;left:50%;bottom:-{d['flow']['arrow_head']}px;transform:translateX(-50%);border-left:{d['flow']['arrow_head']}px solid transparent;border-right:{d['flow']['arrow_head']}px solid transparent;border-top:{d['flow']['arrow_head']}px solid {c['muted']}}}",  # arrow head made with borders
         f".ui-app-head{{display:flex;align-items:baseline;gap:{hd['gap']}px;white-space:nowrap;overflow:hidden}}",  # header, one line
-        f".ui-app-title{{font-size:{hd['title_font']}px;font-weight:700;color:{c['text']}}}",  # project name
+        f".ui-app-title{{font-size:{hd['title_font']}px;font-family:{head_font};letter-spacing:{ty['head_tracking']};font-weight:700;color:{c['text']}}}",  # project name
         f".ui-app-tag{{font-size:{hd['tagline_font']}px;color:{c['muted']};overflow:hidden;text-overflow:ellipsis}}",  # tagline
         f"[data-testid='stMainBlockContainer']{{padding-top:{hd['top_pad']}px}}",  # less space above the header
         f"[data-testid='stBaseButton-primary'],[data-testid='stBaseButton-secondary']{{font-weight:{bt['weight']}}}",  # same weight on every button
@@ -54,7 +67,12 @@ def base_css(cfg: dict) -> str:  # one-time style block
 def header_html(cfg: dict) -> str:  # app header above the tabs
     """Project name and one muted tagline on a single line."""
     h = cfg["header"]  # header texts
-    return f"<div class='ui-app-head'><span class='ui-app-title'>{html.escape(h['title'])}</span><span class='ui-app-tag'>{html.escape(h['tagline'])}</span></div>"  # one line
+    return f"<div class='ui-app-head'><span class='ui-app-title'>{html.escape(h['title'])}</span><span class='ui-app-tag'>{html.escape(h['tagline'])}</span></div><div class='ui-rule'></div>"  # one line
+
+
+def accent_key(question: str, tab: str) -> str:  # container key that draws the top accent of one question
+    """Key of a card that belongs to one question; the css matches it by the question name."""
+    return f"ui-accent-{question}-{tab}"  # unique per tab, so two tabs never share a key
 
 
 def info(text: str) -> str:  # small i with a hover tooltip
@@ -80,7 +98,7 @@ def card(inner: str, title: str = "", tip: str = "") -> str:  # card around html
 
 def kpi_card(label: str, value: str, sub: str, color: str, info_text: str = "") -> str:  # one number block
     """Label (optional), a big number in `color` and a caption under it."""
-    lab = f"<div class='ui-label'>{html.escape(label)}{info(info_text) if info_text else ''}</div>" if label else ""  # label line
+    lab = f"<div class='ui-label ui-eyebrow'>{html.escape(label)}{info(info_text) if info_text else ''}</div>" if label else ""  # label line
     return f"<div class='ui-kpi'>{lab}<div class='ui-big' style='color:{color}'>{html.escape(value)}</div><div class='ui-caption'>{html.escape(sub)}</div></div>"  # block
 
 

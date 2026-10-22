@@ -22,8 +22,11 @@ def register_theme(cfg: dict) -> None:  # one shared dark theme
     def demo_dark() -> alt.theme.ThemeConfig:  # theme function
         return {"config": {  # vega-lite config
             "background": "transparent",  # the card shows through
+            "font": f"{d['font']['body']}, {d['font']['fallback']}",  # one font in every chart
             "view": {"stroke": None},  # no chart border
-            "axis": {"gridColor": c["line"], "gridOpacity": ch["grid_opacity"], "domainColor": c["line"], "tickColor": c["line"], "labelColor": c["muted"], "titleColor": c["muted"], "labelFontSize": ch["axis_font"], "titleFontSize": ch["axis_font"]},  # axes
+            "axis": {"gridColor": c["line"], "gridOpacity": ch["grid_opacity"], "domainColor": c["line"], "tickColor": c["line"], "labelColor": c["muted"], "titleColor": c["muted"], "labelFontSize": ch["axis_font"], "titleFontSize": ch["axis_font"]},  # axes, grid at half the line color
+            "axisTop": {"domain": False},  # no domain line on top
+            "axisRight": {"domain": False},  # no domain line on the right
             "title": {"color": c["text"], "fontSize": ch["title_font"]},  # titles
             "legend": {"labelColor": c["text"], "titleColor": c["muted"], "labelFontSize": ch["axis_font"], "titleFontSize": ch["axis_font"]},  # legends
             "range": {"category": [c["timing"], c["style"], c["rule"], c["chance"], c["highlight"]]},  # no default blue anywhere

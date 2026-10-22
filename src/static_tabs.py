@@ -154,8 +154,8 @@ def tab1_kpis_html(cfg: dict) -> str:  # story strip of tab 1
     n = sc["sizes"]["dots_side"] ** 2  # artists per group
     cards = [one, two]  # always shown
     if all(k > b for _, _, _, k, b in halves):  # model above random in both halves
-        half = lambda lab, color, cap, k, b: f"<div style='flex:1'><div class='ui-label' style='color:{color}'>{html.escape(lab)}</div><div class='ui-big' style='color:{color}'>{html.escape(t['t1_s3_big'].format(k=k, n=n))}</div><div class='ui-caption' style='color:{color}'>{html.escape(cap)}</div><div class='ui-caption'>{html.escape(t['t1_s3_blind'].format(b=b, n=n))}</div></div>"  # one half
-        cards.append(f"<div class='ui-kpi'><div style='display:flex;gap:{sc['story']['pair_gap']}px'>{''.join(half(*h) for h in halves)}</div><div class='ui-caption'>{info(t['t1_s3_tip'].format(s=top_share(cfg)[1], first=y['holdout_start'], last=y['holdout_end']))}</div></div>")  # parallel halves with the tooltip
+        half = lambda lab, color, cap, k, b, tip="": f"<div style='flex:1;min-width:0'><div class='ui-label' style='color:{color}'>{html.escape(lab)}{tip}</div><div class='ui-big' style='color:{color};font-size:{cfg['design']['story']['big_font']}px;white-space:nowrap'>{html.escape(t['t1_s3_big'].format(k=k, n=n))}</div><div class='ui-caption' style='color:{color}'>{html.escape(cap)}</div><div class='ui-caption'>{html.escape(t['t1_s3_blind'].format(b=b, n=n))}</div></div>"  # one half
+        cards.append(f"<div class='ui-kpi'><div style='display:flex;gap:{sc['story']['pair_gap']}px'>{''.join(half(*h, tip=info(t['t1_s3_tip'].format(s=top_share(cfg)[1], y_from=y['holdout_start'], y_to=y['holdout_end'])) if i == 0 else "") for i, h in enumerate(halves))}</div></div>")  # parallel halves, the tooltip sits by the label of the first half
     return "<div class='ui-row'>" + "".join(card(c) for c in cards) + "</div>"  # two or three equal cards
 
 def tab2_head_html(cfg: dict) -> str:  # headline of tab 2
@@ -313,7 +313,7 @@ def tab3_panels(cfg: dict) -> list:  # the two cards of the Two patterns view
     t = cfg["static_tabs"]["texts"]  # texts
     out = []  # one dict per card
     for s, df, color in series_data(cfg):  # in config order
-        out.append({"title": t[s["title"]], "chart": steps_chart(df, s["bucket"], s["rate"], s["count"], color, cfg), "line": f"<div class='ui-caption'>{html.escape(t[s['line']])}</div>"})  # card parts
+        out.append({"key": s["key"], "title": t[s["title"]], "chart": steps_chart(df, s["bucket"], s["rate"], s["count"], color, cfg), "line": f"<div class='ui-caption'>{html.escape(t[s['line']])}</div>"})  # card parts
     return out  # two cards
 
 

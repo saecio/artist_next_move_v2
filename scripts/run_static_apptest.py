@@ -20,6 +20,7 @@ from streamlit.testing.v1 import AppTest  # headless app runner
 
 from app_data import load_demo_config  # demo settings
 from config import CONFIG  # project settings
+from ui_components import base_css, header_html  # design css and header
 
 cfg = load_demo_config()  # settings
 sc = cfg["static_tabs"]  # static tabs section
@@ -109,7 +110,7 @@ story = [  # the three cards: big number, label, muted line
 assert k_t > b_t and k_s > b_s and t["t1_s3_cap_timing"].format(s=round(100 * top["selected_share"])) in n1 and t["t1_s3_cap_style"].format(s=round(100 * top["selected_share"])) in n1, "both halves above random, captions shown"  # card 3 shown
 for number, label, line in story:  # three cards
     assert number in n1 and label in n1 and line in n1, f"tab 1 story card {label}"  # equal to the files and the config
-assert t["t1_s1_tip"].format(date=sc["dump_date"]) in html.unescape(raws[0]) and t["t1_tip_models"].format(names=", ".join(sc["models_compared"])) in html.unescape(raws[0]) and t["t1_s3_tip"].format(s=round(100 * top["selected_share"]), first=y["holdout_start"], last=y["holdout_end"]) in html.unescape(raws[0]), "tab 1 tooltips"  # tooltips from the config
+assert t["t1_s1_tip"].format(date=sc["dump_date"]) in html.unescape(raws[0]) and t["t1_tip_models"].format(names=", ".join(sc["models_compared"])) in html.unescape(raws[0]) and t["t1_s3_tip"].format(s=round(100 * top["selected_share"]), y_from=y["holdout_start"], y_to=y["holdout_end"]) in html.unescape(raws[0]), "tab 1 tooltips"  # tooltips from the config
 assert raws[0].count("class='ui-card'") == 3 and pl["label_timing"] in n1 and pl["label_style"] in n1, "three story cards"  # card count
 for gone in ("t1_kpi_hyp", "t1_kpi_years", "t1_tip_hyp", "t1_tip_years", "t1_s3_plus", "t1_s3_label"):  # dropped keys
     assert gone not in t, f"{gone} removed from the config"  # no leftover
@@ -296,6 +297,24 @@ theme = tomllib.load(open(ROOT / ".streamlit/config.toml", "rb"))["theme"]  # th
 for key, name in (("backgroundColor", "background"), ("secondaryBackgroundColor", "card"), ("textColor", "text"), ("borderColor", "line"), ("primaryColor", "timing")):  # keys the toml repeats
     assert theme[key].lower() == pal[name].lower(), f"toml {key} equals the yaml palette {name}"  # same values
 print("toml equals yaml palette")  # result
+
+fo = cfg["design"]["font"]  # typefaces of the design
+assert fo["body"] in theme["font"] and fo["heading"] in theme["headingFont"], "toml names both typefaces"  # theme fonts
+faces = tomllib.load(open(ROOT / ".streamlit/config.toml", "rb"))["theme"]["fontFaces"]  # declared font files
+assert {f["family"] for f in faces} == {fo["body"], fo["heading"]} and sorted({f["weight"] for f in faces}) == ["400", "500", "600", "700"], "four weights of both families"  # families and weights
+assert all((ROOT / f["url"]).is_file() and (ROOT / f["url"]).stat().st_size > 1000 for f in faces), "every font file exists"  # files on disk
+assert tomllib.load(open(ROOT / ".streamlit/config.toml", "rb"))["server"]["enableStaticServing"] is True, "static serving is on"  # fonts are served
+assert all(list((ROOT / "app/static/fonts").glob(f"LICENSE-{n}.txt")) for n in ("inter", "space-grotesk")), "license texts sit next to the fonts"  # OFL texts
+print("fonts declared and present")  # result
+lum = lambda h: sum(w * (lambda v: v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4)(int(h.lstrip("#")[i:i + 2], 16) / 255) for w, i in ((0.2126, 0), (0.7152, 2), (0.0722, 4)))  # relative luminance of a hex color
+ratio = lambda a, b: (max(lum(a), lum(b)) + 0.05) / (min(lum(a), lum(b)) + 0.05)  # WCAG contrast ratio
+for name in ("text", "muted", "timing", "style", "highlight"):  # text colors used on cards
+    print(f"contrast {name} on card: {ratio(pal[name], pal['card']):.2f}")  # value for the record
+    assert ratio(pal[name], pal["card"]) >= 4.5, f"{name} over the card background is at least 4.5:1"  # body text rule
+assert cfg["design"]["shadow"] == "none", "cards have no shadow"  # border only
+css = base_css(cfg)  # the style block
+assert css.count("linear-gradient") == 1 and "gradient" not in html.unescape(header_html(cfg)), "one gradient only, the header rule"  # signature
+print("design pass 10 ok")  # result
 hexre = re.compile(r"#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b|rgba?\(")  # color literal
 notebook_only = {"eda.py", "style_report.py"}  # notebook plotting modules, not used by the app
 for f in sorted(list((ROOT / "app").glob("*.py")) + list((ROOT / "src").glob("*.py"))):  # every python file of the app and src
