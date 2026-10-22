@@ -11,11 +11,12 @@ def _box(label: str, count: str, tip: str, color: str) -> str:  # one flow box
 
 
 def clean_flow(cfg: dict, t: dict, n: int, counts: dict) -> str:  # tab 2 cleaning flow
-    """Two input boxes, an arrow to the Works box, an arrow to the Artists box; counts holds master, standalone, works and artists as text."""
+    """Two input boxes, an arrow to the Releases box, a muted connector word to the Artists box; counts holds master, standalone, works and artists as text."""
     color = cfg["design"]["palette"]["highlight"]  # box color
     arrow = "<div class='ui-flow-arrow'></div>"  # CSS arrow pointing down
+    by = f"<div class='ui-flow-by'>{html.escape(t['t2_by'])}</div>"  # connector word between releases and artists
     inputs = _box(t["t2_in_master"], counts["master"], t["t2_tip_master"], color) + _box(t["t2_in_standalone"].format(n=n), counts["standalone"], t["t2_tip_standalone"], color)  # the two sources
-    return f"<div class='ui-flow'><div class='ui-flow-row'>{inputs}</div>{arrow}{_box(t['t2_out'], counts['works'], t['t2_tip_out'], color)}{arrow}{_box(t['t2_artists'], counts['artists'], t['t2_tip_artists'], color)}</div>"  # whole flow
+    return f"<div class='ui-flow'><div class='ui-flow-row'>{inputs}</div>{arrow}{_box(t['t2_out'], counts['works'], t['t2_tip_out'], color)}{by}{_box(t['t2_artists'], counts['artists'], t['t2_tip_artists'], color)}</div>"  # whole flow
 
 def method_css(cfg: dict) -> str:  # style rules of the tab 4 infographic and model chips
     """Rules prefixed ui-m-; colors from the palette, sizes from design.method."""

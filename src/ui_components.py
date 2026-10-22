@@ -51,6 +51,7 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f".ui-flow-count{{font-size:{d['flow']['count_font']}px;font-family:{head_font};letter-spacing:{ty['head_tracking']};font-weight:700;line-height:1.2}}",  # count in a box
         f".ui-flow-arrow{{position:relative;width:{d['flow']['arrow_width']}px;height:{d['flow']['arrow_len']}px;background:{c['muted']};margin-bottom:{d['flow']['arrow_head']}px}}",  # arrow shaft
         f".ui-flow-arrow::after{{content:'';position:absolute;left:50%;bottom:-{d['flow']['arrow_head']}px;transform:translateX(-50%);border-left:{d['flow']['arrow_head']}px solid transparent;border-right:{d['flow']['arrow_head']}px solid transparent;border-top:{d['flow']['arrow_head']}px solid {c['muted']}}}",  # arrow head made with borders
+        f".ui-flow-by{{font-size:{ty['caption']}px;color:{c['muted']};margin:{d['flow']['by_gap']}px 0}}",  # small muted connector word between two flow boxes
         f".ui-app-head{{display:flex;align-items:baseline;gap:{hd['gap']}px;white-space:nowrap;overflow:hidden}}",  # header, one line
         f".ui-app-title{{font-size:{hd['title_font']}px;font-family:{head_font};letter-spacing:{ty['head_tracking']};font-weight:700;color:{c['text']}}}",  # project name
         f".ui-app-tag{{font-size:{hd['tagline_font']}px;color:{c['muted']};overflow:hidden;text-overflow:ellipsis}}",  # tagline

@@ -1,0 +1,8 @@
+# Copied by hand from results/style_forecast/test_20261015_173215.out, lines 80 to 87 (test years 2018 to 2022 of "descriptive paired differences, each model minus repeat last year", 95% bootstrap over years, 2,000 draws, seed 1). Not produced by code.
+model,metric,mean,ci_low,ci_high
+bayes_ridge,hits@10,-0.400,-0.800,0.000
+bayes_ridge,Spearman,-0.017,-0.050,0.017
+xgboost,hits@10,0.200,-0.600,1.200
+xgboost,Spearman,-0.021,-0.048,0.005
+random_forest,hits@10,0.600,-0.400,1.800
+random_forest,Spearman,0.019,0.001,0.038

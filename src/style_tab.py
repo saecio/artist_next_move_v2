@@ -5,7 +5,8 @@ import pandas as pd  # tables
 
 from app_live import load_tables, style_live  # live rescoring and the stored files, as the app reads them
 from poc_view import badge_kind  # same marks as mode 2 of tab 6
-from style_forecast import top_hits  # registered hits definition
+from config import ROOT  # project root
+from style_forecast import FINAL_MODEL, top_hits  # registered hits definition
 
 
 def year_kind(year: int, cfg: dict) -> str:  # counted, flagged or none
@@ -91,6 +92,15 @@ def mean_in_range(cfg: dict) -> float:  # mean in-range count over the counted y
     years = cfg["style_tab"]["years"]["counted"]  # counted test years
     return float(np.mean([stored_in_range(y, cfg["style_tab"]["top_n"]) for y in years]))  # mean of the yearly counts
 
+
+def forecast_beats_repeat(cfg: dict) -> bool:  # verdict of the forecast against repeating last year
+    """True when the lower bound of the 95% paired bootstrap interval (final forecast model minus repeat last year, hits at top_n, test years) is above zero; False when the file or the row is missing."""
+    path = ROOT / cfg["style_tab"]["paired_file"]  # stored paired differences of the test years
+    if not path.exists():  # no stored interval
+        return False  # the claim cannot be supported
+    table = pd.read_csv(path, comment="#")  # model, metric, mean, ci_low, ci_high
+    row = table[(table["model"] == FINAL_MODEL) & (table["metric"] == f"hits@{cfg['style_tab']['top_n']}")]  # forecast model, hits row
+    return len(row) == 1 and bool(row["ci_low"].iloc[0] > 0)  # clearly better only when the whole interval is above zero
 
 def validation_figures(cfg: dict) -> dict:  # figures of the headline and the validation text
     """First and last counted year, mean top n hits of the Random Forest (k) and of repeating last year (b), n and the number of counted years."""

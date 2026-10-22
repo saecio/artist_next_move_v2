@@ -20,7 +20,7 @@ from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_tab
 from static_charts import dots_chart, results_chart, strength_chart, works_chart  # noqa: E402  Altair charts of tabs 2, 3 and 5
 from static_tabs import dots_panels, strip_html, results_data, tab1_head_html, tab1_kpis_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
 from depth_views import legend_html, models_charts, models_data, models_head_html, models_note_html, models_title_html, reliability_data, trust_chart, trust_head_html, trust_legend_html, trust_read_html, trust_lines_html, trust_title_html, year_data, years_charts, years_head_html  # noqa: E402  depth views of tab 5
-from ui_components import accent_key, base_css, header_html  # noqa: E402  design system
+from ui_components import accent_key, base_css, header_html, headline  # noqa: E402  design system
 from demo_game import (  # noqa: E402  pure game functions
     hidden_counts, new_state, next_year, scored_years, scoreboard, session_total,  # imported names
 )  # close the import
@@ -195,8 +195,8 @@ with tabs[4]:  # Results
     render_tab5()  # fragment of this tab
 
 with tabs[5]:  # Time Machine demo
-    st.header(cfg["tabs"][5])  # tab title
     g, rt = cfg["game"], cfg["route"]  # game and route settings
+    st.html(headline(g["headline"].format(year=rt["year"]), g["subtitle"]))  # headline with the configured year and subtitle
     modes = list(g["mode_options"])  # mode keys
     for key in (rt["keys"]["year"], rt["keys"]["genre"], rt["keys"]["artists"], g["keys"]["genre"], g["keys"]["artist"]):  # widgets of the mode that is not shown
         if key in st.session_state:  # Streamlit drops the value of a widget that is not drawn
@@ -291,12 +291,10 @@ with tabs[5]:  # Time Machine demo
             st.caption(open_year_text(poc["texts"]))  # same sentence as the tooltip
 
 with tabs[6]:  # Global style forecast
-    st.header(cfg["tabs"][6])  # tab title
     stt = cfg["style_tab"]  # tab 7 settings
     sk, sx = stt["keys"], stt["texts"]  # widget keys and texts
-    st.warning(notes["style_notice"])  # forecast is global
     figures = validation_figures(cfg)  # years and hits of the tested years, from the data
-    st.caption(stt["headline"].format(**figures))  # one neutral visible line
+    st.html(headline(notes["style_notice"], stt["headline"].format(**figures)))  # the question as headline, the tested figures as subtitle
     with st.expander(sx["validation_label"], expanded=False):  # closed, on the page from the start
         st.caption(stt["validation_text"].format(**figures))  # one text: tested years, hits, repeat_last, ranges, few years
     year7 = st.selectbox(sx["year_label"], style_years(cfg), key=sk["year"])  # every target year, none hidden

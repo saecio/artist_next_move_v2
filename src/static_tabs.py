@@ -18,7 +18,7 @@ from static_charts import genre_chart, steps_chart, strength_chart, timeline_cha
 from backtesting import method_spans  # fold and final split years
 from models import make_what_xgboost, make_xgboost  # builders of the Timing and Style final models (their names give the model names)
 from style_forecast import FINAL_MODEL  # final model of the style forecast
-from style_tab import validation_figures  # tab 7 test years, reused for tab 8 (read only)
+from style_tab import forecast_beats_repeat, validation_figures  # tab 7 test years, reused for tab 8 (read only)
 
 
 @st.cache_data  # cache the table
@@ -158,11 +158,21 @@ def tab1_kpis_html(cfg: dict) -> str:  # story strip of tab 1
         cards.append(f"<div class='ui-kpi'><div style='display:flex;gap:{sc['story']['pair_gap']}px'>{''.join(half(*h, tip=info(t['t1_s3_tip'].format(s=top_share(cfg)[1], y_from=y['holdout_start'], y_to=y['holdout_end'])) if i == 0 else "") for i, h in enumerate(halves))}</div></div>")  # parallel halves, the tooltip sits by the label of the first half
     return "<div class='ui-row'>" + "".join(card(c) for c in cards) + "</div>"  # two or three equal cards
 
+def tab2_headline_text(cfg: dict) -> str:  # headline text of tab 2
+    """The peak headline when the peak year is before design.incomplete_from_year and every later year is below it, else the neutral headline."""
+    t = cfg["static_tabs"]["texts"]  # texts
+    d = works_per_year(cfg)  # year, works
+    peak = d.loc[d["works"].idxmax()]  # peak year and value, from the data
+    late = d[d["year"] >= cfg["design"]["incomplete_from_year"]]  # the years still being filled in
+    if int(peak["year"]) < cfg["design"]["incomplete_from_year"] and not late.empty and (late["works"] < peak["works"]).all():  # peak is earlier and the last years are below it
+        return t["t2_headline"].format(peak_year=int(peak["year"]))  # conclusion
+    return t["t2_headline_neutral"]  # fallback
+
 def tab2_head_html(cfg: dict) -> str:  # headline of tab 2
     """Headline and the dump date subtitle with its tooltip."""
     sc = cfg["static_tabs"]  # settings
     t = sc["texts"]  # texts
-    return headline(t["t2_headline"], t["t2_source"].format(date=sc["dump_date"]), t["t2_tip_sub"])  # block
+    return headline(tab2_headline_text(cfg), t["t2_source"].format(date=sc["dump_date"]), t["t2_tip_sub"])  # block
 
 def works_per_year(cfg: dict) -> pd.DataFrame:  # chart table of tab 2
     """Dated cleaned Works per year, from works_per_year.csv."""
@@ -205,19 +215,34 @@ def tab4_html(cfg: dict) -> str:  # method
     return method_css(cfg) + "<div class='ui-stack'>" + headline(t["t4_headline"]) + method_legend(cfg, t) + card_html + f"<div class='ui-caption'>{html.escape(caption)} {info(t['t4_caption_tip'])}</div>" + chips + finals + "</div>"  # page
 
 def tab8_html(cfg: dict) -> str:  # limits and next steps
-    """Closing slide: three equal cards with a marker, a title and up to four items; numbers come from the tab 5 tags and the tab 7 test years."""
+    """Closing slide: three equal cards with a marker, a title and up to four items; numbers come from the tab 5 tags, the tab 1 card and the tab 7 test years."""
+    from depth_views import models_data, trees_tie  # imported here because depth_views imports this module
     t, p = cfg["static_tabs"]["texts"], cfg["poc"]["texts"]  # texts and Timing / Style labels
     v = validation_figures(cfg)  # tab 7 tested years: first, last, years
     y = CONFIG["years"]  # test years
     res = results_data(cfg)  # the table of tab 5, its advantage values are the tag numbers
     d = res[res["d"].notna()].set_index("panel")["d"]  # advantage per panel, as shown in the tags
     ct = cfg["static_tabs"]["calibration_targets"]  # summary target of each question
-    values = {"d1": d[p["label_timing"]], "d2": d[p["label_style"]], "ci": round(CONFIG["bootstrap"]["confidence"] * 100), "n": v["years"], "first": v["first"], "last": v["last"], "test_first": y["holdout_start"], "test_last": y["holdout_end"], "gap_style": cfg["poc"]["gap_text"][ct["style"]], "gap_timing": cfg["poc"]["gap_text"][ct["timing"]]}  # every placeholder of the items, the gaps come from the calibration summary
+    values = {"d1": d[p["label_timing"]], "d2": d[p["label_style"]], "ci": round(CONFIG["bootstrap"]["confidence"] * 100), "n": v["years"], "first": v["first"], "last": v["last"], "test_first": y["holdout_start"], "test_last": y["holdout_end"], "gap_style": cfg["poc"]["gap_text"][ct["style"]], "gap_timing": cfg["poc"]["gap_text"][ct["timing"]], "k": story_halves(cfg)[1][3], "n": cfg["static_tabs"]["sizes"]["dots_side"] ** 2}  # every placeholder of the items, the gaps come from the calibration summary
     cards = ""  # html of the three cards
     for key in ("works", "mind", "next"):  # left to right
-        items = "".join(f"<div class='ui-close-item'>{html.escape(t[f't8_{key}_{i}'].format(**values))}</div>" for i in range(1, 5) if f"t8_{key}_{i}" in t)  # one-line items, as many as the config has (up to four)
+        texts = [t[f"t8_{key}_{i}"].format(**values) for i in range(1, 5) if f"t8_{key}_{i}" in t]  # items, as many as the config has (up to four)
+        if key == "next" and not trees_tie(models_data(cfg), cfg):  # the tie claim is not supported by the data
+            texts[0] = t["t8_next_1_plain"]  # first item without the tie clause
+        items = "".join(f"<div class='ui-close-item'>{html.escape(x)}</div>" for x in texts)  # one-line items
         cards += card(f"<div class='ui-close-title'><span class='ui-close-dot'></span>{html.escape(t[f't8_{key}_title'])}</div>{items}")  # one card
-    return close_css(cfg) + "<div class='ui-stack'>" + headline(t["t8_headline"]) + f"<div class='ui-row'>{cards}</div></div>"  # page
+    return close_css(cfg) + "<div class='ui-stack'>" + headline(t["t8_headline"]) + f"<div class='ui-row'>{cards}</div>" + closing_html(cfg, res) + "</div>"  # page
+
+
+def closing_html(cfg: dict, res: pd.DataFrame) -> str:  # closing block of tab 8
+    """Three chips (Timing, Style, Trends) with a status each, then one sentence; res is the tab 5 table."""
+    t, p, pal = cfg["static_tabs"]["texts"], cfg["poc"]["texts"], cfg["design"]["palette"]  # texts, Timing / Style labels, palette
+    beats = panel_beats_rule(res, cfg)  # per question: model clearly above past habits
+    status = lambda ok, yes: t[yes] if ok else t["t8_close_tested"]  # the positive status only when the data supports it
+    trend = t["t8_close_trend_beats"] if forecast_beats_repeat(cfg) else t["t8_close_first"]  # forecast against repeating last year
+    chips = [(t["t8_close_timing_q"], status(beats[p["label_timing"]], "t8_close_beats"), pal["timing"]), (t["t8_close_style_q"], status(beats[p["label_style"]], "t8_close_beats"), pal["style"]), (t["t8_close_trends_q"], trend, pal["highlight"])]  # question, status, color
+    row = "".join(chip(t["t8_close_chip"].format(question=q, status=s), c) for q, s, c in chips)  # one chip each
+    return f"<div class='ui-chips' style='margin:0'>{row}</div><div class='ui-close-item'>{html.escape(t['t8_close_line'])}</div>"  # chips and the final sentence
 
 
 def results_data(cfg: dict) -> pd.DataFrame:  # chart table of tab 5
@@ -243,12 +268,17 @@ def results_data(cfg: dict) -> pd.DataFrame:  # chart table of tab 5
     return pd.DataFrame(rows)  # six rows
 
 
-def models_beat_rule(data: pd.DataFrame, cfg: dict) -> bool:  # headline condition of tab 5
-    """True when, for every panel, the lower bound of the model interval is above the upper bound of the rule interval."""
+def panel_beats_rule(data: pd.DataFrame, cfg: dict) -> pd.Series:  # per panel condition of tab 5
+    """Per panel: True when the lower bound of the model interval is above the upper bound of the rule interval."""
     t = cfg["static_tabs"]["texts"]  # bar labels
     rule = data[data["label"] == t["t5_col_rule"]].set_index("panel")["hi"]  # rule upper bounds
     model = data[data["label"] == t["t5_col_model"]].set_index("panel")["lo"]  # model lower bounds
-    return bool((model > rule.reindex(model.index)).all())  # every panel
+    return model > rule.reindex(model.index)  # one flag per panel
+
+
+def models_beat_rule(data: pd.DataFrame, cfg: dict) -> bool:  # headline condition of tab 5
+    """True when, for every panel, the lower bound of the model interval is above the upper bound of the rule interval."""
+    return bool(panel_beats_rule(data, cfg).all())  # every panel
 
 
 def tab5_head_html(cfg: dict, data: pd.DataFrame) -> str:  # headline and subtitle of tab 5

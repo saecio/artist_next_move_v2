@@ -102,10 +102,10 @@ def check_default() -> None:  # test 1
     figs = validation_figures(cfg)  # figures computed from the data
     text = st_cfg["validation_text"].format(**figs)  # expected full text
     assert not any(text in w.value for w in at.warning), "the full text is no longer a permanent warning"  # no warning
-    assert st_cfg["headline"].format(**figs) in [c.value for c in at.caption], "the neutral headline line is visible"  # headline
+    assert st_cfg["headline"].format(**figs) in "".join(h.value for h in at.get("html")), "the tested-years line is the subtitle of the headline"  # subtitle
     ex = next(e for e in at.expander if e.label == tx["validation_label"])  # the validation expander, there before Predict
     assert not ex.proto.expanded and [c.value for c in ex.caption] == [text], "closed expander with the validation text only"  # contents
-    assert cfg["notices"]["style_notice"] in [w.value for w in at.warning], "the style notice is shown"  # replaced notice
+    assert cfg["notices"]["style_notice"] in "".join(h.value for h in at.get("html")) and cfg["notices"]["style_notice"] not in [w.value for w in at.warning], "the question is the headline, no banner"  # headline instead of the notice
     years = st_cfg["years"]["counted"]  # counted test years
     mean_range = mean_in_range(cfg)  # mean in-range count from the stored actuals and predictions
     assert [stored_in_range(y, st_cfg["top_n"]) for y in years] == [style_summary(y, st_cfg["top_n"], cfg)["in_range"] for y in years], "the stored counts must equal the live summary"  # cross-check

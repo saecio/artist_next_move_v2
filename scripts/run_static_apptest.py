@@ -21,6 +21,8 @@ from streamlit.testing.v1 import AppTest  # headless app runner
 from app_data import load_demo_config  # demo settings
 from config import CONFIG  # project settings
 from ui_components import base_css, header_html  # design css and header
+from depth_views import models_data, trees_tie  # models compared table and the tie condition
+from static_tabs import story_halves, tab2_headline_text  # tab 2 headline built from the data
 
 cfg = load_demo_config()  # settings
 sc = cfg["static_tabs"]  # static tabs section
@@ -126,7 +128,7 @@ print("tab 1 ok")  # result
 
 undated_file = int(pd.read_csv(folder / pa["data_quality"]).set_index("metric").loc["works_undated", "value"])  # undated Works from the new file
 pct = f"{undated_file / int(fig['works']) * 100:.1f}"  # share in percent
-assert t["t2_headline"] in n2 and t["t2_source"].format(date=sc["dump_date"]) in n2, "tab 2 headline and dump date"  # headline and date from the config
+assert tab2_headline_text(cfg) in n2 and t["t2_source"].format(date=sc["dump_date"]) in n2, "tab 2 headline and dump date"  # headline and date from the config
 for key in ("works", "artists"):  # flow numbers
     assert f"{int(fig[key]):,}" in n2, f"tab 2 flow {key} equals data_figures.csv"  # file values
 assert fig[sc["rows"]["metric_master"]] + fig[sc["rows"]["metric_standalone"]] == fig["works"], "source counts sum to the total"  # control
@@ -134,6 +136,7 @@ for number in (fig[sc["rows"]["metric_master"]], fig[sc["rows"]["metric_standalo
     assert f"{int(number):,}" in n2, "tab 2 flow count"  # from the file
 for lab in (t["t2_in_master"], t["t2_in_standalone"].format(n=CONFIG["works"]["min_standalone_releases"]), t["t2_out"], t["t2_artists"], t["t2_chart_title"]):  # labels
     assert lab in n2, f"tab 2 label {lab}"  # threshold from config.yaml
+assert t["t2_by"] in n2 and t["t2_tip_out"] in raws[1] and "Works" not in n2, "tab 2: connector word, releases tooltip and the word releases only"  # one word for one concept
 assert "<svg" not in raws[1] and "ui-flow-box" in raws[1] and raws[1].count("ui-flow-box") == 4, "tab 2 flow is HTML and CSS with four boxes"  # no svg
 boxes = re.findall(r"<div class='ui-flow-box'.*?</div></div>", raws[1])  # flow boxes
 assert len(boxes) == 4 and all(plain(b_).strip() for b_ in boxes), "every flow box has text"  # non-empty cards
@@ -248,12 +251,50 @@ v8 = validation_figures(cfg)  # tab 7 tested years
 summ = pd.read_csv(ROOT / pa["calibration_summary"]).set_index("target")  # calibration summary, read independently of the app
 gap_pts = {k: round(100 * float(v)) for k, v in summ["ece"].items()}  # round(100 x ECE) per target
 pts_text = lambda n: cfg["ui"]["point_one" if n == 1 else "point_many"].format(n=n)  # singular for one point, plural otherwise
-vals = {"d1": d1, "d2": d2, "ci": round(CONFIG["bootstrap"]["confidence"] * 100), "n": v8["years"], "first": v8["first"], "last": v8["last"], "test_first": first, "test_last": last, "gap_style": pts_text(gap_pts["what"]), "gap_timing": pts_text(gap_pts["next_1y"])}  # placeholders, the gaps are read from the calibration summary
-assert raws[7].count("class='ui-card'") == 3 and raws[7].count("ui-close-dot'") == 3 and raws[7].count("class='ui-close-item'") == 10, "tab 8: three cards, a marker each, four items in What works and three in the others"  # structure
+vals = {"d1": d1, "d2": d2, "ci": round(CONFIG["bootstrap"]["confidence"] * 100), "n": v8["years"], "first": v8["first"], "last": v8["last"], "test_first": first, "test_last": last, "gap_style": pts_text(gap_pts["what"]), "gap_timing": pts_text(gap_pts["next_1y"]), "k": story_halves(cfg)[1][3], "n": sc["sizes"]["dots_side"] ** 2}  # placeholders, the gaps are read from the calibration summary
+assert raws[7].count("class='ui-card'") == 3 and raws[7].count("ui-close-dot'") == 3 and raws[7].count("class='ui-close-item'") == 11, "tab 8: three cards, a marker each, three items in What works, four in What to keep in mind, three in What comes next and the closing sentence"  # structure
 for key in ("works", "mind", "next"):  # each card
     assert t[f"t8_{key}_title"] in texts[7], f"card title {key}"  # title
-    for i in (1, 2, 3, 4) if key == "works" else (1, 2, 3):  # items
-        assert t[f"t8_{key}_{i}"].format(**vals) in texts[7], f"item {key} {i}"  # item with its numbers
+    for i in {"works": (1, 2, 3), "mind": (1, 2, 3, 4), "next": (1, 2, 3)}[key]:  # items
+        want = t[f"t8_{key}_{i}"].format(**vals)  # item with its numbers
+        if (key, i) == ("next", 1) and not trees_tie(models_data(cfg), cfg):  # the tie clause is not supported by the data
+            want = t["t8_next_1_plain"]  # first item without the tie clause
+        assert want in texts[7], f"item {key} {i}"  # item on screen
+import depth_views  # module whose tie check the closing slide calls
+import static_tabs  # builder of the closing slide
+for tie, want in ((True, t["t8_next_1"]), (False, t["t8_next_1_plain"])):  # the tie claim both ways
+    depth_views.trees_tie = lambda d, c, tie=tie: tie  # forced condition (restored below)
+    assert want in html.unescape(static_tabs.tab8_html(cfg)), f"tab 8 first next item with tie {tie}"  # item follows the condition
+depth_views.trees_tie = trees_tie  # real condition back
+chip_text = lambda q, st_: t["t8_close_chip"].format(question=q, status=st_)  # closing chip as shown
+real = (static_tabs.panel_beats_rule, static_tabs.forecast_beats_repeat)  # real conditions, restored below
+for ok in (True, False):  # the closing block both ways
+    static_tabs.panel_beats_rule = lambda d, c, ok=ok: pd.Series({poc["label_timing"]: ok, poc["label_style"]: ok})  # forced advantage flags
+    static_tabs.forecast_beats_repeat = lambda c, ok=ok: ok  # forced forecast verdict
+    page = html.unescape(static_tabs.tab8_html(cfg))  # closing slide with forced conditions
+    sure = t["t8_close_beats"] if ok else t["t8_close_tested"]  # Timing and Style status
+    assert chip_text(t["t8_close_timing_q"], sure) in page and chip_text(t["t8_close_style_q"], sure) in page, f"closing chips Timing and Style with {ok}"  # statuses
+    assert chip_text(t["t8_close_trends_q"], t["t8_close_trend_beats"] if ok else t["t8_close_first"]) in page, f"closing chip Trends with {ok}"  # trends status
+    assert t["t8_close_line"] in page and page.count("class='ui-chip'") == 3, f"closing sentence and three chips with {ok}"  # sentence and chip count
+static_tabs.panel_beats_rule, static_tabs.forecast_beats_repeat = real  # real conditions back
+import copy  # copy of the config for the missing-file case
+import tempfile  # temporary interval files
+paired = pd.read_csv(ROOT / cfg["style_tab"]["paired_file"], comment="#")  # stored interval, read independently of the app
+low = paired[(paired["model"] == FINAL_MODEL) & (paired["metric"] == f"hits@{cfg['style_tab']['top_n']}")]["ci_low"].iloc[0]  # lower bound of the forecast model
+want_trend = t["t8_close_trend_beats"] if low > 0 else t["t8_close_first"]  # chip text follows the sign of ci_low
+assert static_tabs.forecast_beats_repeat(cfg) == (low > 0) and chip_text(t["t8_close_trends_q"], want_trend) in html.unescape(static_tabs.tab8_html(cfg)), "Trends chip follows the sign of ci_low in the stored file"  # real data
+for lo, expected in ((0.3, True), (-0.4, False), (0.0, False)):  # lower bound above, below and at zero
+    with tempfile.TemporaryDirectory() as tmp:  # scratch folder
+        fake = Path(tmp) / "paired.csv"  # interval file with one chosen lower bound
+        fake.write_text(f"model,metric,mean,ci_low,ci_high\n{FINAL_MODEL},hits@{cfg['style_tab']['top_n']},0.5,{lo},1.5\n", encoding="utf-8")  # forecast model row
+        c2 = copy.deepcopy(cfg)  # config with the fake file
+        c2["style_tab"]["paired_file"] = str(fake)  # absolute path replaces the root-relative one
+        assert static_tabs.forecast_beats_repeat(c2) is expected, f"ci_low {lo} gives {expected}"  # sign rule
+c3 = copy.deepcopy(cfg)  # config with a missing file
+c3["style_tab"]["paired_file"] = "results/style_forecast/does_not_exist.csv"  # no such file
+assert static_tabs.forecast_beats_repeat(c3) is False, "missing file gives False"  # chip falls back to A first step
+for pal_key, q in (("timing", "t8_close_timing_q"), ("style", "t8_close_style_q"), ("highlight", "t8_close_trends_q")):  # chip colors on the real page
+    assert t[q] in texts[7] and f"border-color:{cfg['design']['palette'][pal_key]}" in raws[7], f"closing chip {q} on screen in its color"  # question and color
 assert t["t8_headline"] in texts[7] and "poc-st" not in raws[7], "tab 8 headline, old blocks gone"  # clean
 assert "<svg" not in raws[7] and not re.search(r"\bWHEN\b|\bWHAT\b", texts[7]), "tab 8: no svg, no WHEN or WHAT"  # clean tab
 print("tab 8 ok")  # result
@@ -327,7 +368,7 @@ vk = sc["view_keys"]  # pill keys
 pill = lambda key: at.segmented_control(key=key)  # a pill by key
 assert pill(vk["tab2"]).options == [t[k] for k in sc["views"]["tab2"]] and pill(vk["tab3"]).options == [t[k] for k in sc["views"]["tab3"]], "two pills on tab 2 and on tab 3"  # options from the config
 assert pill(vk["tab2"]).value == t["t2_view_volume"] and pill(vk["tab3"]).value == t["t3_view_patterns"], "defaults are Volume and Two patterns"  # first view of each
-assert t["t2_headline"] in texts[1] and len(spec_rows(1)) == 1, "Volume view is the current tab 2"  # unchanged default
+assert tab2_headline_text(cfg) in texts[1] and len(spec_rows(1)) == 1, "Volume view is the current tab 2"  # unchanged default
 print("pills ok")  # result
 
 pill(vk["tab2"]).set_value(t["t2_view_genres"]).run()  # open the Genres view
@@ -344,7 +385,7 @@ best = (wide[y1] - wide[y0]).idxmax()  # genre with the largest absolute increas
 line = t["t2g_headline"].format(genre=best, a=f"{wide.loc[best, y0] * 100:.0f}", b=f"{wide.loc[best, y1] * 100:.0f}", y0=y0, y1=y1)  # expected headline
 assert line in g_txt and t["t2g_sub"] in g_txt, "Genres headline names the genre of largest increase, numbers equal the file"  # headline and subtitle
 assert t["t2g_note"].format(year=cfg["design"]["incomplete_from_year"] - 1) in g_txt and t["t2g_title"] in g_txt, "years note and card title"  # note and title
-assert t["t2_headline"] not in g_txt and "<svg" not in g_raw and not re.search(r"\bWHEN\b|\bWHAT\b", g_raw), "Genres view: Volume content gone, no svg, no WHEN or WHAT"  # clean view
+assert tab2_headline_text(cfg) not in g_txt and "<svg" not in g_raw and not re.search(r"\bWHEN\b|\bWHAT\b", g_raw), "Genres view: Volume content gone, no svg, no WHEN or WHAT"  # clean view
 spec = json.loads(at.tabs[1].get("vega_lite_chart")[0].proto.spec)  # chart spec
 enc = spec["encoding"]  # encodings
 assert spec["params"][0]["bind"] == "legend" and enc["color"]["legend"]["orient"] == "right", "legend on the right, clickable"  # legend selection
@@ -353,7 +394,7 @@ assert [x["title"] for x in enc["tooltip"]] == [t["t2g_tip_year"], t["t2g_tip_ge
 assert spec["height"] == cfg["design"]["chart"]["height_genres"], "chart height from the config"  # height
 print("tab 2 genres ok")  # result
 pill(vk["tab2"]).set_value(t["t2_view_volume"]).run()  # back to Volume
-assert t["t2_headline"] in plain(tab_text(1)) and len(spec_rows(1)) == 1, "Volume view returns unchanged"  # switch back
+assert tab2_headline_text(cfg) in plain(tab_text(1)) and len(spec_rows(1)) == 1, "Volume view returns unchanged"  # switch back
 print("tab 2 views ok")  # result
 
 pill(vk["tab3"]).set_value(t["t3_view_tests"]).run()  # open the Six tests view
