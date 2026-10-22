@@ -6,7 +6,7 @@ import altair as alt  # charts, ships with Streamlit
 import pandas as pd  # tables
 
 from config import CONFIG  # project settings
-from static_charts import register_theme  # shared dark theme
+from static_charts import register_theme  # shared light paper theme
 from static_tabs import load_csv, load_json, static_path  # cached readers
 from ui_components import card_title, chip, headline  # design system helpers
 

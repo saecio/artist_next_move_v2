@@ -10,8 +10,8 @@ import pandas as pd  # tables
 _REGISTERED = []  # names of themes already registered
 
 
-def register_theme(cfg: dict) -> None:  # one shared dark theme
-    """Register and enable the dark Altair theme once: transparent background, no border, faint grid, muted text."""
+def register_theme(cfg: dict) -> None:  # one shared light paper theme
+    """Register and enable the light paper Altair theme once: transparent background, no border, faint horizontal grid, muted text."""
     d = cfg["design"]  # design settings
     name = d["chart"]["theme_name"]  # theme name
     if name in _REGISTERED:  # already done
@@ -19,12 +19,13 @@ def register_theme(cfg: dict) -> None:  # one shared dark theme
     c, ch = d["palette"], d["chart"]  # palette and chart settings
 
     @alt.theme.register(name, enable=True)  # registered once
-    def demo_dark() -> alt.theme.ThemeConfig:  # theme function
+    def demo_paper() -> alt.theme.ThemeConfig:  # theme function
         return {"config": {  # vega-lite config
             "background": "transparent",  # the card shows through
             "font": f"{d['font']['body']}, {d['font']['fallback']}",  # one font in every chart
             "view": {"stroke": None},  # no chart border
-            "axis": {"gridColor": c["line"], "gridOpacity": ch["grid_opacity"], "domainColor": c["line"], "tickColor": c["line"], "labelColor": c["muted"], "titleColor": c["muted"], "labelFontSize": ch["axis_font"], "titleFontSize": ch["axis_font"]},  # axes, grid at half the line color
+            "axis": {"gridColor": c["line"], "gridOpacity": ch["grid_opacity"], "domainColor": c["line"], "tickColor": c["line"], "labelColor": c["muted"], "titleColor": c["muted"], "labelFontSize": ch["axis_font"], "titleFontSize": ch["axis_font"]},  # axes, grid in the line color at reduced opacity
+            "axisX": {"grid": False},  # horizontal grid lines only, a chart that needs vertical ones sets grid=True itself
             "axisTop": {"domain": False},  # no domain line on top
             "axisRight": {"domain": False},  # no domain line on the right
             "title": {"color": c["text"], "fontSize": ch["title_font"]},  # titles

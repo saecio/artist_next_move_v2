@@ -12,12 +12,12 @@ def css(poc: dict) -> str:  # style block from the config
     """Style block built from the colors and sizes of the poc section."""
     c, s = poc["colors"], poc["sizes"]  # colors and sizes
     rules = [  # one CSS rule per line
-        f".poc-line{{display:flex;gap:{s['card_gap']}px;align-items:stretch}}",  # timeline of cards
+        f".poc-line{{display:flex;gap:{s['card_gap']}px;align-items:stretch;overflow-x:auto;max-width:100%}}",  # timeline of cards
         f".poc-card{{flex:1 1 {s['card_min_width']}px;min-width:{s['card_min_width']}px;border:1px solid {c['card_border']};border-radius:{s['card_radius']}px;padding:{s['card_padding']}px;font-size:{s['card_font']}px;line-height:1.25;position:relative;overflow-wrap:anywhere}}",  # one card, long words wrap instead of overflowing
         ".poc-year{font-weight:700}",  # year label, never truncated
         f".poc-title{{display:-webkit-box;-webkit-line-clamp:{s['title_lines']};-webkit-box-orient:vertical;overflow:hidden}}",  # titles on at most two lines
         f".poc-muted{{opacity:{s['muted_opacity']}}}",  # secondary text keeps the theme text color
-        f".poc-pred{{border:{s['predicted_border']}px solid {c['card_border_predicted']};box-shadow:0 0 {s['predicted_shadow']}px {c['card_border_predicted']}}}",  # card of the predicted year
+        f".poc-pred{{border:{s['predicted_border']}px solid {c['card_border_predicted']}}}",  # card of the predicted year
         f".poc-marks{{display:flex;gap:{s['card_gap']}px;margin-top:{s['card_gap']}px}}",  # row of the two marks
         f".poc-mark{{display:inline-flex;align-items:center;justify-content:center;min-width:{s['mark_size']}px;height:{s['mark_size']}px;box-sizing:border-box;padding:0 {s['mark_pad']}px;border-radius:{s['pill_radius']}px;font-size:{s['mark_font']}px;font-weight:{s['mark_weight']};line-height:1}}",  # one solid mark, round for one glyph, a pill for a glyph and an asterisk
         f".poc-earlier{{font-size:{s['note_font']}px;opacity:{s['muted_opacity']};margin-bottom:{s['card_gap']}px}}",  # marker of hidden earlier years
@@ -133,8 +133,9 @@ def multi_css(poc: dict) -> str:  # style rules of the mode 2 table, all scoped 
     c, s = poc["colors"], poc["sizes"]  # colors and sizes
     rules = [  # one CSS rule per line
         ".poc-multi .poc-table{table-layout:fixed}",  # equal column widths, so all placeholder cells are equally wide
+        "@media (max-width:639px){.poc-multi .poc-table{min-width:560px}.poc-table{min-width:420px}}",  # phone: tables keep a readable width and scroll inside their own box
         f".poc-multi .poc-table th:first-child{{width:{s['multi_artist_col']}%}}",  # artist column
-        f".poc-multi .poc-ph{{background:{c['placeholder_bg']};border:{s['placeholder_border_width']}px dashed {c['placeholder_border']};text-align:center}}",  # dark placeholder cell, dashed border, no grey fill
+        f".poc-multi .poc-ph{{background:{c['placeholder_bg']};border:{s['placeholder_border_width']}px dashed {c['placeholder_border']};text-align:center}}",  # paper tint placeholder cell, dashed border
         f".poc-multi .poc-ph span{{color:currentColor;opacity:{s['placeholder_opacity']}}}",  # dim text that follows the theme text color
         f".poc-multi .poc-pill{{display:inline-block;padding:{s['pill_pad_v']}px {s['pill_pad_h']}px;border-radius:{s['pill_radius']}px;border:{s['pill_border']}px solid {c['accent']};font-size:{s['pill_font']}px;font-weight:600;white-space:nowrap}}",  # pill shape
         f".poc-multi .poc-pill.yes{{background:{c['accent']};color:{c['accent_fg']}}}",  # Yes and Likely: filled
@@ -318,7 +319,7 @@ def multi_table_html(rows: pd.DataFrame, summary: dict, g: dict, route: dict, po
     if stage == "reveal":  # the marks are visible
         lines.append(t["symbols_legend"])  # meaning of the check, the cross and the dot
     notes_html = "".join(f"<div class='poc-note'>{html.escape(x)}</div>" for x in lines)  # small notes
-    return css(poc) + multi_css(poc) + f"<div class='poc-panel poc-multi'><table class='poc-table'><tr>{head}</tr>{''.join(body)}</table>{notes_html}</div>"  # table and notes in the scoped wrapper
+    return css(poc) + multi_css(poc) + f"<div class='poc-panel poc-multi'><div class='ui-scroll'><table class='poc-table'><tr>{head}</tr>{''.join(body)}</table></div>{notes_html}</div>"  # table and notes in the scoped wrapper
 
 def style_table_html(rows: pd.DataFrame, summary: dict | None, flagged: bool, st: dict, poc: dict, marks_fn, stage: str, top_n: int, tip: str = "") -> str:  # tab 7 table
     """The tab 7 table as one HTML string. Stage placeholder: ranks and placeholder cells. Stage predict: style, expected Works as a pill and the range. Stage reveal: actual Works, the in-range mark and, for a counted year, the two summary lines under the table."""
@@ -347,4 +348,4 @@ def style_table_html(rows: pd.DataFrame, summary: dict | None, flagged: bool, st
     if stage == "reveal" and summary is not None:  # counted years only
         lines = [tx["summary_hits"].format(k=summary["hits"], n=summary["n"]), tx["summary_range"].format(k=summary["in_range"], n=summary["m"])]  # both summary lines
     notes_html = "".join(f"<div class='poc-note'>{html.escape(x)}</div>" for x in lines)  # small notes
-    return css(poc) + multi_css(poc) + f"<div class='poc-panel poc-multi'><table class='poc-table'><tr>{head}</tr>{''.join(body)}</table>{notes_html}</div>"  # table and notes in the scoped wrapper
+    return css(poc) + multi_css(poc) + f"<div class='poc-panel poc-multi'><div class='ui-scroll'><table class='poc-table'><tr>{head}</tr>{''.join(body)}</table></div>{notes_html}</div>"  # table and notes in the scoped wrapper

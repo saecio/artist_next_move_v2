@@ -236,22 +236,22 @@ poc:  # tab 6 mode 1 timeline and panel: texts, colors and sizes shared by tab 6
     gap_card: "No release"  # card of a year without release, replaced by the year-end tag in a year-end year
     only_rerecordings: "Only re-recordings"  # card whose Works are all hidden re-recordings
   colors:  # result and mark colors, each with its own text color so they do not depend on the theme
-    mark_green: {bg: "#16a34a", fg: "#ffffff"}  # solid mark: prediction matches the reality, white glyph
-    mark_red: {bg: "#dc2626", fg: "#ffffff"}  # solid mark: prediction does not match the reality, white glyph
-    mark_grey: {bg: "#6b7280", fg: "#ffffff"}  # solid mark: no reality yet, grey dot
-    card_border: "rgba(128,128,128,0.6)"  # neutral border, readable on light and dark pages
-    card_border_predicted: "#2563eb"  # border of the card of the predicted year
-    chip_bg: "#e0e7ff"  # scoreboard chip background
-    accent: "#6366f1"  # mode 2 verdict pills: Yes and Likely filled, No and Not likely outlined (not green or red, those mean right and wrong)
-    accent_fg: "#ffffff"  # text on a filled pill
-    placeholder_bg: "rgba(0,0,0,0.18)"  # mode 2 placeholder cell, dark in a dark theme and a soft tint in a light one
-    placeholder_border: "rgba(128,128,128,0.7)"  # dashed border of a placeholder cell
-    chip_fg: "#1e3a8a"  # scoreboard chip text
+    mark_green: {bg: "#1E7A46", fg: "#ffffff"}  # solid mark: prediction matches the reality, white glyph
+    mark_red: {bg: "#B3261E", fg: "#ffffff"}  # solid mark: prediction does not match the reality, white glyph
+    mark_grey: {bg: "#6B675E", fg: "#ffffff"}  # solid mark: no reality yet, grey dot
+    card_border: "#DDD8CC"  # thin border, same value as design.palette.line
+    card_border_predicted: "#1B1B1F"  # border of the card of the predicted year, same value as design.palette.text
+    chip_bg: "#ECE7DB"  # scoreboard chip background, same value as design.palette.tint
+    accent: "#1B1B1F"  # mode 2 verdict pills: Yes and Likely filled, No and Not likely outlined (not green or red, those mean right and wrong)
+    accent_fg: "#F4F1EA"  # text on a filled pill, same value as design.palette.background
+    placeholder_bg: "#ECE7DB"  # mode 2 placeholder cell, the paper tint
+    placeholder_border: "#C9C4B8"  # dashed border of a placeholder cell
+    chip_fg: "#1B1B1F"  # scoreboard chip text, same value as design.palette.text
   sizes:  # sizes in pixels, except the opacity
     card_min_width: 110  # smallest card width, cards grow to fill the line
     card_gap: 4  # gap between cards
     card_padding: 6  # padding inside a card
-    card_radius: 6  # corner radius
+    card_radius: 4  # corner radius
     card_font: 12  # card text size
     title_lines: 2  # most lines of one title
     mark_size: 24  # height and least width of a mark, shared by tab 6 mode 2, tab 7 and the proof of concept
@@ -262,16 +262,15 @@ poc:  # tab 6 mode 1 timeline and panel: texts, colors and sizes shared by tab 6
     pill_pad_v: 2  # verdict pill vertical padding
     pill_pad_h: 12  # verdict pill horizontal padding
     pill_border: 2  # verdict pill border width
-    pill_radius: 999  # verdict pill corner radius, large for a full pill
+    pill_radius: 2  # verdict pill and mark corner radius, rectangular
     placeholder_border_width: 1  # dashed border width of a placeholder cell
     placeholder_opacity: 0.45  # opacity of the placeholder text
     multi_artist_col: 16  # width of the artist column of the mode 2 table, percent; the other columns share the rest equally
     predicted_border: 2  # border width of the predicted card
-    predicted_shadow: 6  # shadow blur of the predicted card
     table_font: 12  # table text size
     cell_padding: 3  # cell padding
     note_font: 11  # size of the small notes under the table
-    muted_opacity: 0.7  # opacity of secondary text, inherits the theme text color
+    muted_opacity: 0.75  # opacity of secondary text, inherits the theme text color
     chip_font: 12  # chip text size
 
 route:  # tab 6 mode 2: several artists in one year, read-only table
@@ -640,23 +639,23 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
       H6: {question: "Does a long silence mean no release next year?", answer: "Yes. One year after the last release, {first} release again the next year. After 10 years or more, {last}.", measure: "Cramer's V", short_label: "Silence since the last release"}  # values from h6_buckets.csv
 design:  # visual system of the demo: the only place for colors, type scale and chart settings
   palette:  # hex values; .streamlit/config.toml must equal background, card, text, line, timing (a test checks it)
-    background: "#0F1220"  # page
-    card: "#181C2E"  # cards
-    text: "#F2F2F5"  # main text
-    muted: "#9AA0B8"  # secondary text
-    line: "#2A2F47"  # borders and grid
-    timing: "#3DD6D0"  # the Timing question, on every tab and chart
-    style: "#FF4D8D"  # the Style question, on every tab and chart
-    chance: "#3A4060"  # By chance bar
-    rule: "#7C86A8"  # Past habits bar
-    highlight: "#FFB547"  # accent for emphasis
-  shadow: "none"  # cards have a border and no shadow
+    background: "#F4F1EA"  # paper page
+    card: "#FFFFFF"  # cards
+    tint: "#ECE7DB"  # paper tint of bands and chip fills
+    text: "#1B1B1F"  # main text, the ink
+    muted: "#6B675E"  # secondary text
+    line: "#DDD8CC"  # borders, rules and grid
+    timing: "#0F6B6B"  # the Timing question, on every tab and chart
+    style: "#D9482B"  # the Style question, on every tab and chart
+    chance: "#C9C4B8"  # By chance bar
+    rule: "#8A8578"  # Past habits bar
+    highlight: "#C98A12"  # accent for emphasis
+  shadow: "none"  # cards have a thin border and no shadow
   font:  # typefaces, self-hosted; .streamlit/config.toml must name the same two families and files (a test checks it)
-    heading: "Space Grotesk"  # headlines, big numbers and tab labels
+    heading: "Fraunces"  # serif headlines and big numbers (weights 500 and 600)
     body: "Inter"  # everything else
     fallback: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"  # system fonts used until the files load
     tab_weight: 600  # weight of the tab labels
-  rule: {height: 2, gap: 8}  # gradient rule between the header and the tabs: height and space above it in px
   type:  # type scale in px
     headline: 28  # page headline
     subtitle: 15  # line under the headline
@@ -667,7 +666,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     head_tracking: "-0.01em"  # letter spacing of headlines and big numbers
     eyebrow_tracking: "0.06em"  # letter spacing of the uppercase card labels
     line: 1.45  # body text line height
-  box: {radius: 12, border: 1, pad: 18, gap: 12}  # card radius, border width, padding and gap in px
+  box: {radius: 4, border: 1, pad: 18, gap: 12}  # card radius, border width, padding and gap in px
   method_axis_start: 1985  # first year of the tab 4 time axis (the last year is the last test year of the final exam)
   method_tick_every: 10  # tab 4 axis: a year label every this many years
   method:  # tab 4 infographic and tab 8 marker, sizes in px
@@ -685,22 +684,22 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     dot: 14  # round marker of the tab 8 cards
     swatch_w: 22  # width of a legend swatch of tab 4
     swatch_h: 12  # height of a legend swatch of tab 4
-  chip: {pad_v: 4, pad_h: 12, font: 13}  # chip sizes in px
+  chip: {pad_v: 3, pad_h: 10, font: 11, radius: 2}  # chip sizes in px
   header: {title_font: 20, tagline_font: 14, gap: 14, top_pad: 56}  # header sizes in px, top_pad is the space above the header (page padding)
-  button: {weight: 700, hover_brightness: 1.12}  # primary button label weight and hover brightness (text color is the palette background)
+  button: {weight: 600, radius: 4}  # button label weight and corner radius in px (active fill is the text color, label is the palette background)
   genre_story_start_year: 1990  # first year of the Genres headline comparison
-  genre_palette:  # one color per genre of the genre chart (dark theme), distinct from the timing and style colors
-    Blues: "#4458D8"  # indigo
-    Electronic: "#8E7CF3"  # violet
-    "Folk, World, & Country": "#C9A66B"  # sand
-    Funk / Soul: "#E2735B"  # coral
-    Hip Hop: "#D96FD0"  # orchid
-    Jazz: "#7AA2E3"  # light blue
-    Latin: "#E8C34A"  # gold
-    Pop: "#7BCB6F"  # green
-    Reggae: "#3F9E6E"  # deep green
-    Rock: "#C8553D"  # brick red
-    Stage & Screen: "#8A93B5"  # grey lavender
+  genre_palette:  # one color per genre of the genre chart (light paper), distinct from the timing and style colors
+    Blues: "#3B5B92"  # indigo
+    Electronic: "#7A5BA6"  # violet
+    "Folk, World, & Country": "#8C7A3E"  # sand
+    Funk / Soul: "#B8714A"  # coral
+    Hip Hop: "#A8447F"  # orchid
+    Jazz: "#5E8FB8"  # light blue
+    Latin: "#B8921F"  # gold
+    Pop: "#4C9A5F"  # green
+    Reggae: "#2E7550"  # deep green
+    Rock: "#8F3B2C"  # brick red
+    Stage & Screen: "#7A7F96"  # grey lavender
   incomplete_from_year: 2024  # first year still being filled in (docs/decisions.md, 10-10-2026 entry on the Discogs submission lag: 2024 and 2025 are the excluded recent years, 2026 is the demo year)
   strip: {height: 10, gap: 4}  # tab 5 sorted-artists strip: bar height and label gap in px
   flow:  # tab 2 flow card, sizes in px
@@ -717,7 +716,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     example_days: 6  # days of rain in the reading card example
     example_total: 10  # days in the reading card example
     note_gap: 0.02  # gap of the top Timing bin above which the "too confident" note is shown
-  photo: {width: 200, height: 206, content_weight: 430, card_height: 262, radius: 12, focus: "50% 20%", name_font: 22, question_font: 16, monogram_font: 64, monogram_opacity: 0.25, credit_font: 10, credit_line: 12, credit_margin: 6, credit_opacity: 0.6, bottom_pad: 16}  # tab 1 artist card (credit_font, credit_line and credit_margin in px for the one-line credit under the photo, credit_opacity of the muted credit text, bottom_pad px under the credit line, equal to the space above the photo; the photo height is the card content height minus the credit line and margin): photo column width and height, relative width of the content column, card height (px), corner radius (px), object-position of the photo, name and question sizes (px), monogram size (px) and background opacity
+  photo: {width: 200, height: 206, content_weight: 430, card_height: 262, radius: 4, focus: "50% 20%", name_font: 22, question_font: 16, monogram_font: 64, monogram_opacity: 0.25, credit_font: 10, credit_line: 12, credit_margin: 6, credit_opacity: 1, bottom_pad: 16}  # tab 1 artist card (credit_font, credit_line and credit_margin in px for the one-line credit under the photo, credit_opacity of the muted credit text, bottom_pad px under the credit line, equal to the space above the photo; the photo height is the card content height minus the credit line and margin): photo column width and height, relative width of the content column, card height (px), corner radius (px), object-position of the photo, name and question sizes (px), monogram size (px) and background opacity
   story:  # tab 1 timeline marker
     big_font: 26  # px of the big "{k} in {n}" of the tab 1 card 3, small enough for "60 in 100" to stay on one line at 1280 px
     marker_below: 6  # px the "You are here" marker continues below the timeline line, so it stops above the year labels
@@ -729,7 +728,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     point_size: 90  # point area of the depth charts
     thin_line: 1  # thin connecting line and whisker width in px
     axis_pad: 0.15  # share of the value range kept free around the points of the depth charts
-    theme_name: demo_dark  # registered theme name
+    theme_name: demo_paper  # registered theme name
     height_results: 280  # tab 5 chart height in px
     strength_axis_max: 0.5  # Six tests chart axis maximum; all six effect sizes are below it (a test checks it)
     strength_axis_step: 0.1  # Six tests chart axis step, ticks and grid lines sit at multiples of it

@@ -1,13 +1,13 @@
 [theme]
-base = "dark"
-primaryColor = "#3DD6D0"
-backgroundColor = "#0F1220"
-secondaryBackgroundColor = "#181C2E"
-textColor = "#F2F2F5"
-borderColor = "#2A2F47"
-baseRadius = "12px"
+base = "light"
+primaryColor = "#0F6B6B"
+backgroundColor = "#F4F1EA"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1B1B1F"
+borderColor = "#DDD8CC"
+baseRadius = "4px"
 font = "Inter, sans-serif"
-headingFont = "Space Grotesk, sans-serif"
+headingFont = "Fraunces, serif"
 
 [[theme.fontFaces]]
 family = "Inter"
@@ -34,27 +34,15 @@ weight = "700"
 style = "normal"
 
 [[theme.fontFaces]]
-family = "Space Grotesk"
-url = "app/static/fonts/space-grotesk-latin-400-normal.woff2"
-weight = "400"
-style = "normal"
-
-[[theme.fontFaces]]
-family = "Space Grotesk"
-url = "app/static/fonts/space-grotesk-latin-500-normal.woff2"
+family = "Fraunces"
+url = "app/static/fonts/fraunces-latin-500-normal.woff2"
 weight = "500"
 style = "normal"
 
 [[theme.fontFaces]]
-family = "Space Grotesk"
-url = "app/static/fonts/space-grotesk-latin-600-normal.woff2"
+family = "Fraunces"
+url = "app/static/fonts/fraunces-latin-600-normal.woff2"
 weight = "600"
-style = "normal"
-
-[[theme.fontFaces]]
-family = "Space Grotesk"
-url = "app/static/fonts/space-grotesk-latin-700-normal.woff2"
-weight = "700"
 style = "normal"
 
 [server]

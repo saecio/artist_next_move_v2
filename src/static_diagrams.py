@@ -27,26 +27,26 @@ def method_css(cfg: dict) -> str:  # style rules of the tab 4 infographic and mo
         f".ui-m-label{{font-size:{ty['label']}px;color:{c['muted']}}}",  # muted run label
         f".ui-m-row.final .ui-m-label{{color:{c['highlight']};font-weight:700}}",  # accented final label
         f".ui-m-track{{display:grid;height:{m['row_h']}px}}",  # one row of the shared year axis, columns inline in percent
-        f".ui-m-train{{background:linear-gradient(to right,transparent,{c['chance']});display:flex;align-items:center;padding-left:{m['text_pad']}px;font-size:{ty['caption']}px;color:{c['muted']};white-space:nowrap;overflow:hidden}}",  # train bar fading to the left edge
-        f".ui-m-row.final .ui-m-train{{background:linear-gradient(to right,transparent,{c['highlight']});color:{c['text']}}}",  # final train bar
+        f".ui-m-train{{background:{c['chance']};display:flex;align-items:center;padding-left:{m['text_pad']}px;font-size:{ty['caption']}px;color:{c['text']};white-space:nowrap;overflow:hidden}}",  # train bar, flat
+        f".ui-m-row.final .ui-m-train{{background:{c['highlight']};color:{c['text']}}}",  # final train bar
         f".ui-m-gap{{border:{d['box']['border']}px dashed {c['muted']};box-sizing:border-box}}",  # gap block, outline only
-        f".ui-m-test{{line-height:1.1;background:{c['rule']};color:{c['background']};display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:{ty['caption']}px;font-weight:600;border-radius:{m['test_radius']}px}}",  # test block
+        f".ui-m-test{{line-height:1.1;background:{c['rule']};color:{c['text']};display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:{ty['caption']}px;font-weight:600;border-radius:{m['test_radius']}px}}",  # test block
         f".ui-m-row.final .ui-m-test{{background:{c['highlight']}}}",  # sealed test block
         f".ui-m-sealed{{display:flex;align-items:center;gap:{m['text_pad']}px}}",  # lock and the word Sealed
-        f".ui-m-lock{{position:relative;display:inline-block;width:{m['lock_w']}px;height:{m['lock_h']}px;background:{c['background']};border-radius:2px;margin-top:{m['shackle_h']}px}}",  # lock body
-        f".ui-m-lock::before{{content:'';position:absolute;left:50%;transform:translateX(-50%);top:-{m['shackle_h']}px;width:{m['lock_w'] - 4}px;height:{m['shackle_h']}px;border:2px solid {c['background']};border-bottom:none;border-radius:{m['lock_w']}px {m['lock_w']}px 0 0;box-sizing:border-box}}",  # lock shackle
+        f".ui-m-lock{{position:relative;display:inline-block;width:{m['lock_w']}px;height:{m['lock_h']}px;background:{c['text']};border-radius:2px;margin-top:{m['shackle_h']}px}}",  # lock body
+        f".ui-m-lock::before{{content:'';position:absolute;left:50%;transform:translateX(-50%);top:-{m['shackle_h']}px;width:{m['lock_w'] - 4}px;height:{m['shackle_h']}px;border:2px solid {c['text']};border-bottom:none;border-radius:{m['lock_w']}px {m['lock_w']}px 0 0;box-sizing:border-box}}",  # lock shackle
         f".ui-m-axis{{position:relative;height:{ty['caption'] * 2}px}}",  # tick row
         f".ui-m-tick{{position:absolute;transform:translateX(-50%);font-size:{ty['caption']}px;color:{c['muted']}}}",  # one year label
-        f".ui-m-chips{{display:flex;align-items:flex-end;gap:{d['box']['gap']}px}}",  # model chips with arrows
+        f".ui-m-chips{{display:flex;flex-wrap:wrap;align-items:flex-end;gap:{d['box']['gap']}px}}",  # model chips with arrows
         f".ui-m-col{{display:flex;flex-direction:column;align-items:flex-start}}",  # chip and its flag
         f".ui-m-flag{{font-size:{ty['caption']}px;font-weight:700;color:{c['highlight']};min-height:{ty['caption'] * 2}px}}",  # Final model flag
         f".ui-m-arrow{{position:relative;width:{m['arrow_len']}px;height:{d['box']['border'] * 2}px;background:{c['muted']};margin-bottom:{m['arrow_lift']}px}}",  # arrow shaft
         f".ui-m-arrow::after{{content:'';position:absolute;right:-1px;top:50%;transform:translateY(-50%);border-top:{m['arrow_head']}px solid transparent;border-bottom:{m['arrow_head']}px solid transparent;border-left:{m['arrow_head']}px solid {c['muted']}}}",  # arrow head
         f".ui-m-inline{{display:flex;align-items:center}}",  # chip and its tooltip icon on one line, centered
-        f".ui-m-legend{{display:flex;align-items:center;gap:{d['box']['gap'] * 2}px;font-size:{ty['caption']}px;color:{c['muted']}}}",  # legend row above the card
+        f".ui-m-legend{{display:flex;flex-wrap:wrap;align-items:center;gap:{d['box']['gap'] * 2}px;font-size:{ty['caption']}px;color:{c['muted']}}}",  # legend row above the card
         f".ui-m-key{{display:inline-flex;align-items:center;gap:{m['text_pad']}px}}",  # swatch and its word
         f".ui-m-sw{{display:inline-block;width:{m['swatch_w']}px;height:{m['swatch_h']}px;box-sizing:border-box}}",  # legend swatch
-        f".ui-m-finals{{display:flex;align-items:center;gap:{d['box']['gap']}px;font-size:{ty['label']}px;color:{c['muted']}}}",  # final models line
+        f".ui-m-finals{{display:flex;flex-wrap:wrap;align-items:center;gap:{d['box']['gap']}px;font-size:{ty['label']}px;color:{c['muted']}}}",  # final models line
     ]
     return "<style>" + "".join(rules) + "</style>"  # the style element
 
@@ -76,9 +76,9 @@ def method_legend(cfg: dict, t: dict) -> str:  # tab 4 legend above the card
     """Three swatches: train bar, dashed gap block (with its tooltip) and test block."""
     c, b = cfg["design"]["palette"], cfg["design"]["box"]["border"]  # palette and border width
     key = lambda swatch, text, tip="": f"<span class='ui-m-key'>{swatch}{html.escape(text)}{info(tip) if tip else ''}</span>"  # one swatch with its word
-    train = f"<i class='ui-m-sw' style='background:linear-gradient(to right,transparent,{c['chance']})'></i>"  # train swatch, same fade as the bars
+    train = f"<i class='ui-m-sw' style='background:{c['chance']}'></i>"  # train swatch, same flat color as the bars
     gap = f"<i class='ui-m-sw' style='border:{b}px dashed {c['muted']}'></i>"  # gap swatch, dashed outline
-    test = f"<i class='ui-m-sw' style='background:{c['rule']};border-radius:2px'></i>"  # test swatch
+    test = f"<i class='ui-m-sw' style='background:{c['rule']};border-radius:{cfg['design']['method']['test_radius'] // 2}px'></i>"  # test swatch
     return "<div class='ui-m-legend'>" + key(train, t["t4_legend_train"]) + key(gap, t["t4_legend_gap"], t["t4_tip_gap"]) + key(test, t["t4_legend_test"]) + "</div>"  # legend row
 
 def final_models_html(cfg: dict, tags: list) -> str:  # tab 4 final models line
@@ -93,13 +93,16 @@ def method_chips(cfg: dict, t: dict, names: list) -> str:  # tab 4 model chips
     parts = [f"<div class='ui-m-col'><span class='ui-m-flag'>{html.escape(flag)}</span><div class='ui-m-inline'>{chip(text, color)}{info(t['t4_chips_tip']) if flag else ''}</div></div>" for text, color, flag in items]  # one column per chip, the tooltip icon sits right after the final one
     return "<div class='ui-m-chips'>" + "<div class='ui-m-arrow'></div>".join(parts) + "</div>"  # arrows between the chips
 
-def close_css(cfg: dict) -> str:  # style rules of the tab 8 closing cards
+def close_css(cfg: dict) -> str:  # style rules of the tab 8 closing cards and band
     """Rules prefixed ui-close-; colors from the palette, the marker size from design.method."""
     d = cfg["design"]  # design settings
     c, ty, b = d["palette"], d["type"], d["box"]  # palette, type scale and box sizes
     rules = [  # one rule per element
         f".ui-close-title{{display:flex;align-items:center;gap:{b['gap']}px;font-size:{ty['subtitle']}px;font-weight:700;color:{c['text']};margin-bottom:{b['gap'] * 2}px}}",  # marker and card title
         f".ui-close-dot{{width:{d['method']['dot']}px;height:{d['method']['dot']}px;border-radius:50%;background:{c['highlight']};flex:none}}",  # round marker in the highlight color
-        f".ui-close-item{{font-size:{ty['label']}px;color:{c['text']};line-height:1.45;margin-bottom:{b['gap']}px}}",  # one item
+        f".ui-close-item{{font-size:{ty['label']}px;color:{c['text']};line-height:1.45;margin-bottom:{b['gap']}px;text-align:left}}",  # one item
+        f".ui-band{{background:{c['tint']};border-top:{b['border']}px solid {c['line']};border-bottom:{b['border']}px solid {c['line']};padding:{b['pad']}px 0;text-align:left}}",  # closing band, paper tint between two thin rules
+        f".ui-band .ui-chips{{margin:0 0 {b['gap']}px 0;flex-wrap:wrap}}",  # the three chips in a row, wrapping on small screens
+        f".ui-band>.ui-close-item{{font-family:'{d['font']['heading']}',Georgia,serif;font-size:clamp({round(ty['subtitle'] * 1.1)}px,1.6vw + 10px,{round(ty['subtitle'] * 1.5)}px);line-height:1.35;margin-bottom:0}}",  # the sentence in the serif
     ]
     return "<style>" + "".join(rules) + "</style>"  # the style element

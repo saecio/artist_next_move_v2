@@ -318,8 +318,8 @@ assert any(cfg["header"]["title"] in e.value and tag in e.value for e in at.get(
 assert all(tag not in tab_text(i) for i in range(8)), "header sits above the tabs, so it shows on every tab"  # not inside a tab
 css_text = "".join(e.value for e in at.get("html") if "<style>" in e.value)  # shared css
 pal = cfg["design"]["palette"]  # palette
-bg, tm = pal["background"], pal["timing"]  # button colors
-assert f"[data-testid='stBaseButton-primary']{{background:{tm};border-color:{tm};color:{bg}}}" in css_text and "font-weight:" in css_text and ":hover" in css_text, "primary button: dark text, bold, hover"  # shared css
+bg, tm = pal["background"], pal["text"]  # button colors, ink fill with paper text
+assert f"[data-testid='stBaseButton-primary']{{background:{tm};border-color:{tm};color:{bg}}}" in css_text and "font-weight:" in css_text and ":hover" in css_text, "primary button: paper text on ink, bold, hover"  # shared css
 for f in list((ROOT / "app").glob("*.py")) + list((ROOT / "src").glob("*.py")):  # every python file of the app
     src = f.read_text()  # file text
     for line in src.splitlines():  # every line
@@ -345,17 +345,19 @@ faces = tomllib.load(open(ROOT / ".streamlit/config.toml", "rb"))["theme"]["font
 assert {f["family"] for f in faces} == {fo["body"], fo["heading"]} and sorted({f["weight"] for f in faces}) == ["400", "500", "600", "700"], "four weights of both families"  # families and weights
 assert all((ROOT / f["url"]).is_file() and (ROOT / f["url"]).stat().st_size > 1000 for f in faces), "every font file exists"  # files on disk
 assert tomllib.load(open(ROOT / ".streamlit/config.toml", "rb"))["server"]["enableStaticServing"] is True, "static serving is on"  # fonts are served
-assert all(list((ROOT / "app/static/fonts").glob(f"LICENSE-{n}.txt")) for n in ("inter", "space-grotesk")), "license texts sit next to the fonts"  # OFL texts
+assert all(list((ROOT / "app/static/fonts").glob(f"LICENSE-{n}.txt")) for n in ("inter", "fraunces")), "license texts sit next to the fonts"  # OFL texts
 print("fonts declared and present")  # result
 lum = lambda h: sum(w * (lambda v: v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4)(int(h.lstrip("#")[i:i + 2], 16) / 255) for w, i in ((0.2126, 0), (0.7152, 2), (0.0722, 4)))  # relative luminance of a hex color
 ratio = lambda a, b: (max(lum(a), lum(b)) + 0.05) / (min(lum(a), lum(b)) + 0.05)  # WCAG contrast ratio
-for name in ("text", "muted", "timing", "style", "highlight"):  # text colors used on cards
+floors = {"text": 4.5, "muted": 4.5, "timing": 4.5, "style": 4.0, "highlight": 2.9}  # style and highlight are used for big numbers, marks and borders
+for name, floor in floors.items():  # colors used on cards
     print(f"contrast {name} on card: {ratio(pal[name], pal['card']):.2f}")  # value for the record
-    assert ratio(pal[name], pal["card"]) >= 4.5, f"{name} over the card background is at least 4.5:1"  # body text rule
+    assert ratio(pal[name], pal["card"]) >= floor, f"{name} over the card background is at least {floor}:1"  # contrast floor
 assert cfg["design"]["shadow"] == "none", "cards have no shadow"  # border only
 css = base_css(cfg)  # the style block
-assert css.count("linear-gradient") == 1 and "gradient" not in html.unescape(header_html(cfg)), "one gradient only, the header rule"  # signature
-print("design pass 10 ok")  # result
+assert "gradient" not in css and "ui-rule" not in css and "ui-rule" not in header_html(cfg) and "rule" not in cfg["design"] and "box-shadow" not in css.replace("box-shadow:none", ""), "no gradient, no header rule, no shadow"  # editorial identity
+assert "@media (max-width:1023px)" in css and "@media (max-width:639px)" in css, "two breakpoints"  # responsive
+print("design pass 11 ok")  # result
 hexre = re.compile(r"#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b|rgba?\(")  # color literal
 notebook_only = {"eda.py", "style_report.py"}  # notebook plotting modules, not used by the app
 for f in sorted(list((ROOT / "app").glob("*.py")) + list((ROOT / "src").glob("*.py"))):  # every python file of the app and src

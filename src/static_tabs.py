@@ -103,7 +103,7 @@ def artist_photo_html(cfg: dict, name: str, color: str) -> str:  # photo column 
     box = f"width:100%;max-width:{ph['width']}px;height:{ph['height']}px;border-radius:{ph['radius']}px"  # shared column shape
     path = photo_path(cfg, credit_row(cfg, name))  # existing photo, if any
     if path:  # the file exists
-        img = f"<img class='ui-photo' src='{photo_uri(path, ph['width'], ph['height'], ph['focus'])}' alt='{html.escape(name, quote=True)}' style='{box};object-fit:cover;object-position:{ph['focus']};display:block'>"  # embedded photo
+        img = f"<img class='ui-photo' src='{photo_uri(path, ph['width'], ph['height'], ph['focus'])}' alt='{html.escape(name, quote=True)}' style='{box};object-fit:cover;object-position:{ph['focus']};display:block;border:1px solid {cfg['design']['palette']['line']};box-sizing:border-box'>"  # embedded photo
         return f"<div class='ui-photo-wrap' style='max-width:{ph['width']}px;padding-bottom:{ph['bottom_pad']}px'>{img}{credit_html(cfg, name)}</div>"  # photo with its credit line under it
     return f"<div class='ui-mono' style='{box};position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:{ph['monogram_font']}px;font-weight:700;color:{color}'><div style='position:absolute;inset:0;background:{color};opacity:{ph['monogram_opacity']}'></div><span style='position:relative'>{html.escape(monogram(name))}</span></div>"  # initials column
 
@@ -154,8 +154,8 @@ def tab1_kpis_html(cfg: dict) -> str:  # story strip of tab 1
     n = sc["sizes"]["dots_side"] ** 2  # artists per group
     cards = [one, two]  # always shown
     if all(k > b for _, _, _, k, b in halves):  # model above random in both halves
-        half = lambda lab, color, cap, k, b, tip="": f"<div style='flex:1;min-width:0'><div class='ui-label' style='color:{color}'>{html.escape(lab)}{tip}</div><div class='ui-big' style='color:{color};font-size:{cfg['design']['story']['big_font']}px;white-space:nowrap'>{html.escape(t['t1_s3_big'].format(k=k, n=n))}</div><div class='ui-caption' style='color:{color}'>{html.escape(cap)}</div><div class='ui-caption'>{html.escape(t['t1_s3_blind'].format(b=b, n=n))}</div></div>"  # one half
-        cards.append(f"<div class='ui-kpi'><div style='display:flex;gap:{sc['story']['pair_gap']}px'>{''.join(half(*h, tip=info(t['t1_s3_tip'].format(s=top_share(cfg)[1], y_from=y['holdout_start'], y_to=y['holdout_end'])) if i == 0 else "") for i, h in enumerate(halves))}</div></div>")  # parallel halves, the tooltip sits by the label of the first half
+        half = lambda lab, color, cap, k, b, tip="": f"<div style='flex:1;min-width:0'><div class='ui-label' style='color:{color}'>{html.escape(lab)}{tip}</div><div class='ui-big' style='color:{color};font-size:clamp({round(cfg['design']['story']['big_font'] * 0.75)}px,2.2vw,{cfg['design']['story']['big_font']}px);white-space:nowrap'>{html.escape(t['t1_s3_big'].format(k=k, n=n))}</div><div class='ui-caption' style='color:{color}'>{html.escape(cap)}</div><div class='ui-caption'>{html.escape(t['t1_s3_blind'].format(b=b, n=n))}</div></div>"  # one half
+        cards.append(f"<div class='ui-kpi'><div class='ui-halves'>{''.join(half(*h, tip=info(t['t1_s3_tip'].format(s=top_share(cfg)[1], y_from=y['holdout_start'], y_to=y['holdout_end'])) if i == 0 else "") for i, h in enumerate(halves))}</div></div>")  # parallel halves, the tooltip sits by the label of the first half
     return "<div class='ui-row'>" + "".join(card(c) for c in cards) + "</div>"  # two or three equal cards
 
 def tab2_headline_text(cfg: dict) -> str:  # headline text of tab 2
@@ -242,7 +242,7 @@ def closing_html(cfg: dict, res: pd.DataFrame) -> str:  # closing block of tab 8
     trend = t["t8_close_trend_beats"] if forecast_beats_repeat(cfg) else t["t8_close_first"]  # forecast against repeating last year
     chips = [(t["t8_close_timing_q"], status(beats[p["label_timing"]], "t8_close_beats"), pal["timing"]), (t["t8_close_style_q"], status(beats[p["label_style"]], "t8_close_beats"), pal["style"]), (t["t8_close_trends_q"], trend, pal["highlight"])]  # question, status, color
     row = "".join(chip(t["t8_close_chip"].format(question=q, status=s), c) for q, s, c in chips)  # one chip each
-    return f"<div class='ui-chips' style='margin:0'>{row}</div><div class='ui-close-item'>{html.escape(t['t8_close_line'])}</div>"  # chips and the final sentence
+    return f"<div class='ui-band'><div class='ui-chips'>{row}</div><div class='ui-close-item'>{html.escape(t['t8_close_line'])}</div></div>"  # band with the chips and the final sentence
 
 
 def results_data(cfg: dict) -> pd.DataFrame:  # chart table of tab 5
