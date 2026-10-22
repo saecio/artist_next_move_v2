@@ -22,6 +22,8 @@ notices:  # texts shown verbatim
 ui:  # interface labels
   genre_label: "Genre"  # genre selector
   all_genres: "All genres"  # genre selector, no filter option
+  point_one: "{n} point"  # a score gap of one point (singular)
+  point_many: "{n} points"  # a score gap of any other number of points (plural)
   artist_label: "Artist"  # artist selector
   year_label: "Year"  # year selector
   projection_column: "is_projection"  # boolean column added to the forecast table
@@ -204,7 +206,7 @@ poc:  # tab 6 mode 1 timeline and panel: texts, colors and sizes shared by tab 6
     within_two: "Within {n} years:"  # line of the second-horizon prediction, shown by the cascade rule, {n} from game.second_horizon
     reality: "Reality:"  # line of the reality
     reality_two: "Reality, within {n} years:"  # line of the second-horizon reality
-    score_tip: "Model score {score:.2f}, not a probability"  # hover text of a prediction word
+    score_tip: "Model score {score:.2f}. On the test years, scores like this matched real rates closely: average gap {gap}."  # hover text of a prediction word, gap = singular or plural point text of the question the panel belongs to (round(100 x ECE) from results/calibration/summary.csv)
     release_line: "{title} ({year})"  # release under a reality line, {year} is the year of the release
     release_year_only: "Release in {year}"  # same line when the file has no title
     used_before: "(none new)"  # after the styles of the release of a No reality
@@ -374,6 +376,15 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     what_top10: results/holdout_what/top10_lift.csv  # Style top group hit rate, holdout
     works_per_year: works_per_year.csv  # year, works (dated cleaned Works per year), written once by scripts/run_static_assets.py
     data_quality: data_quality.csv  # metric, value (works_undated), written once by scripts/run_static_assets.py
+    models_compared: models_compared.csv  # question, model, mean_score, ci_low, ci_high, source, written once by scripts/run_models_compared_assets.py
+    what_by_year: results/holdout_what/by_year.csv  # Style holdout score per test year, model and past habits
+    notebook_timing: notebooks/03_when_backtesting_design.ipynb  # saved outputs of the Timing model comparison
+    notebook_style: notebooks/05_what_models.ipynb  # saved outputs of the Style model comparison
+    artist_photos: app/assets/artists  # folder of the artist photos, read only
+    artist_credits: app/assets/artists/credits.csv  # artist, file, author, license, license_url, source_url
+    calibration_summary: results/calibration/summary.csv  # one row per target: ECE and Brier figures
+    calibration_timing: results/calibration/reliability_next_1y.csv  # Timing reliability table, ten bins
+    calibration_style: results/calibration/reliability_what.csv  # Style reliability table, ten bins
     genre_share: genre_share_by_year.csv  # year, genre, share of top-genre Works (each year sums to 1), written once by scripts/run_static_assets.py
     hyp_cards: hypotheses_cards.csv  # one row per hypothesis: plain question, answer template, placeholder values, effect size, written once by scripts/run_static_assets.py
     hyp_labels: hypotheses_labels.csv  # id, short_label: the six short names of the Six tests chart, written once by scripts/run_static_assets.py
@@ -389,7 +400,8 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     source_master: master  # work_source value of a Master Work
     source_standalone: synthetic  # work_source value of a standalone release Work
   story:  # tab 1 hook: one artist per question, nothing after the cutoff year is shown
-    cutoff_year: 2019  # the year the reader is in
+    cutoff_year: 2026  # the year the reader is in
+    last_release_year: 2025  # last year of releases drawn on the timelines (the year of the marker has no complete data)
     timing_artist: Taylor Swift  # artist of the Timing question
     style_artist: Bad Bunny  # artist of the Style question
     future_years: 3  # empty years drawn after the cutoff, ending in the question mark
@@ -406,12 +418,21 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     effect_sizes: {H1: 0.18, H2: 0.155, H3: 0.169, H4: 0.041, H5: 0.067, H6: 0.313}  # effect size per hypothesis (notebook 02 interpretation cells)
     effect_tolerance: 0.005  # largest allowed difference between a computed and an expected effect size
   models_compared: [Logistic Regression, Naive Bayes, Random Forest, HistGradientBoosting, XGBoost]  # models of the comparison, in the order of docs/decisions.md (entries on the Step 5 sequence)
-  view_keys: {tab2: tab2_view, tab3: tab3_view}  # widget keys of the two view selectors
+  timing_report_keys: {Logistic Regression: logreg, Naive Bayes: naive_bayes, Random Forest: random_forest, HistGradientBoosting: hist_gb, XGBoost: xgb_stage0}  # model -> key of the reports dict of the Timing notebook
+  tree_models: [Random Forest, HistGradientBoosting, XGBoost]  # the three tree models of the Models compared headline
+  simple_model: Logistic Regression  # the simple model that must trail them
+  final_model: XGBoost  # the model highlighted in the Models compared dot plots
+  style_rule_label: Baseline (c)  # label of the past habits block in the Style comparison table
+  calibration_targets: {timing: next_1y, style: what}  # summary.csv target of each question in the Results depth views and the closing slide
+  view_keys: {tab2: tab2_view, tab3: tab3_view, tab5: tab5_view}  # widget keys of the two view selectors
   views:  # view selectors: label texts (keys of static_tabs.texts), first one is the default
     tab2: [t2_view_volume, t2_view_genres]  # tab 2
     tab3: [t3_view_patterns, t3_view_tests]  # tab 3
+    tab5: [t5_view_results, t5_view_years, t5_view_models, t5_view_trust]  # tab 5
   sizes:  # pixel sizes of the static tabs (a later design pass restyles them)
+    tab5_trust_columns: [3, 2]  # relative widths of the reliability chart card and the muted lines of the Can you trust view
     tab5_columns: [2, 1]  # relative widths of the chart card and the dot card of tab 5
+    tab5_card_height: 480  # height in px of the two cards of the Results view, so both start and end at the same line
     tab2_columns: [3, 2]  # relative widths of the chart card and the right blocks of tab 2
     dots_side: 10  # circles per side of a grid, the grid shows side x side artists
   hypotheses:  # one entry per hypothesis, in order; the file hypotheses_summary.csv is built from here and from the two bucket files
@@ -422,7 +443,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     H5: {question: "Do years without a date matter?", result: "The gap is mostly catalogue length", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 64"}  # qualitative
     H6: {question: "Does the gap since the last release predict a release next year?", result: "Falls from {first} to {last} as the gap grows", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 69"}  # rate range from h6_buckets.csv
   texts:  # on-screen texts, placeholders in braces
-    t1_headline: "It is {year}. Two artists, two questions about what comes next."  # tab 1 headline, year from static_tabs.story.cutoff_year
+    t1_headline: "It is {year}. You want to stay ahead of the world's top artists."  # tab 1 headline, year from static_tabs.story.cutoff_year
     t1_q_timing: "Will {artist} release something next year?"  # question under the Timing artist timeline
     t1_q_style: "Will {artist}'s next release bring a new style?"  # question under the Style artist timeline
     t1_here: "You are here"  # label of the vertical rule at the cutoff year
@@ -438,7 +459,9 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t1_tip_models: "Compared on past years before the final test: {names}."  # tooltip of the second number, names from models_compared
     t1_tip_tests: "Each prediction is one artist at one past date, scored on years the models never saw."  # tooltip of the third number
     t1_tip_years: "Years kept aside and never used to train the models."  # tooltip of the fourth number
-    t1_use: "Helps a label or platform anticipate when an artist will release again and whether the next release will bring a new style."  # tab 1 subtitle
+    t1_use: "When will they drop something new? Will it sound different?"  # tab 1 subtitle
+    t1_credit: "Photo: {author}, {license}"  # muted credit under the photo, shown when the photo exists and the license is filled and the author is too
+    t1_credit_noauthor: "Photo: {license}"  # muted credit under the photo when the author is empty and the license is filled
     t2_source: "Discogs data dump of {date}"  # tab 2 source line
     t2_headline: "A century of releases, and the last years are still being written"  # tab 2 headline
     t2_chart_title: "Works per year"  # title of the area chart card
@@ -463,9 +486,9 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t4_train: "all earlier years"  # label of the train bar of a practice run
     t4_train_final: "Learns from everything up to {year}"  # label of the train bar of the final exam, year = last training year of the final split
     t4_legend_train: "Learns from"  # legend: train bar
-    t4_legend_gap: "Skipped"  # legend: dashed gap block
+    t4_legend_gap: "Gap"  # legend: dashed gap block
     t4_legend_test: "Graded on"  # legend: test block
-    t4_tip_gap: "Two years are skipped so the training answers never overlap the test years."  # tooltip of the Skipped legend item and of every gap block
+    t4_tip_gap: "We leave a gap of two years. Each answer looks ahead one to two years, so training right up to the test would let the model peek at what it is graded on."  # tooltip of the Gap legend item and of every gap block
     t4_test: "{first} to {last}"  # years of a test block
     t4_sealed: "Graded once"  # words next to the lock of the final exam
     t4_caption: "Practice runs are used to compare and tune models. The final exam years are never used to train a model."  # under the card
@@ -483,6 +506,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t8_works_1: "Beats a guess from past habits on both questions, on years it never saw: +{d1} points Timing, +{d2} points Style."  # item, d1 and d2 equal the tab 5 tags
     t8_works_2: "No peeking: every input is checked to be known at the prediction date."  # item
     t8_works_3: "Tested the way it would be used: forward in time, with {ci}% intervals."  # item, ci from bootstrap.confidence
+    t8_works_4: "Scores track real rates: on average {gap_style} off for Style and {gap_timing} for Timing."  # item, gaps = singular or plural point text from results/calibration/summary.csv (round(100 x ECE))
     t8_mind_title: "What to keep in mind"  # card title
     t8_mind_1: "Discogs is a collector database, so it does not list every release ever made."  # item
     t8_mind_2: "Recent years are still being filled in, so they are left out of training, tuning and scoring."  # item
@@ -546,6 +570,39 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t5_dot_yes: "Brings a new style"  # circle state used by the chart
     t5_dot_no: "Does not"  # circle state used by the chart
     t5_dot_tip: "Exact share that bring a new style"  # tooltip title of a circle
+    t5_view_results: "Results"  # tab 5 view label
+    t5_view_years: "Year by year"  # tab 5 view label
+    t5_view_models: "Models compared"  # tab 5 view label
+    t5_view_trust: "Can you trust the score?"  # tab 5 view label
+    t5y_headline: "The model stays ahead of past habits in every test year."  # Year by year headline, shown only when true for both questions
+    t5y_headline_neutral: "Results for each test year"  # Year by year headline otherwise
+    t5y_line: "Each point is one test year, scored separately."  # muted line under the Year by year cards
+    t5y_tip_year: "Year"  # tooltip title of a point: test year
+    t5y_tip_score: "Score"  # tooltip title of a point: score
+    t5y_tip_line: "Line"  # tooltip title of a point: which line
+    t5y_x: "Test year"  # x axis title
+    t5y_y: "Score"  # y axis title
+    t5m_headline: "The three tree models tie; the simpler ones trail."  # Models compared headline, shown only when true for both questions
+    t5m_headline_neutral: "How each model performed"  # Models compared headline otherwise
+    t5m_title: "Average score of each model"  # card title prefix, followed by the question
+    t5m_tip: "Average score of each model on years it was tested on while we were building. Higher is better."  # tooltip of the card title
+    t5m_tip_model: "Model"  # tooltip title: model name
+    t5m_tip_score: "Average score"  # tooltip title: mean score
+    t5m_x: "Average score"  # x axis title
+    t5m_zoom: "The axis is zoomed in: small gaps look bigger than they are."  # muted caption under a dot plot whose axis does not start at zero
+    t5t_headline: "Like a good weather forecast, its percentages come true."  # Can you trust headline, shown only when the highest Style bin gap is small
+    t5t_sub: "Of {n} artists it rated around {s}%, about {o} really brought a new style."  # subtitle, n from design.calibration.group_size, s and o from the highest Style bin, whole numbers
+    t5t_read_title: "How to read it"  # title of the reading card
+    t5t_read: "A forecast of {pct}% rain means it rains on about {days} days in {total}. The same here: group artists by the percentage the model gave them, and that share really happened."  # reading card text, numbers from design.calibration
+    t5t_headline_neutral: "How the scores compare with what happened"  # Can you trust headline otherwise
+    t5t_title: "Score against what happened"  # card title
+    t5t_tip: "Scores were checked on the test years, with no recalibration."  # tooltip of the card title
+    t5t_x: "The model's score"  # x axis title
+    t5t_y: "How often it really happened"  # y axis title
+    t5t_perfect: "Perfect"  # label of the diagonal
+    t5t_tip_point: "When the model says {score}%, it happened {observed}%"  # tooltip of a point, whole percentages
+    t5t_line: "Average gap between score and reality: {style} for Style, {timing} for Timing."  # muted line, gaps = singular or plural point text from summary.csv (round(100 x ECE))
+    t5t_note: "Timing scores run a little too confident at the extremes."  # second muted line, shown only when the highest Timing bin gap is above design.calibration.note_gap
   tab3_series:  # the two charts of tab 3, in order
     - {key: style, file: h1_buckets, bucket: bucket, rate: new_style_rate, count: transitions, hypothesis: H1, title: t3_card_style, line: t3_line_style}  # Style card
     - {key: timing, file: h6_buckets, bucket: bucket, rate: release_next_year_rate, count: artist_years, hypothesis: H6, title: t3_card_timing, line: t3_line_timing}  # Timing card
@@ -623,7 +680,23 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     arrow_head: 7  # arrow head half width
     box_pad: 10  # padding inside a flow box
     count_font: 30  # count inside a flow box
+  calibration:  # thresholds of the calibration texts in tab 5
+    max_headline_gap: 0.03  # largest gap between score and observed rate of the top Style bin for the headline (the largest Style bin gap in the record is 0.017)
+    group_size: 100  # artists in the subtitle sentence
+    example_pct: 60  # forecast percentage of the reading card example
+    example_days: 6  # days of rain in the reading card example
+    example_total: 10  # days in the reading card example
+    note_gap: 0.02  # gap of the top Timing bin above which the "too confident" note is shown
+  photo: {width: 200, height: 206, content_weight: 430, card_height: 262, radius: 12, focus: "50% 20%", name_font: 22, question_font: 16, monogram_font: 64, monogram_opacity: 0.25, credit_font: 10, credit_line: 12, credit_margin: 6, credit_opacity: 0.6, bottom_pad: 16}  # tab 1 artist card (credit_font, credit_line and credit_margin in px for the one-line credit under the photo, credit_opacity of the muted credit text, bottom_pad px under the credit line, equal to the space above the photo; the photo height is the card content height minus the credit line and margin): photo column width and height, relative width of the content column, card height (px), corner radius (px), object-position of the photo, name and question sizes (px), monogram size (px) and background opacity
+  story:  # tab 1 timeline marker
+    marker_below: 16  # px the "You are here" marker continues below the timeline line, so it stops above the year labels
   chart:  # Altair settings
+    height_years: 260  # Year by year chart height in px
+    height_models: 230  # Models compared chart height in px
+    calibration_side: 400  # side of the square reliability chart in px
+    point_size: 90  # point area of the depth charts
+    thin_line: 1  # thin connecting line and whisker width in px
+    axis_pad: 0.15  # share of the value range kept free around the points of the depth charts
     theme_name: demo_dark  # registered theme name
     height_results: 280  # tab 5 chart height in px
     strength_axis_max: 0.5  # Six tests chart axis maximum; all six effect sizes are below it (a test checks it)
@@ -639,7 +712,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     bar_corner: 4  # bar corner radius in px
     whisker_width: 2  # whisker line width in px
     y_headroom_results: 1.22  # headroom of the tab 5 chart, room for the advantage tag
-    height_story: 200  # tab 1 timeline height in px
+    height_story: 100  # tab 1 timeline height in px
     story_dot_min: 60  # smallest timeline dot area
     story_dot_max: 420  # largest timeline dot area
     story_glyph_font: 44  # size of the question mark after the cutoff

@@ -193,9 +193,9 @@ def cascade_cell(r: pd.Series, items: list, rt: dict, n: int) -> str:  # cascade
     """The cascade as a table cell."""
     return f"<td>{cascade_div(r, items, rt, n)}</td>"  # the cell
 
-def tip_of(poc: dict, score: float) -> str:  # tooltip text of a prediction word
-    """The score as a plain number (never a percentage, it is not calibrated)."""
-    return poc["texts"]["score_tip"].format(score=score)  # text from the yaml
+def tip_of(poc: dict, score: float, target: str) -> str:  # tooltip text of a prediction word
+    """The score as a plain number (never a percentage) and the average calibration gap of the target the panel belongs to."""
+    return poc["texts"]["score_tip"].format(score=score, gap=poc["gap_text"][target])  # text from the yaml, gap text from summary.csv
 
 def line(label: str, value: str) -> str:  # one 'label value' line of a block
     """A label followed by an already escaped value."""
@@ -231,9 +231,9 @@ def timing_html(r: pd.Series, step: str, answer: str | None, g: dict, route: dic
     if answer and shown:  # the user predicted this year
         lines.append(line(t["your_prediction"], html.escape(yn[answer])))  # user answer, only in this block
     two = bool(r["show2"]) and shown  # the 2-year items follow the cascade rule
-    lines.append(line(t["prediction"], pill(yn[r["when_verdict"]], r["when_verdict"] == "yes", tip_of(poc, r["when_score"])) if shown else html.escape(t["unknown"])))  # next-year prediction
+    lines.append(line(t["prediction"], pill(yn[r["when_verdict"]], r["when_verdict"] == "yes", tip_of(poc, r["when_score"], "next_1y")) if shown else html.escape(t["unknown"])))  # next-year prediction
     if two:  # within 2 years
-        lines.append(line(t["within_two"].format(n=g["second_horizon"]), pill(yn[r["when2_verdict"]], r["when2_verdict"] == "yes", tip_of(poc, r["when2_score"]))))  # 2-year prediction
+        lines.append(line(t["within_two"].format(n=g["second_horizon"]), pill(yn[r["when2_verdict"]], r["when2_verdict"] == "yes", tip_of(poc, r["when2_score"], "next_2y"))))  # 2-year prediction
     if not done:  # before the reveal: only '?', or "Not yet" in the forecast year
         unknown = rt["not_yet"] if r["is_forecast"] else t["unknown"]  # the forecast year has no reality to wait for
         lines.append(line(t["reality"], html.escape(unknown)))  # next-year reality
@@ -259,7 +259,7 @@ def style_html(r: pd.Series, step: str, g: dict, route: dict, poc: dict) -> str:
         lines.append(f"<div class='poc-ln'>{na_cell(poc, r.get('what_na'))}</div>")  # grey dash with tooltip
         return block_html(t["label_style"], t["q_style"], lines, poc)  # block
     likely = r["what_verdict"] == "yes"  # model answer
-    lines.append(line(t["prediction"], pill(t["likely"] if likely else t["not_likely"], likely, tip_of(poc, r["what_score"])) if shown else html.escape(t["unknown"])))  # prediction word, the score in the tooltip
+    lines.append(line(t["prediction"], pill(t["likely"] if likely else t["not_likely"], likely, tip_of(poc, r["what_score"], "what")) if shown else html.escape(t["unknown"])))  # prediction word, the score in the tooltip
     if not done:  # before the reveal: only '?', or "Not yet" in the forecast year
         lines.append(line(t["reality"], html.escape(rt["not_yet"] if r["is_forecast"] else t["unknown"])))  # reality
         return block_html(t["label_style"], t["q_style"], lines, poc)  # block

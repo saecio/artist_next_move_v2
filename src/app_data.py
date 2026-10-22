@@ -12,7 +12,21 @@ DEMO_CONFIG_PATH = ROOT / "app" / "demo_config.yaml"  # location of the demo set
 def load_demo_config() -> dict:  # read the demo settings
     """Read app/demo_config.yaml and return it as a dict."""
     with open(DEMO_CONFIG_PATH, encoding="utf-8") as f:  # the single settings file of the app
-        return yaml.safe_load(f)  # plain nested dict
+        cfg = yaml.safe_load(f)  # plain nested dict
+    cfg["poc"]["gap_points"] = gap_points(cfg)  # average score gap per target, whole points
+    cfg["poc"]["gap_text"] = {k: point_text(cfg, n) for k, n in cfg["poc"]["gap_points"].items()}  # the same gaps as text ("1 point", "2 points"), for the tab 6 tooltip, the closing slide and tab 5
+    return cfg  # settings with the calibration gaps
+
+
+def point_text(cfg: dict, n: int) -> str:  # a number of points as text
+    """Singular text for one point, plural text for any other number, both from the config."""
+    return cfg["ui"]["point_one" if n == 1 else "point_many"].format(n=n)  # config text
+
+
+def gap_points(cfg: dict) -> dict:  # average gap between score and reality
+    """target -> round(100 x ECE) from results/calibration/summary.csv, in whole points."""
+    summary = pd.read_csv(ROOT / cfg["static_tabs"]["paths"]["calibration_summary"]).set_index("target")  # one row per target
+    return {t: round(100 * float(e)) for t, e in summary["ece"].items()}  # whole points
 
 
 @st.cache_data  # cache the table

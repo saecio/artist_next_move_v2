@@ -1,5 +1,6 @@
 """Streamlit demo: thin page that builds the tabs from app_data and the config."""
 
+import html  # escape of the muted lines
 import sys  # module search path
 from pathlib import Path  # repo root
 
@@ -18,6 +19,7 @@ from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary
 from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, open_year_text, star_in_row, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
 from static_charts import dots_chart, results_chart, strength_chart, works_chart  # noqa: E402  Altair charts of tabs 2, 3 and 5
 from static_tabs import dots_panels, strip_html, results_data, tab1_head_html, tab1_kpis_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
+from depth_views import legend_html, models_charts, models_data, models_head_html, models_note_html, models_title_html, reliability_data, trust_chart, trust_head_html, trust_legend_html, trust_read_html, trust_lines_html, trust_title_html, year_data, years_charts, years_head_html  # noqa: E402  depth views of tab 5
 from ui_components import base_css, header_html  # noqa: E402  design system
 from demo_game import (  # noqa: E402  pure game functions
     hidden_counts, new_state, next_year, scored_years, scoreboard, session_total,  # imported names
@@ -80,10 +82,13 @@ tabs = st.tabs(cfg["tabs"])  # one tab per title, in config order
 with tabs[0]:  # Problem and question
     st.html(tab1_head_html(cfg))  # story headline and use sentence
     for col, panel in zip(st.columns(2), tab1_panels(cfg)):  # Timing card and Style card
-        with col, st.container(border=True):  # card
-            st.html(panel["title"])  # artist name in the question color
-            st.altair_chart(panel["chart"], theme=None, width="stretch")  # releases up to the cutoff
-            st.html(panel["question"])  # the question of this artist
+        with col, st.container(border=True, height=cfg["design"]["photo"]["card_height"]):  # card of equal height
+            pic, body = st.columns([cfg["design"]["photo"]["width"], cfg["design"]["photo"]["content_weight"]])  # photo column and content
+            pic.html(panel["photo"])  # photo or monogram, the hero
+            body = body.container(height=cfg["design"]["photo"]["height"], border=False)  # right column exactly as tall as the photo, so the question ends on the photo bottom line
+            body.html(panel["title"])  # artist name in the question color
+            body.altair_chart(panel["chart"], theme=None, width="stretch")  # releases up to the cutoff
+            body.html(panel["question"])  # the question of this artist
     st.html(tab1_kpis_html(cfg))  # four numbers
 
 with tabs[1]:  # Data and cleaning
@@ -123,20 +128,53 @@ with tabs[2]:  # Data exploration
                 st.html(panel["line"])  # muted one-liner
 
 with tabs[4]:  # Results
-    results = results_data(cfg)  # one row per bar
-    st.html(tab5_head_html(cfg, results))  # headline and subtitle
-    left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_columns"])  # chart card and dot card
-    with left, st.container(border=True):  # chart card
-        st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
-        for col, panel in zip(st.columns(2), results_chart(results, cfg)):  # Timing and Style panels share the width equally
-            col.altair_chart(panel, theme=None, width="stretch")  # one panel
-        st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}</div>")  # what the score is
-    dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
-    dtx = cfg["static_tabs"]["texts"]  # texts of the dot card
-    right.html(f"<div class='ui-card-title'>{dot_line}</div>")  # one headline line
-    with right, st.container(border=True):  # dot card
-        st.html(strip_html(cfg))  # sorted-artists strip
-        st.altair_chart(dots_chart(dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"yes": dtx["t5_dot_yes"], "no": dtx["t5_dot_no"], "tip": dtx["t5_dot_tip"]}, cfg), theme=None, width="stretch")  # two grids
+    view5 = view_selector(cfg, "tab5")  # Results, Year by year, Models compared or Can you trust the score?
+    t5 = cfg["static_tabs"]["texts"]  # texts of the tab 5 views
+    if view5 == t5["t5_view_years"]:  # Year by year view
+        years = year_data(cfg)  # one row per question, line and test year
+        st.html(years_head_html(cfg, years))  # headline, only when true
+        st.html(legend_html(cfg, ("t5_col_rule", "t5_col_model")))  # the two line names with their tooltips
+        for col, chart in zip(st.columns(2), years_charts(years, cfg)):  # Timing and Style side by side
+            with col, st.container(border=True):  # card
+                st.altair_chart(chart, theme=None, width="stretch")  # one line chart
+        st.html(f"<div class='ui-caption'>{html.escape(t5['t5y_line'])}</div>")  # muted line
+    elif view5 == t5["t5_view_models"]:  # Models compared view
+        models = models_data(cfg)  # stored table
+        st.html(models_head_html(cfg, models))  # headline, only when true
+        for col, (question, chart) in zip(st.columns(2), zip(models["question"].unique(), models_charts(models, cfg))):  # Timing and Style side by side
+            with col, st.container(border=True):  # card
+                st.html(models_title_html(cfg, question))  # title with tooltip
+                st.altair_chart(chart, theme=None, width="stretch")  # dot plot
+                if models_note_html(cfg, models, question):  # only when the axis does not start at zero
+                    st.html(models_note_html(cfg, models, question))  # zoom caption
+    elif view5 == t5["t5_view_trust"]:  # Can you trust the score? view
+        rel = reliability_data(cfg)  # ten bins per question
+        st.html(trust_head_html(cfg, rel))  # headline, only when true
+        left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_trust_columns"])  # chart card and the muted lines
+        with left, st.container(border=True):  # card
+            st.html(trust_title_html(cfg))  # title with tooltip
+            st.html(trust_legend_html(cfg))  # Timing, Style and Perfect chips
+            st.altair_chart(trust_chart(rel, cfg), theme=None, width="content")  # reliability chart
+        with right:  # reading card and muted lines
+            with st.container(border=True):  # card
+                st.html(trust_read_html(cfg))  # how to read it
+            st.html(trust_lines_html(cfg, rel))  # muted lines
+    else:  # Results view, the original content
+        results = results_data(cfg)  # one row per bar
+        st.html(tab5_head_html(cfg, results))  # headline and subtitle
+        left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_columns"])  # chart card and dot card
+        card_h = cfg["static_tabs"]["sizes"]["tab5_card_height"]  # one height for both cards
+        with left, st.container(border=True, height=card_h):  # chart card
+            st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
+            for col, panel in zip(st.columns(2), results_chart(results, cfg)):  # Timing and Style panels share the width equally
+                col.altair_chart(panel, theme=None, width="stretch")  # one panel
+            st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}</div>")  # what the score is
+        dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
+        dtx = cfg["static_tabs"]["texts"]  # texts of the dot card
+        with right, st.container(border=True, height=card_h):  # dot card, same height and top as the chart card
+            st.html(f"<div class='ui-card-title'>{dot_line}</div>")  # headline line, first line of the card
+            st.html(strip_html(cfg))  # sorted-artists strip
+            st.altair_chart(dots_chart(dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"yes": dtx["t5_dot_yes"], "no": dtx["t5_dot_no"], "tip": dtx["t5_dot_tip"]}, cfg), theme=None, width="stretch")  # two grids
 
 with tabs[5]:  # Time Machine demo
     st.header(cfg["tabs"][5])  # tab title

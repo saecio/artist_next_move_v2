@@ -1,10 +1,13 @@
 """Static tabs 1 to 5 and 8: cached file loaders and the HTML of each tab. Texts and settings come from the static_tabs config."""
 
+import base64  # photo as a data URI
 import html  # escape of artist names
+import io  # in-memory image file
 import json  # result files of the Timing model and the stored card values
 import re  # model names compared without spaces or case
 
 import pandas as pd  # tables
+from PIL import Image, ImageOps  # artist photo crop and resize
 import streamlit as st  # cache decorator
 
 from ui_components import card, card_title, chip, headline, info, kpi_card  # design system helpers
@@ -48,13 +51,13 @@ def tab1_head_html(cfg: dict) -> str:  # headline of tab 1
 
 
 def timeline_data(cfg: dict, artist: str) -> pd.DataFrame:  # one row per release year of one artist
-    """Dated Works up to the cutoff year without re-recordings: year, releases, title (picked title, else the representative Work)."""
+    """Dated Works up to story.last_release_year without re-recordings: year, releases, title (picked title, else the representative Work)."""
     sc = cfg["static_tabs"]  # settings
-    pa, cutoff = sc["paths"], sc["story"]["cutoff_year"]  # paths and cutoff year
+    pa, last = sc["paths"], sc["story"]["last_release_year"]  # paths and last year drawn
     rt = load_csv(pa["route_table"])  # artist names and ids
     aid = int(rt.loc[rt["artist"] == artist, "artist_id"].iloc[0])  # Discogs id
     works = pd.concat([load_csv(f) for f in pa["works"]])  # both pools
-    w = works[(works["artist_id"] == aid) & (works["year"] <= cutoff) & ~works["is_rerecording"]]  # this artist, dated up to the cutoff, no re-recordings
+    w = works[(works["artist_id"] == aid) & (works["year"] <= last) & ~works["is_rerecording"]]  # this artist, dated up to the last year drawn, no re-recordings
     out = w.groupby("year").size().rename("releases").reset_index()  # releases per year
     rep = w[w["is_representative"]].drop_duplicates("year").set_index("year")["title"]  # representative title per year
     pick = load_csv(pa["release_pick"])  # picked titles
@@ -63,12 +66,70 @@ def timeline_data(cfg: dict, artist: str) -> pd.DataFrame:  # one row per releas
     return out  # year, releases, title
 
 
+@st.cache_data  # cache the encoded photo
+def photo_uri(path: str, width: int, height: int, focus: str) -> str:  # one photo as a data URI
+    """Photo file (path relative to the project root) cropped around `focus` to the column shape, at twice the shown size, as a JPEG data URI."""
+    img = ImageOps.exif_transpose(Image.open(ROOT / path)).convert("RGB")  # upright, three channels
+    centering = tuple(float(v.strip("%")) / 100 for v in focus.split())  # "50% 20%" as fractions
+    img = ImageOps.fit(img, (2 * width, 2 * height), centering=centering)  # crop to the column shape, faces kept
+    buf = io.BytesIO()  # in-memory file
+    img.save(buf, "JPEG", quality=85)  # compressed
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()  # inline image
+
+
+def credit_row(cfg: dict, name: str) -> dict:  # credits.csv row of an artist
+    """The row of `name` in the credits file as a dict, empty when the artist has none."""
+    d = load_csv(cfg["static_tabs"]["paths"]["artist_credits"])  # artist, file, author, license, license_url, source_url
+    hit = d[d["artist"] == name]  # this artist
+    return hit.iloc[0].to_dict() if len(hit) else {}  # row or nothing
+
+
+def photo_path(cfg: dict, row: dict) -> str:  # path of an existing photo
+    """Photo path relative to the project root when the file of the credits row exists, else an empty string."""
+    if not row or pd.isna(row.get("file")):  # no row or no file name
+        return ""  # no photo
+    path = f"{cfg['static_tabs']['paths']['artist_photos']}/{row['file']}"  # folder and file name
+    return path if (ROOT / path).is_file() else ""  # only when the file exists
+
+
+def monogram(name: str) -> str:  # initials of a name
+    """First letters of the first two words, upper case."""
+    return "".join(w[0] for w in name.split()[:2]).upper()  # initials
+
+
+def artist_photo_html(cfg: dict, name: str, color: str) -> str:  # photo column of a card
+    """The photo filling its column with the credit on its bottom left, or the initials large on the artist color at low opacity (no credit) when there is no photo."""
+    ph = cfg["design"]["photo"]  # photo settings
+    box = f"width:100%;max-width:{ph['width']}px;height:{ph['height']}px;border-radius:{ph['radius']}px"  # shared column shape
+    path = photo_path(cfg, credit_row(cfg, name))  # existing photo, if any
+    if path:  # the file exists
+        img = f"<img class='ui-photo' src='{photo_uri(path, ph['width'], ph['height'], ph['focus'])}' alt='{html.escape(name, quote=True)}' style='{box};object-fit:cover;object-position:{ph['focus']};display:block'>"  # embedded photo
+        return f"<div class='ui-photo-wrap' style='max-width:{ph['width']}px;padding-bottom:{ph['bottom_pad']}px'>{img}{credit_html(cfg, name)}</div>"  # photo with its credit line under it
+    return f"<div class='ui-mono' style='{box};position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:{ph['monogram_font']}px;font-weight:700;color:{color}'><div style='position:absolute;inset:0;background:{color};opacity:{ph['monogram_opacity']}'></div><span style='position:relative'>{html.escape(monogram(name))}</span></div>"  # initials column
+
+
+def artist_name_html(cfg: dict, name: str, color: str) -> str:  # artist name line
+    """The artist name in the question color at the configured size."""
+    return f"<div class='ui-card-title' style='color:{color};font-size:{cfg['design']['photo']['name_font']}px'>{html.escape(name)}</div>"  # name
+
+
+def credit_html(cfg: dict, name: str) -> str:  # credit line under the photo
+    """One muted line: "Photo: {author}, {license}", or "Photo: {license}" without an author; nothing without a photo or without a license."""
+    row = credit_row(cfg, name)  # credits row
+    filled = lambda k: not pd.isna(row.get(k)) and bool(str(row.get(k)).strip())  # a field with text
+    if not photo_path(cfg, row) or not filled("license"):  # no photo or no license
+        return ""  # no credit
+    t, ph, pal = cfg["static_tabs"]["texts"], cfg["design"]["photo"], cfg["design"]["palette"]  # texts, photo settings and palette
+    text = t["t1_credit"].format(author=row["author"], license=row["license"]) if filled("author") else t["t1_credit_noauthor"].format(license=row["license"])  # with or without the author
+    return f"<div class='ui-credit' title='{html.escape(text, quote=True)}' style='margin-top:{ph['credit_margin']}px;height:{ph['credit_line']}px;line-height:{ph['credit_line']}px;font-size:{ph['credit_font']}px;font-weight:400;color:{pal['muted']};opacity:{ph['credit_opacity']};white-space:nowrap;overflow:hidden;text-overflow:ellipsis'>{html.escape(text)}</div>"  # one line with ellipsis, left aligned
+
+
 def tab1_panels(cfg: dict) -> list:  # the two story cards
-    """Per card: title html (artist name in the question color), timeline chart and question html."""
+    """Per card: photo column html, name html, timeline chart, question html (main text color, bottom padding)."""
     sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
     t, st_ = sc["texts"], sc["story"]  # texts and story settings
     cards = ((st_["timing_artist"], pal["timing"], t["t1_q_timing"]), (st_["style_artist"], pal["style"], t["t1_q_style"]))  # artist, color, question
-    return [{"title": f"<div class='ui-card-title' style='color:{color}'>{html.escape(name)}</div>", "chart": timeline_chart(timeline_data(cfg, name), st_["cutoff_year"], st_["future_years"], color, t, cfg), "question": f"<div class='ui-label'>{html.escape(q.format(artist=name))}</div>"} for name, color, q in cards]  # two cards
+    return [{"photo": artist_photo_html(cfg, name, color), "title": artist_name_html(cfg, name, color), "chart": timeline_chart(timeline_data(cfg, name), st_["cutoff_year"], st_["future_years"], color, t, cfg), "question": f"<div style='font-size:{cfg['design']['photo']['question_font']}px;color:{pal['text']}'>{html.escape(q.format(artist=name))}</div>", } for name, color, q in cards]  # two cards
 
 
 def tab1_kpis_html(cfg: dict) -> str:  # strip of four numbers
@@ -132,16 +193,17 @@ def tab4_html(cfg: dict) -> str:  # method
     return method_css(cfg) + "<div class='ui-stack'>" + headline(t["t4_headline"]) + method_legend(cfg, t) + card_html + f"<div class='ui-caption'>{html.escape(caption)} {info(t['t4_caption_tip'])}</div>" + chips + finals + "</div>"  # page
 
 def tab8_html(cfg: dict) -> str:  # limits and next steps
-    """Closing slide: three equal cards with a marker, a title and three items; numbers come from the tab 5 tags and the tab 7 test years."""
+    """Closing slide: three equal cards with a marker, a title and up to four items; numbers come from the tab 5 tags and the tab 7 test years."""
     t, p = cfg["static_tabs"]["texts"], cfg["poc"]["texts"]  # texts and Timing / Style labels
     v = validation_figures(cfg)  # tab 7 tested years: first, last, years
     y = CONFIG["years"]  # test years
     res = results_data(cfg)  # the table of tab 5, its advantage values are the tag numbers
     d = res[res["d"].notna()].set_index("panel")["d"]  # advantage per panel, as shown in the tags
-    values = {"d1": d[p["label_timing"]], "d2": d[p["label_style"]], "ci": round(CONFIG["bootstrap"]["confidence"] * 100), "n": v["years"], "first": v["first"], "last": v["last"], "test_first": y["holdout_start"], "test_last": y["holdout_end"]}  # every placeholder of the items
+    ct = cfg["static_tabs"]["calibration_targets"]  # summary target of each question
+    values = {"d1": d[p["label_timing"]], "d2": d[p["label_style"]], "ci": round(CONFIG["bootstrap"]["confidence"] * 100), "n": v["years"], "first": v["first"], "last": v["last"], "test_first": y["holdout_start"], "test_last": y["holdout_end"], "gap_style": cfg["poc"]["gap_text"][ct["style"]], "gap_timing": cfg["poc"]["gap_text"][ct["timing"]]}  # every placeholder of the items, the gaps come from the calibration summary
     cards = ""  # html of the three cards
     for key in ("works", "mind", "next"):  # left to right
-        items = "".join(f"<div class='ui-close-item'>{html.escape(t[f't8_{key}_{i}'].format(**values))}</div>" for i in (1, 2, 3))  # three one-line items
+        items = "".join(f"<div class='ui-close-item'>{html.escape(t[f't8_{key}_{i}'].format(**values))}</div>" for i in range(1, 5) if f"t8_{key}_{i}" in t)  # one-line items, as many as the config has (up to four)
         cards += card(f"<div class='ui-close-title'><span class='ui-close-dot'></span>{html.escape(t[f't8_{key}_title'])}</div>{items}")  # one card
     return close_css(cfg) + "<div class='ui-stack'>" + headline(t["t8_headline"]) + f"<div class='ui-row'>{cards}</div></div>"  # page
 

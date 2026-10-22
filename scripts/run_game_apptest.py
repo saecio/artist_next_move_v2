@@ -26,6 +26,8 @@ import html  # unescape of HTML texts
 import re  # tags of the HTML
 import pandas as pd  # tables
 poc_tx = cfg["poc"]["texts"]  # poc texts: grey dash, marks, pills
+gap = {r["target"]: round(100 * float(r["ece"])) for r in csv.DictReader(open(ROOT / "results/calibration/summary.csv"))}  # average score gap per target in whole points, read independently of the app
+gap_text = lambda n: cfg["ui"]["point_one" if n == 1 else "point_many"].format(n=n)  # singular for one point, plural otherwise
 
 
 def na_shown(at: AppTest) -> bool:  # the grey dash of a row without a WHAT score
@@ -337,9 +339,9 @@ def case(name: str, year: int, show: bool = False) -> None:  # one mode 1 year a
     raw_t = block_raw(at, poc_tx["label_timing"])  # Timing block
     assert lines_of(raw_t) == want_timing(r, False), f"{name} {year}: Timing lines {lines_of(raw_t)}"  # order, words and ?
     assert lines_of(block_raw(at, poc_tx["label_style"])) == want_style(r, False), f"{name} {year}: Style lines before the reveal"  # Style block
-    assert f"title='{poc_tx['score_tip'].format(score=r.score_1y)}'" in raw_t and "%" not in re.sub(r"<style>.*?</style>", "", raw_t, flags=re.S), f"{name} {year}: the score sits in the tooltip, never as a percentage"  # tooltip
+    assert f"title='{poc_tx['score_tip'].format(score=r.score_1y, gap=gap_text(gap['next_1y']))}'" in raw_t and "%" not in re.sub(r"<style>.*?</style>", "", raw_t, flags=re.S) and "not a probability" not in raw_t, f"{name} {year}: the score sits in the tooltip with the calibration gap, never as a percentage"  # tooltip
     if ref_what(r) is not None:  # a WHAT prediction word has its own score tooltip
-        assert f"title='{poc_tx['score_tip'].format(score=ref_what(r)['score'])}'" in block_raw(at, poc_tx["label_style"]), f"{name} {year}: WHAT score tooltip"  # tooltip
+        assert f"title='{poc_tx['score_tip'].format(score=ref_what(r)['score'], gap=gap_text(gap['what']))}'" in block_raw(at, poc_tx["label_style"]), f"{name} {year}: WHAT score tooltip"  # tooltip
     page = " ".join([m.value for m in list(at.markdown) + list(at.caption)])  # visible markdown and captions
     assert "score" not in page.lower().replace("scoreboard", ""), f"{name} {year}: no score text on the page"  # scores only in tooltips
     at.button(key=keys["reveal"].format(id=aid)).click().run()  # reveal

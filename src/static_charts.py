@@ -137,11 +137,11 @@ def timeline_chart(df: pd.DataFrame, cutoff: int, future: int, color: str, texts
     tip = [alt.Tooltip("year:Q", title=texts["t1_tip_year"], format="d"), alt.Tooltip("releases:Q", title=texts["t1_tip_count"]), alt.Tooltip("title:N", title=texts["t1_tip_title"])]  # year, releases, picked title
     line = alt.Chart(pd.DataFrame({"x0": [first], "x1": [cutoff], "lane": [0.5]})).mark_rule(color=c["line"]).encode(x=alt.X("x0:Q", scale=dom, axis=None), x2="x1:Q", y=y)  # past line
     dots = alt.Chart(df.assign(lane=0.5)).mark_circle(color=color, opacity=1).encode(x=x, y=y, size=alt.Size("releases:Q", scale=alt.Scale(range=[ch["story_dot_min"], ch["story_dot_max"]]), legend=None), tooltip=tip)  # one dot per year
-    here = alt.Chart(pd.DataFrame({"x": [cutoff]})).mark_rule(color=c["text"], strokeWidth=ch["whisker_width"]).encode(x=alt.X("x:Q", scale=dom, axis=None))  # vertical rule at the cutoff
+    here = alt.Chart(pd.DataFrame({"x": [cutoff], "top": [1.0], "lane": [0.5]})).mark_rule(color=c["text"], strokeWidth=ch["whisker_width"], y2Offset=cfg["design"]["story"]["marker_below"]).encode(x=alt.X("x:Q", scale=dom, axis=None), y=alt.Y("top:Q", scale=alt.Scale(domain=[0, 1]), axis=None), y2="lane:Q")  # vertical rule at the cutoff, from the top to a little below the timeline line so it stops above the year labels
     here_label = alt.Chart(pd.DataFrame({"x": [cutoff], "text": [texts["t1_here"]], "lane": [0.95]})).mark_text(align="right", dx=-6, color=c["text"], fontSize=ch["axis_font"]).encode(x=alt.X("x:Q", scale=dom, axis=None), y=y, text="text:N")  # label of the rule
     future_line = alt.Chart(pd.DataFrame({"x0": [cutoff], "x1": [end - 0.5], "lane": [0.5]})).mark_rule(color=color, strokeDash=[5, 5], strokeWidth=ch["whisker_width"]).encode(x=alt.X("x0:Q", scale=dom, axis=None), x2="x1:Q", y=y)  # dashed line into the unknown
     mark = alt.Chart(pd.DataFrame({"x": [end], "text": ["?"], "lane": [0.5]})).mark_text(color=color, fontSize=ch["story_glyph_font"], fontWeight="bold").encode(x=alt.X("x:Q", scale=dom, axis=None), y=y, text="text:N")  # large question mark
-    years = sorted({int(df["year"].min()), int(df["year"].max()), cutoff})  # first dot, last dot and cutoff, each year once
+    years = sorted({int(df["year"].min()), cutoff})  # first data year and the marker year only, the last data year would overlap the marker label
     ticks = alt.Chart(pd.DataFrame({"x": years, "text": [str(v) for v in years], "lane": 0.25})).mark_text(color=c["muted"], fontSize=ch["axis_font"]).encode(x=alt.X("x:Q", scale=dom, axis=None), y=y, text="text:N")  # muted years below the line
     return alt.layer(line, here, here_label, future_line, dots, mark, ticks).properties(height=ch["height_story"])  # chart
 
