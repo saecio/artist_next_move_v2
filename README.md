@@ -9,7 +9,7 @@ Every model is compared with simple historical baselines, and every score comes 
 
 Data: Discogs, 5,949,217 works by 1,034,756 artists. Final test on a sealed holdout (2018 to 2023), evaluated once.
 
-| Question | Our model | Past habits | By chance |
+| Question | Our model | Release counts | By chance |
 |---|---|---|---|
 | Timing (PR-AUC) | 0.785 | 0.735 | 0.542 |
 | Style (PR-AUC) | 0.499 | 0.346 | 0.313 |
@@ -49,8 +49,8 @@ The app has eight tabs:
 | Timing | WHEN, `next_1y`, `next_2y` | A new work within one or two years |
 | Style | WHAT, `new_style` | The next release has a style the artist has not used before |
 | Global style forecast | Style trend forecast | Which styles will have more works next year, worldwide |
-| Past habits | Baselines | Simple rules built from the artist's own history |
-| A work | A Work | One row per artist-level creative release (see `docs/work_definition.md`) |
+| Release counts | Baselines | Simple rules built from the artist's own release counts |
+| A release | A Work, a work | One row per artist-level creative release: an album, EP or single, not a Discogs release record (see `docs/work_definition.md`) |
 
 ## Project layout
 
