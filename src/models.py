@@ -13,7 +13,7 @@ Usage:
     report = evaluate_folds(folds, "next_1y", fit_fn, score_fn)
 """
 
-from __future__ import annotations
+from __future__ import annotations  # allow type hints to be read lazily
 
 import pandas as pd  # dataframe library used throughout
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier  # boosted trees (native NaN) and bagged trees
@@ -70,7 +70,7 @@ def _make_pair(target: str, make_model):
         """Score test rows with a fitted model. Inputs: the test dataframe and the fitted estimator. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(build_features(test))[:, 1]  # probability of target == 1
 
-    return fit, score
+    return fit, score  # return both functions for the folds
 
 
 def make_logistic_regression(target: str):
@@ -84,7 +84,7 @@ def make_logistic_regression(target: str):
     log transform of the heavy-tailed counts, a known limit of this untuned
     linear model.
     """
-    return _make_pair(target, lambda: Pipeline([
+    return _make_pair(target, lambda: Pipeline([  # model: median fill, scaling, logistic regression
         ("impute", SimpleImputer(strategy="median")),  # median, not mean: the counts are heavy-tailed
                                                        # and the baseline uses the same fallback rule
         ("scale", StandardScaler()),  # zero mean and unit variance from train. A linear model with L2
@@ -110,7 +110,7 @@ def make_naive_bayes(target: str):
     so the mismatch is documented in docs/decisions.md and not fixed with a
     mixed Gaussian/Bernoulli model. Same median imputation as the others.
     """
-    return _make_pair(target, lambda: Pipeline([
+    return _make_pair(target, lambda: Pipeline([  # model: median fill, Gaussian naive Bayes
         ("impute", SimpleImputer(strategy="median")),  # same imputation as the other non-native-NaN models
         ("model", GaussianNB(
             var_smoothing=1e-9,  # Fraction of the largest feature variance added to every variance
@@ -129,7 +129,7 @@ def make_random_forest(target: str):
     need scaling. The values below are common starting points for tabular
     data with a few dozen features, not the result of any search.
     """
-    return _make_pair(target, lambda: Pipeline([
+    return _make_pair(target, lambda: Pipeline([  # model: median fill, random forest
         ("impute", SimpleImputer(strategy="median")),  # same imputation as the other non-native-NaN models
         ("model", RandomForestClassifier(
             n_estimators=200,      # Number of trees. More trees = more stable average prediction and
@@ -158,7 +158,7 @@ def make_hist_gradient_boosting(target: str):
     every split, and trees do not need scaling. The values below are common
     starting points, not the result of any search.
     """
-    return _make_pair(target, lambda: HistGradientBoostingClassifier(
+    return _make_pair(target, lambda: HistGradientBoostingClassifier(  # model: gradient boosting that handles NaN itself
         learning_rate=0.1,      # Step size of each new tree. Smaller = slower, more careful
                                 # learning that needs more trees. 0.1 is the usual starting point.
         max_iter=200,           # Number of boosting rounds (trees). With learning_rate 0.1, 200
@@ -187,7 +187,7 @@ def make_xgboost(target: str, **overrides):
     src/tuning.py and docs/decisions.md). `overrides` replaces any stage 0
     value, which is how the tuned configuration is evaluated.
     """
-    return _make_pair(target, lambda: XGBClassifier(
+    return _make_pair(target, lambda: XGBClassifier(  # model: XGBoost, tuned values replace the defaults
         n_estimators=300,        # Number of boosting rounds (trees). With learning_rate 0.1,
                                  # 300 rounds is enough for the loss to flatten on this data size.
         learning_rate=0.1,       # Step size of each new tree. Smaller = slower, more careful
@@ -218,8 +218,8 @@ def make_xgboost(target: str, **overrides):
 # the best grid combination per target, trials g8 and g10. They replace the
 # stage 0 values of make_xgboost; everything not listed keeps the stage 0 value.
 FINAL_XGB_PARAMS = {
-    "next_1y": {"max_depth": 7, "reg_lambda": 15, "learning_rate": 0.05, "n_estimators": 500, "subsample": 0.8, "colsample_bytree": 0.55, "min_child_weight": 50, "reg_alpha": 0.01},
-    "next_2y": {"max_depth": 9, "reg_lambda": 2, "learning_rate": 0.03, "n_estimators": 500, "subsample": 0.8, "colsample_bytree": 0.55, "min_child_weight": 50, "reg_alpha": 0.01},
+    "next_1y": {"max_depth": 7, "reg_lambda": 15, "learning_rate": 0.05, "n_estimators": 500, "subsample": 0.8, "colsample_bytree": 0.55, "min_child_weight": 50, "reg_alpha": 0.01},  # tuned values for the 1-year target
+    "next_2y": {"max_depth": 9, "reg_lambda": 2, "learning_rate": 0.03, "n_estimators": 500, "subsample": 0.8, "colsample_bytree": 0.55, "min_child_weight": 50, "reg_alpha": 0.01},  # tuned values for the 2-year target
 }
 
 
@@ -278,12 +278,12 @@ def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATU
     `(fit, score)` with the signatures `evaluate_folds` expects: `fit(train)` returns the fitted
     model, `score(test, fitted)` the probability of `target` == 1.
     """
-    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
-    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
+    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"  # stop if a forbidden column is requested
+    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"  # stop if a column name is repeated
 
     def fit(train: pd.DataFrame):
         """Fit a fresh XGBoost with the stage 0 settings plus `overrides` on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted model."""
-        model = XGBClassifier(
+        model = XGBClassifier(  # fresh XGBoost with the stage 0 settings
             n_estimators=300,        # Same as the WHEN stage 0: boosting rounds.
             learning_rate=0.1,       # Same: step size of each new tree.
             max_depth=6,             # Same: depth of each tree.
@@ -302,7 +302,7 @@ def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATU
         """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
-    return fit, score
+    return fit, score  # return both functions for the folds
 
 
 def make_what_logistic_regression(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
@@ -318,12 +318,12 @@ def make_what_logistic_regression(features: pd.DataFrame, feature_columns: list 
     or a repeated name. Returns `(fit, score)` with the signatures `evaluate_folds` expects:
     `fit(train)` returns the fitted model, `score(test, fitted)` the probability of `target` == 1.
     """
-    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
-    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
+    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"  # stop if a forbidden column is requested
+    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"  # stop if a column name is repeated
 
     def fit(train: pd.DataFrame):
         """Fit a fresh Logistic Regression pipeline (median imputation, scaling) on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted pipeline."""
-        model = Pipeline([
+        model = Pipeline([  # pipeline: median fill, scaling, logistic regression
             ("impute", SimpleImputer(strategy="median")),  # Same: median, not mean, the counts are heavy-tailed.
             ("scale", StandardScaler()),  # Same: zero mean and unit variance from train, so L2 does not penalize units.
             ("model", LogisticRegression(
@@ -338,7 +338,7 @@ def make_what_logistic_regression(features: pd.DataFrame, feature_columns: list 
         """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
-    return fit, score
+    return fit, score  # return both functions for the folds
 
 
 def make_what_naive_bayes(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
@@ -357,12 +357,12 @@ def make_what_naive_bayes(features: pd.DataFrame, feature_columns: list = WHAT_F
     or a repeated name. Returns `(fit, score)` with the signatures `evaluate_folds` expects:
     `fit(train)` returns the fitted model, `score(test, fitted)` the probability of `target` == 1.
     """
-    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
-    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
+    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"  # stop if a forbidden column is requested
+    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"  # stop if a column name is repeated
 
     def fit(train: pd.DataFrame):
         """Fit a fresh Gaussian Naive Bayes pipeline (median imputation) on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted pipeline."""
-        model = Pipeline([
+        model = Pipeline([  # pipeline: median fill, Gaussian naive Bayes
             ("impute", SimpleImputer(strategy="median")),  # Same: median imputation as the other non-native-NaN models.
             ("model", GaussianNB(
                 var_smoothing=1e-9,  # Same: sklearn default, fraction of the largest variance added to every variance.
@@ -374,7 +374,7 @@ def make_what_naive_bayes(features: pd.DataFrame, feature_columns: list = WHAT_F
         """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
-    return fit, score
+    return fit, score  # return both functions for the folds
 
 
 def make_what_random_forest(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
@@ -390,12 +390,12 @@ def make_what_random_forest(features: pd.DataFrame, feature_columns: list = WHAT
     the signatures `evaluate_folds` expects: `fit(train)` returns the fitted model,
     `score(test, fitted)` the probability of `target` == 1.
     """
-    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
-    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
+    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"  # stop if a forbidden column is requested
+    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"  # stop if a column name is repeated
 
     def fit(train: pd.DataFrame):
         """Fit a fresh Random Forest pipeline (median imputation) on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted pipeline."""
-        model = Pipeline([
+        model = Pipeline([  # pipeline: median fill, random forest
             ("impute", SimpleImputer(strategy="median")),  # Same: median imputation as the other non-native-NaN models.
             ("model", RandomForestClassifier(
                 n_estimators=200,      # Same: number of trees.
@@ -413,7 +413,7 @@ def make_what_random_forest(features: pd.DataFrame, feature_columns: list = WHAT
         """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
-    return fit, score
+    return fit, score  # return both functions for the folds
 
 
 def make_what_hist_gradient_boosting(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
@@ -428,12 +428,12 @@ def make_what_hist_gradient_boosting(features: pd.DataFrame, feature_columns: li
     `(fit, score)` with the signatures `evaluate_folds` expects: `fit(train)` returns the fitted
     model, `score(test, fitted)` the probability of `target` == 1.
     """
-    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"
-    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"
+    assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"  # stop if a forbidden column is requested
+    assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"  # stop if a column name is repeated
 
     def fit(train: pd.DataFrame):
         """Fit a fresh HistGradientBoosting model on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted model."""
-        model = HistGradientBoostingClassifier(
+        model = HistGradientBoostingClassifier(  # fresh boosting model with the stage 0 settings
             learning_rate=0.1,      # Same: step size of each new tree.
             max_iter=200,           # Same: number of boosting rounds.
             max_leaf_nodes=31,      # Same: leaves per tree.
@@ -447,4 +447,4 @@ def make_what_hist_gradient_boosting(features: pd.DataFrame, feature_columns: li
         """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
-    return fit, score
+    return fit, score  # return both functions for the folds
