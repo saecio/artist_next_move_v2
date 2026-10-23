@@ -46,7 +46,7 @@ def panel_chart(df: pd.DataFrame, title: str, subtitle: str, title_color: str, c
     range_title = t["t5_tt_range"].format(ci=round(CONFIG["bootstrap"]["confidence"] * 100))  # "95% range", level from the bootstrap setting
     name_score = [alt.Tooltip("label:N", title=t["t5_tt_name"]), alt.Tooltip("score_txt:N", title=t["t5_tt_score"])]  # friendly rows: bar name and score
     base = alt.Chart(df).encode(x=x)  # shared encoding
-    has_range = alt.expr.isValid(alt.datum.lo)  # bars with an interval (past habits and model)
+    has_range = alt.expr.isValid(alt.datum.lo)  # bars with an interval (release counts and model)
     color = alt.Color("label:N", scale=alt.Scale(domain=order, range=[colors[k] for k in order]), legend=None)  # bar colors
     bar_mark = dict(cornerRadiusTopLeft=ch["bar_corner"], cornerRadiusTopRight=ch["bar_corner"])  # rounded tops
     bars_plain = base.mark_bar(**bar_mark).encode(y=y, color=color, tooltip=name_score).transform_filter(~has_range)  # by chance: name and score only

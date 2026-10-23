@@ -27,7 +27,7 @@ def question_colors(cfg: dict) -> dict:  # question label -> color
 # Year by year
 
 def year_data(cfg: dict) -> pd.DataFrame:  # score of each test year
-    """question, line, year, score: our model and past habits, Timing from the holdout JSON files, Style from by_year.csv (no 2023 rows)."""
+    """question, line, year, score: our model and release counts, Timing from the holdout JSON files, Style from by_year.csv (no 2023 rows)."""
     sc = cfg["static_tabs"]  # settings
     t, p, pa, rw = sc["texts"], cfg["poc"]["texts"], sc["paths"], sc["rows"]  # texts, labels, paths, row names
     rows = []  # one dict per point
@@ -35,7 +35,7 @@ def year_data(cfg: dict) -> pd.DataFrame:  # score of each test year
         for year, v in load_json(pa[key])["by_year"].items():  # one entry per test year
             rows.append({"question": p["label_timing"], "line": line, "year": int(year), "score": v["pr_auc"]})  # Timing point
     by_year = load_csv(pa["what_by_year"])  # Style rows
-    for line, model in ((t["t5_col_model"], rw["what_model"]), (t["t5_col_rule"], rw["what_rule"])):  # Style model and past habits
+    for line, model in ((t["t5_col_model"], rw["what_model"]), (t["t5_col_rule"], rw["what_rule"])):  # Style model and release counts
         for r in by_year[by_year["model"] == model].itertuples():  # one row per test year
             rows.append({"question": p["label_style"], "line": line, "year": int(r.year), "score": r.pr_auc})  # Style point
     d = pd.DataFrame(rows)  # all points
@@ -44,9 +44,9 @@ def year_data(cfg: dict) -> pd.DataFrame:  # score of each test year
 
 
 def ahead_every_year(d: pd.DataFrame, cfg: dict) -> bool:  # headline condition of Year by year
-    """True when, for both questions, the model score is above past habits in every year the question has."""
+    """True when, for both questions, the model score is above release counts in every year the question has."""
     t = cfg["static_tabs"]["texts"]  # line names
-    wide = d.pivot_table(index=["question", "year"], columns="line", values="score")  # model and past habits side by side
+    wide = d.pivot_table(index=["question", "year"], columns="line", values="score")  # model and release counts side by side
     return bool((wide[t["t5_col_model"]] > wide[t["t5_col_rule"]]).all())  # every question and year
 
 
@@ -66,13 +66,13 @@ def legend_html(cfg: dict, keys: tuple) -> str:  # chips of the chart lines
 
 
 def years_charts(d: pd.DataFrame, cfg: dict) -> list:  # one line chart per question
-    """Two charts: a solid line in the question color for our model, a muted line for past habits, points with tooltips."""
+    """Two charts: a solid line in the question color for our model, a muted line for release counts, points with tooltips."""
     register_theme(cfg)  # shared theme
     t, pal, ch = cfg["static_tabs"]["texts"], cfg["design"]["palette"], cfg["design"]["chart"]  # texts, palette, chart settings
     charts = []  # in question order
     for question, color in question_colors(cfg).items():  # Timing then Style
         part = d[d["question"] == question]  # this question
-        order = [t["t5_col_rule"], t["t5_col_model"]]  # past habits under, our model on top
+        order = [t["t5_col_rule"], t["t5_col_model"]]  # release counts under, our model on top
         col = alt.Color("line:N", scale=alt.Scale(domain=order, range=[pal["rule"], color]), legend=None)  # line colors
         base = alt.Chart(part).encode(x=alt.X("year:O", title=t["t5y_x"], axis=alt.Axis(labelAngle=0)), y=alt.Y("score:Q", title=t["t5y_y"], scale=alt.Scale(domain=pad_domain(part["score"], ch["axis_pad"]))), color=col, tooltip=[alt.Tooltip("year:O", title=t["t5y_tip_year"]), alt.Tooltip("score_txt:N", title=t["t5y_tip_score"]), alt.Tooltip("line:N", title=t["t5y_tip_line"])])  # shared encoding
         line = base.mark_line(strokeWidth=ch["line_width"])  # the two lines
@@ -120,7 +120,7 @@ def models_title_html(cfg: dict, question: str) -> str:  # card title with the t
 
 
 def models_domain(part: pd.DataFrame, cfg: dict) -> list:  # x range of a dot plot
-    """Padded range of the models and the past habits line of one question."""
+    """Padded range of the models and the release counts line of one question."""
     return pad_domain(part["mean_score"], cfg["design"]["chart"]["axis_pad"])  # padded range
 
 
@@ -132,7 +132,7 @@ def models_note_html(cfg: dict, d: pd.DataFrame, question: str) -> str:  # zoom 
 
 
 def models_charts(d: pd.DataFrame, cfg: dict) -> list:  # one dot plot per question
-    """Horizontal dot plot: one row per model sorted best first, a dashed line for past habits, XGBoost in the question color and the rest muted."""
+    """Horizontal dot plot: one row per model sorted best first, a dashed line for release counts, XGBoost in the question color and the rest muted."""
     register_theme(cfg)  # shared theme
     sc, pal, ch = cfg["static_tabs"], cfg["design"]["palette"], cfg["design"]["chart"]  # settings, palette, chart settings
     t = sc["texts"]  # texts
@@ -141,12 +141,12 @@ def models_charts(d: pd.DataFrame, cfg: dict) -> list:  # one dot plot per quest
         part = d[d["question"] == question]  # this question
         dots = part[part["model"] != t["t5_col_rule"]].sort_values("mean_score", ascending=False).copy()  # models, best first
         dots["color"] = [color if m == sc["final_model"] else pal["rule"] for m in dots["model"]]  # final model highlighted
-        rule = part[part["model"] == t["t5_col_rule"]]  # past habits row
+        rule = part[part["model"] == t["t5_col_rule"]]  # release counts row
         dom = models_domain(part, cfg)  # x range
         x = alt.X("mean_score:Q", title=t["t5m_x"], scale=alt.Scale(domain=dom), axis=alt.Axis(tickCount=5))  # score axis
         tip = [alt.Tooltip("model:N", title=t["t5m_tip_model"]), alt.Tooltip("score_txt:N", title=t["t5m_tip_score"]), alt.Tooltip("range_txt:N", title=t["t5_tt_range"].format(ci=round(100 * CONFIG["bootstrap"]["confidence"])))]  # model, mean score, range
         points = alt.Chart(dots).mark_point(filled=True, size=ch["point_size"], opacity=1).encode(x=x, y=alt.Y("model:N", sort=list(dots["model"]), title=None), color=alt.Color("color:N", scale=None), tooltip=tip)  # one dot per model
-        line = alt.Chart(rule).mark_rule(strokeDash=[4, 4], color=pal["rule"], strokeWidth=ch["line_width"]).encode(x=x, tooltip=[alt.Tooltip("model:N", title=t["t5m_tip_model"]), alt.Tooltip("score_txt:N", title=t["t5m_tip_score"])])  # dashed past habits line
+        line = alt.Chart(rule).mark_rule(strokeDash=[4, 4], color=pal["rule"], strokeWidth=ch["line_width"]).encode(x=x, tooltip=[alt.Tooltip("model:N", title=t["t5m_tip_model"]), alt.Tooltip("score_txt:N", title=t["t5m_tip_score"])])  # dashed release counts line
         label = alt.Chart(rule).mark_text(align="left", dx=4, dy=-4, baseline="bottom", color=pal["muted"], fontSize=ch["axis_font"]).encode(x=x, y=alt.value(0), text="model:N", tooltip=alt.value(None))  # name of the dashed line at the top
         charts.append(alt.layer(line, label, points).properties(height=ch["height_models"], width="container"))  # chart
     return charts  # Timing, Style

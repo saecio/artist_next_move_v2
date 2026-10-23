@@ -32,7 +32,7 @@ def summarize(scores: list, lows: list, highs: list) -> tuple:  # mean over the 
 
 
 def timing_rows(cells: list, keys: dict, rule_label: str) -> list:  # Timing rows from the practice-run reports
-    """One (model, mean, low, high, cell) per model of `keys` (name -> key of the notebook reports dict), plus the past-habits row from the first side-by-side table."""
+    """One (model, mean, low, high, cell) per model of `keys` (name -> key of the notebook reports dict), plus the release-counts row from the first side-by-side table."""
     rows = []  # result rows
     for name, key in keys.items():  # in the configured order
         hit = [(i, o) for i, s, o in cells if f"reports_1y['{key}'] = evaluate_folds" in s]  # cell that fits this model
@@ -46,17 +46,17 @@ def timing_rows(cells: list, keys: dict, rule_label: str) -> list:  # Timing row
         folds = sorted(first)  # fold numbers
         rows.append((name, *summarize([float(first[f][1]) for f in folds], [float(first[f][2]) for f in folds], [float(second[f]) for f in folds]), i))  # model row
     side = [(i, o) for i, s, o in cells if "reports_1y" in s and "report[metrics]" in s]  # side-by-side tables
-    if side:  # the first one starts with the past habits
+    if side:  # the first one starts with the release counts
         i, text = side[0]  # its cell
         wide = [WIDE.match(x.strip()) for x in text.splitlines()]  # data rows
         wide = [m for m in wide if m][:5]  # five folds
         if len(wide) == 5:  # complete
-            rows.append((rule_label, *summarize([float(m.group(2)) for m in wide], [float(m.group(3)) for m in wide], [float(m.group(4)) for m in wide]), i))  # past habits row
+            rows.append((rule_label, *summarize([float(m.group(2)) for m in wide], [float(m.group(3)) for m in wide], [float(m.group(4)) for m in wide]), i))  # release counts row
     return rows  # Timing rows
 
 
 def style_rows(cells: list, names: list, rule_prefix: str, rule_label: str) -> list:  # Style rows from the comparison table
-    """One (model, mean, low, high, cell) per name found in the comparison table, plus the past-habits row; a name matches the table label that starts with it."""
+    """One (model, mean, low, high, cell) per name found in the comparison table, plus the release-counts row; a name matches the table label that starts with it."""
     flat = lambda x: re.sub(r"[^a-z0-9]", "", x.lower())  # name without spaces or case
     hit = [(i, o) for i, s, o in cells if "comparison = pd.concat" in s]  # comparison cell
     if not hit:  # not in the notebook
@@ -69,11 +69,11 @@ def style_rows(cells: list, names: list, rule_prefix: str, rule_label: str) -> l
             label = m.group(1) or label  # the label is printed on the first row of a block only
             table.setdefault(label, []).append([float(v) for v in m.groups()[2:5]])  # PR-AUC, low, high
     rows = []  # result rows
-    for name in names + [rule_prefix]:  # models, then past habits
+    for name in names + [rule_prefix]:  # models, then release counts
         found = [k for k in table if flat(k).startswith(flat(name))]  # matching table label
         if found and len(table[found[0]]) == 5:  # five folds read
             cols = list(zip(*table[found[0]]))  # PR-AUC, low, high lists
-            rows.append((rule_label if name == rule_prefix else name, *summarize(*map(list, cols)), i))  # model or past habits row
+            rows.append((rule_label if name == rule_prefix else name, *summarize(*map(list, cols)), i))  # model or release counts row
     return rows  # Style rows
 
 

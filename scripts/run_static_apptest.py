@@ -181,7 +181,7 @@ assert t["t4_headline"] in texts[3] and t["t4_caption"] in texts[3] and html.esc
 assert re.findall(r"class='ui-m-tick'[^>]*>(\d+)<", raws[3]) == [str(v) for v in range(1990, last + 1, 10)] and cfg["design"]["method_axis_start"] == 1985, "ticks every ten years from the axis start"  # axis
 chips4 = [html.unescape(c) for c in re.findall(r"class='ui-chip'[^>]*>([^<]*)", raws[3])]  # chip texts of the row
 chips4, tags4 = chips4[:-3], chips4[-3:]  # model chips, then the three final-model tags
-assert chips4 == [t["t5_col_rule"]] + sc["models_compared"] and raws[3].count("ui-m-arrow'") == len(chips4) - 1 and t["t4_final_flag"] in texts[3], "chips equal the config list plus past habits, arrows between"  # model row
+assert chips4 == [t["t5_col_rule"]] + sc["models_compared"] and raws[3].count("ui-m-arrow'") == len(chips4) - 1 and t["t4_final_flag"] in texts[3], "chips equal the config list plus release counts, arrows between"  # model row
 assert re.search(r"ui-m-inline'><span class='ui-chip'[^>]*>XGBoost</span><span class='ui-info'", raws[3]), "info icon inline right after the final chip"  # attached to the chip
 from models import make_what_xgboost, make_xgboost  # builders of the Timing and Style final models
 from style_forecast import FINAL_MODEL, make_model  # final model of the forecast and its builder
@@ -204,21 +204,21 @@ assert len(grids) == 2 and all(g[1].count("ui-dots-dot") == n_dots for g in grid
 for g, k, rate in zip(grids, ks, (top["holdout_positive_rate"], top["precision_top"])):  # left then right
     assert g[1].count("ui-dots-dot on") == k, "filled circles equal round(n x rate)"  # from the files
     assert f"{rate * 100:.1f}%" in g[0], "exact rate in the tooltip"  # from the files
-assert t["t5_col_rule"] == "Past habits" and t["t5_col_rule"] in texts[4], "Past habits label on screen"  # renamed
+assert t["t5_col_rule"] == "Release counts" and t["t5_col_rule"] in texts[4], "Release counts label on screen"  # renamed
 cfg_text = open(ROOT / "app/demo_config.yaml").read()  # config file text
 assert all(w_ not in texts[4] and w_ not in cfg_text and all(r["label"] != w_ for r in rows5) for w_ in ("Rule of thumb", "rule of thumb", "History only", "Simple rule")), "old names are gone"  # no trace
 for key in ("t5_tip_chance", "t5_tip_rule_timing", "t5_tip_rule_style", "t5_tip_model"):  # the three column tooltips
     assert html.escape(t[key], quote=True) in raws[4], f"tooltip {key}"  # on screen
 tags = {r["panel"]: r["tag"] for r in rows5 if r.get("tag")}  # advantage tags by panel
-assert tags == {poc["label_timing"]: t["t5_advantage"].format(d=round(100 * (wm["pr_auc"] - wb["pr_auc"]))), poc["label_style"]: t["t5_advantage"].format(d=round(100 * (m["pr_auc"] - b["pr_auc"])))}, "advantage tags are whole points, model minus past habits from the files"  # computed
+assert tags == {poc["label_timing"]: t["t5_advantage"].format(d=round(100 * (wm["pr_auc"] - wb["pr_auc"]))), poc["label_style"]: t["t5_advantage"].format(d=round(100 * (m["pr_auc"] - b["pr_auc"])))}, "advantage tags are whole points, model minus release counts from the files"  # computed
 spec5 = "".join(e.proto.spec for e in at.tabs[4].get("vega_lite_chart")[:2])  # the two panel specs
 assert len(at.tabs[4].get("vega_lite_chart")) == 2 and re.search(r'"width":\s*"container"', spec5) and all(f in spec5 for f in ("score_txt", "range_txt", "tag_tip")), "two panels fill their equal columns, friendly tooltip fields"  # layout and tooltips
 assert all(x in spec5 for x in (t["t5_tt_name"], t["t5_tt_score"], t["t5_tt_range"].format(ci=round(CONFIG["bootstrap"]["confidence"] * 100)))) and not re.search(r'"title": "(value|lo|hi)"', spec5) and t["t5_tip_advantage"] in json.dumps(rows5), "tooltip titles come from the config, no internal field names"  # tooltips
 for r_ in rows5:  # tooltip texts of every bar
     assert r_["score_txt"] == f"{r_['value']:.3f}", "score with three decimals"  # score
-    assert (r_["range_txt"] is None) == (r_["label"] == t["t5_col_chance"]) and (r_["range_txt"] is None or r_["range_txt"] == t["t5_range_fmt"].format(lo=f"{r_['lo']:.3f}", hi=f"{r_['hi']:.3f}")), "95% range only on past habits and model bars"  # range
+    assert (r_["range_txt"] is None) == (r_["label"] == t["t5_col_chance"]) and (r_["range_txt"] is None or r_["range_txt"] == t["t5_range_fmt"].format(lo=f"{r_['lo']:.3f}", hi=f"{r_['hi']:.3f}")), "95% range only on release counts and model bars"  # range
 chart5 = json.dumps([e.proto.spec for e in at.tabs[4].get("vega_lite_chart")])  # specs sent to the browser
-assert all(w_ in chart5 for k_ in ("t5_line_timing", "t5_line_style") for w_ in textwrap.wrap(t[k_], cfg["design"]["chart"]["subtitle_wrap"])), "visible past habits line under each panel title"  # chart subtitles
+assert all(w_ in chart5 for k_ in ("t5_line_timing", "t5_line_style") for w_ in textwrap.wrap(t[k_], cfg["design"]["chart"]["subtitle_wrap"])), "visible release counts line under each panel title"  # chart subtitles
 assert t["t5_caption"] in raws[4] and t["t5_headline"] in raws[4], "caption and headline"  # on screen
 old_dot = ("the 100 the model ranks highest", "ranks highest", "artists picked at random", "Picking with our model", "Guessing blindly", "guessing blindly")  # removed wording
 assert not any(w_ in texts[4] or w_ in cfg_text for w_ in old_dot), "old dot chart wording is gone"  # no trace
@@ -491,13 +491,13 @@ got = [{(r["line"], int(r["year"]), round(r["score"], 10)) for r in rows} for ro
 assert len(ch_y) == 2 and got[0] == want_t and got[1] == want_s, "Year by year chart data equals the files"  # data
 assert max(yr for _, yr, _ in want_t) == 2023 and max(yr for _, yr, _ in want_s) == 2022 and len(want_s) == 10, "Style stops one year earlier, no 2023 point is invented"  # missing year
 assert all(f in "".join(e.proto.spec for e in at.tabs[4].get("vega_lite_chart")) for f in ("score_txt", t["t5y_tip_year"], t["t5y_tip_score"])), "friendly tooltips"  # tooltip rows
-ahead = all(m > r for want in (want_t, want_s) for (ln, yr, m) in want if ln == t["t5_col_model"] for (ln2, yr2, r) in want if ln2 == t["t5_col_rule"] and yr2 == yr)  # model above past habits in every year of each question
+ahead = all(m > r for want in (want_t, want_s) for (ln, yr, m) in want if ln == t["t5_col_model"] for (ln2, yr2, r) in want if ln2 == t["t5_col_rule"] and yr2 == yr)  # model above release counts in every year of each question
 assert ahead, "the files support the Year by year headline"  # true case
 assert t["t5y_headline"] in plain(y_raw) and t["t5y_line"] in plain(y_raw) and t["t5y_note"].format(year=y["holdout_end"] + 1) in plain(y_raw), "headline, muted line and the Style note shown"  # true case on screen
 dip = depth_views.year_data(cfg).copy()  # real table
-dip.loc[(dip["question"] == q_s) & (dip["line"] == t["t5_col_model"]) & (dip["year"] == 2020), "score"] = 0.0  # one Style year below past habits
+dip.loc[(dip["question"] == q_s) & (dip["line"] == t["t5_col_model"]) & (dip["year"] == 2020), "score"] = 0.0  # one Style year below release counts
 fb = patched_run(depth_views, "year_data", lambda c: dip, t["t5_view_years"])  # patched run
-assert t["t5y_headline_neutral"] in plain(tab5_html(fb)) and t["t5y_headline"] not in plain(tab5_html(fb)), "fallback headline when the model dips below past habits"  # false case
+assert t["t5y_headline_neutral"] in plain(tab5_html(fb)) and t["t5y_headline"] not in plain(tab5_html(fb)), "fallback headline when the model dips below release counts"  # false case
 assert "<svg" not in y_raw and not re.search(r"\bWHEN\b|\bWHAT\b", y_raw), "Year by year: no svg, no WHEN or WHAT"  # clean view
 print("tab 5 year by year ok")  # result
 
@@ -512,8 +512,8 @@ for rows, q, col in zip(ch_m, (q_t, q_s), (pal_["timing"], pal_["style"])):  # e
     dots = [r for r in rows if "color" in r]  # dot rows
     assert {(r["model"], round(r["mean_score"], 10)) for r in dots} == {(m, round(v, 10)) for m, v in zip(part["model"], part["mean_score"]) if m != t["t5_col_rule"]}, f"{q}: dot data equals models_compared.csv"  # data
     assert all(r["color"] == (col if r["model"] == sc["final_model"] else pal_["rule"]) for r in dots), f"{q}: only the final model is in the question color"  # highlight
-    rule_row = [r for r in rows if r.get("model") == t["t5_col_rule"]]  # past habits row
-    assert len(rule_row) == 1 and abs(rule_row[0]["mean_score"] - float(part.loc[part["model"] == t["t5_col_rule"], "mean_score"].iloc[0])) < 1e-9, f"{q}: dashed line equals the stored past habits score"  # line
+    rule_row = [r for r in rows if r.get("model") == t["t5_col_rule"]]  # release counts row
+    assert len(rule_row) == 1 and abs(rule_row[0]["mean_score"] - float(part.loc[part["model"] == t["t5_col_rule"], "mean_score"].iloc[0])) < 1e-9, f"{q}: dashed line equals the stored release counts score"  # line
     order = [m for m in part.sort_values("mean_score", ascending=False)["model"] if m != t["t5_col_rule"]]  # best first
     assert order in find_key(json.loads(ch_m and at.tabs[4].get("vega_lite_chart")[(q_t, q_s).index(q)].proto.spec), "sort"), f"{q}: rows sorted from best to worst"  # sort order sent to the chart
 assert set(mc["question"]) == {q_t, q_s} and (mc["source"].str.len() > 0).all() and {"Logistic Regression", "Naive Bayes", "Random Forest", "HistGradientBoosting", "XGBoost"} <= set(mc["model"]), "every model has a row and a source"  # file content

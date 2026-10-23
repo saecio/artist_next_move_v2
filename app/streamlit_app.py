@@ -318,7 +318,8 @@ with tabs[6]:  # Global style forecast
         st.caption(stt["validation_text"].format(**figures))  # one text: tested years, hits, repeat_last, ranges, few years
     year7 = st.selectbox(sx["year_label"], style_years(cfg), key=sk["year"])  # every target year, none hidden
     status = year_status(year7, cfg)  # kind and status line
-    (st.info if status["kind"] != "none" else st.warning)(status["text"])  # reason of a flagged year or the no-forecast text
+    if status["text"]:  # a counted year has no status line
+        (st.info if status["kind"] != "none" else st.warning)(status["text"])  # reason of a flagged year or the no-forecast text
     if status["kind"] != "none":  # a forecast exists for this year
         state7 = advance_stage(st.session_state.get(sk["stage"]), multi_signature(year7, []), None)  # reset when the year changed
         st.session_state[sk["stage"]] = state7  # keep the state, tab 6 keys are not touched

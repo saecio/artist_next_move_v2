@@ -87,7 +87,7 @@ def final_models_html(cfg: dict, tags: list) -> str:  # tab 4 final models line
     return "<div class='ui-m-finals'><span>" + html.escape(t["t4_final_models"]) + "</span>" + "".join(chip(tag, c["rule"]) for tag in tags) + "</div>"  # label and tags
 
 def method_chips(cfg: dict, t: dict, names: list) -> str:  # tab 4 model chips
-    """Past habits, then the compared models with arrows; the last model is the final one and carries the flag and the row tooltip."""
+    """Release counts, then the compared models with arrows; the last model is the final one and carries the flag and the row tooltip."""
     pal = cfg["design"]["palette"]  # palette
     items = [(t["t5_col_rule"], pal["muted"], "")] + [(n, pal["rule"], "") for n in names[:-1]] + [(names[-1], pal["highlight"], t["t4_final_flag"])]  # label, color and flag of each chip
     parts = [f"<div class='ui-m-col'><span class='ui-m-flag'>{html.escape(flag)}</span><div class='ui-m-inline'>{chip(text, color)}{info(t['t4_chips_tip']) if flag else ''}</div></div>" for text, color, flag in items]  # one column per chip, the tooltip icon sits right after the final one

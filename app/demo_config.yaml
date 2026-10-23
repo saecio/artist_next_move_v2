@@ -349,7 +349,7 @@ style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
   texts:  # texts of the tab
     t7_sub: "Each year, we ask the model for the {n} styles it expects to grow most. On average, {hits} of those {n} were really among the {n} that grew most (tested on {y_from}-{y_to}). Picking {n} styles at random would get about {rand} of {n}."  # subtitle of the headline, hits and the years from the data, rand from random_file
     year_label: "Year to forecast"  # year selector label
-    flag_counted: "This year is part of the tested results."  # status line of a counted year
+    flag_counted: ""  # status line of a counted year
     col_rank: "Rank"  # table column
     col_style: "Style"  # table column
     col_expected_growth: "Expected growth in releases"  # table column, the quantity that defines the rank
@@ -500,8 +500,8 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t1_s1_label: "Discogs releases analysed"  # label of story card 1
     t1_s1_sub: "by {artists} artists, from {y0} to {y1}"  # muted line of story card 1, artists from data_figures.csv, years from works_per_year.csv
     t1_s1_tip: "Data dump of {date} from Discogs, the largest music database. Recent years are still being filled in, so the latest counts are incomplete."  # tooltip of story card 1, date is static_tabs.dump_date
-    t1_s2_label: "models tested"  # label of story card 2
-    t1_s2_sub: "on {tests} predictions for years they never saw"  # muted line of story card 2, tests from the Timing test snapshots
+    t1_s2_label: "models compared"  # label of story card 2
+    t1_s2_sub: "final Timing model tested on {tests} predictions from unseen years"  # muted line of story card 2, tests from the Timing test snapshots
     t1_s3_big: "{k} in {n}"  # big number of each half of story card 3, k of n artists
     t1_s3_blind: "random picks: {b} in {n}"  # muted line of each half, b = positive rate of the holdout as a whole number of n
     t1_s3_cap_timing: "of the artists it rates highest release the next year"  # caption of the Timing half
@@ -567,7 +567,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t8_headline: "What it can do, what to keep in mind, what comes next."  # tab 8 headline
     t8_works_title: "What works"  # card title
     t8_works_tip: "The model gives every artist a score and ranks them from most to least likely. We look at the highest-rated tenth. Picked at random means choosing artists with no model."  # tooltip next to the card title
-    t8_works_1: "It beats past habits on both questions, tested only on years it never saw."  # item, shown only when the model is clearly above past habits on both questions (tab 5 condition)
+    t8_works_1: "On both questions it does better than release counts alone, tested only on years it never saw."  # item, shown only when the model is clearly above past habits on both questions (tab 5 condition)
     t8_works_2: "Timing: of every {n} artists it rates highest, {t} release the next year. Picked at random, {tb}."  # item, n, t and tb equal the Timing numbers of the tab 1 third card, shown only when the highest-rated artists beat random picking
     t8_works_3: "Style: of every {n} artists it rates highest, {s} bring a style new to them. Picked at random, {sb}."  # item, n, s and sb equal the Style numbers of the tab 1 third card and the tab 5 dot card, shown only when the highest-rated artists beat random picking
     t8_mind_title: "What to keep in mind"  # card title
@@ -581,7 +581,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t8_close_timing_q: "When will an artist release again?"  # closing block, Timing question
     t8_close_style_q: "Will it bring a style new to them?"  # closing block, Style question
     t8_close_trends_q: "Which styles will grow?"  # closing block, style forecast question
-    t8_close_beats: "Beats past habits"  # status of Timing and Style when the model is clearly above past habits (tab 5 condition per question)
+    t8_close_beats: "Better than release counts alone"  # status of Timing and Style when the model is clearly above past habits (tab 5 condition per question)
     t8_close_tested: "Tested"  # status of Timing and Style otherwise
     t8_close_first: "A first step"  # status of Trends when the forecast is not clearly better than repeating last year
     t8_close_trend_beats: "Beats last year's ranking"  # status of Trends otherwise
@@ -636,13 +636,13 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t3s_tt_strength: "Strength"  # tooltip title of the effect size and its measure
     t3s_tip_h3: "The pause is far from normal, so a rank test (Mann-Whitney) was used."  # sentence added to the H3 tooltip
     t3_headline_neutral: "How history relates to styles new to them and releases"  # tab 3 headline when the data does not support the conclusion
-    t5_headline: "Both models beat the past-habits baseline"  # tab 5 headline, shown only when true
+    t5_headline: "Both models do better than release counts alone"  # tab 5 headline, shown only when true
     t5_headline_neutral: "Results on years the models never saw"  # tab 5 headline otherwise
     t5_sub: "Test years {first} to {last}, never used to train the models."  # tab 5 subtitle
     t5_info: "PR-AUC: how well the model finds the artists who do release or do bring a style new to them. Higher is better. Chance equals the share of yes cases."  # tooltip next to the subtitle
-    t5_line_timing: "Past habits: guess that artists who released often will release again."  # visible line under the Timing panel title
-    t5_line_style: "Past habits: assume each artist keeps their usual rate of styles new to them."  # visible line under the Style panel title
-    t5_advantage: "+{d} points over past habits"  # tag above the model bar, d = round(100 x (model minus past habits PR-AUC))
+    t5_line_timing: "Release counts: guess that artists who released often will release again."  # visible line under the Timing panel title
+    t5_line_style: "Release counts: use the usual rate of artists with a similar number of releases."  # visible line under the Style panel title
+    t5_advantage: "+{d} points vs release counts"  # tag above the model bar, d = round(100 x (model minus release counts PR-AUC))
     t5_tt_name: "Bar"  # tab 5 bar tooltip: title of the bar name row
     t5_tt_score: "Score"  # tab 5 bar tooltip: title of the score row
     t5_tt_range: "{ci}% range"  # tab 5 bar tooltip: title of the interval row, ci from bootstrap.confidence
@@ -650,7 +650,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t5_tip_advantage: "Difference between the two scores, multiplied by 100."  # tooltip of the advantage tag
     t5_caption: "Score: PR-AUC (0 to 1), higher is better."  # caption under the results chart
     t5_caption_tip: "PR-AUC rewards a model for ranking the real cases first. 1 is perfect; the by-chance bar shows what random picking scores."  # tooltip next to the caption
-    t5_col_rule: "Past habits"  # bar label of the baseline
+    t5_col_rule: "Release counts"  # bar label of the baseline
     t5_tip_chance: "Always guessing the overall share of cases where the answer is yes."  # tooltip of the By chance label
     t5_tip_rule_timing: "Ranks artists only by how often they released per year of activity so far."  # Past habits, Timing
     t5_tip_rule_style: "Uses only the artist's number of earlier releases and their output this year."  # Past habits, Style
@@ -671,7 +671,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t5_view_years: "Year by year"  # tab 5 view label
     t5_view_models: "Models compared"  # tab 5 view label
     t5_view_trust: "Can you trust the score?"  # tab 5 view label
-    t5y_headline: "The model stays ahead of past habits in every test year."  # Year by year headline, shown only when true for both questions
+    t5y_headline: "The model stays ahead of release counts alone in every test year."  # Year by year headline, shown only when true for both questions
     t5y_headline_neutral: "Results for each test year"  # Year by year headline otherwise
     t5y_line: "Each point is one test year, scored separately."  # muted line under the Year by year cards
     t5y_note: "Style stops one year earlier: its answer is the year of the artist's next release, and releases from {year} on are still being filled in."  # muted note under the Year by year charts, year = last test year plus one

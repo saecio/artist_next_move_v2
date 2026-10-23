@@ -146,7 +146,7 @@ def story_halves(cfg: dict) -> list:  # numbers of story card 3
     return [(p["label_timing"], pal["timing"], t["t1_s3_cap_timing"].format(s=top_share(cfg)[1]), round(n * top["observed_rate"]), round(n * chance)), (p["label_style"], pal["style"], t["t1_s3_cap_style"].format(s=top_share(cfg)[1]), style[1]["k"], style[0]["k"])]  # Timing then Style
 
 def tab1_kpis_html(cfg: dict) -> str:  # story strip of tab 1
-    """Three cards: Works analysed, models tested, and the top 10% rate against picking at random (only when the model is above random in both halves)."""
+    """Three cards: Works analysed, models compared, and the top 10% rate against picking at random (only when the model is above random in both halves)."""
     sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
     t, y, p = sc["texts"], CONFIG["years"], cfg["poc"]["texts"]  # texts, split years and Timing / Style labels
     fig, years = figure_values(cfg), works_per_year(cfg)["year"]  # counts and years of the Works chart
@@ -219,7 +219,7 @@ def tab4_html(cfg: dict) -> str:  # method
     runs = method_spans()  # years of the folds and of the final split, from backtesting
     card_html = method_card(cfg, t, runs, runs[-1]["test_end"])  # six rows on one year axis
     caption = t["t4_caption"]  # one line under the card
-    chips = method_chips(cfg, t, sc["models_compared"])  # past habits and the compared models
+    chips = method_chips(cfg, t, sc["models_compared"])  # release counts and the compared models
     finals = final_models_html(cfg, final_models(cfg))  # label and the three final-model tags
     return method_css(cfg) + "<div class='ui-stack'>" + headline(t["t4_headline"]) + method_legend(cfg, t) + card_html + f"<div class='ui-caption'>{html.escape(caption)} {info(t['t4_caption_tip'])}</div>" + chips + finals + "</div>"  # page
 
@@ -231,7 +231,7 @@ def tab8_html(cfg: dict) -> str:  # limits and next steps
     tim, sty = story_halves(cfg)  # Timing and Style numbers of the tab 1 third card: label, color, caption, top picks, random
     n = cfg["static_tabs"]["sizes"]["dots_side"] ** 2  # artists per group
     values = {"n": n, "t": tim[3], "tb": tim[4], "s": sty[3], "sb": sty[4], "m": n - sty[3]}  # every placeholder of the items
-    supported = {("works", 1): bool(panel_beats_rule(res, cfg).all()), ("works", 2): tim[3] > tim[4], ("works", 3): sty[3] > sty[4]}  # line 1 needs the model clearly above past habits, lines 2 and 3 the highest-rated artists above random picking
+    supported = {("works", 1): bool(panel_beats_rule(res, cfg).all()), ("works", 2): tim[3] > tim[4], ("works", 3): sty[3] > sty[4]}  # line 1 needs the model clearly above release counts, lines 2 and 3 the highest-rated artists above random picking
     cards = ""  # html of the three cards
     for key in ("works", "mind", "next"):  # left to right
         texts = [t[f"t8_{key}_{i}"].format(**values) for i in range(1, 5) if f"t8_{key}_{i}" in t and supported.get((key, i), True)]  # items, as many as the config has (up to four)
@@ -246,7 +246,7 @@ def tab8_html(cfg: dict) -> str:  # limits and next steps
 def closing_html(cfg: dict, res: pd.DataFrame) -> str:  # closing block of tab 8
     """Three blocks (Timing, Style, Trends) with a name, a question and a verdict chip each, then one sentence; res is the tab 5 table."""
     t, p, pal = cfg["static_tabs"]["texts"], cfg["poc"]["texts"], cfg["design"]["palette"]  # texts, Timing / Style labels, palette
-    beats = panel_beats_rule(res, cfg)  # per question: model clearly above past habits
+    beats = panel_beats_rule(res, cfg)  # per question: model clearly above release counts
     status = lambda ok, yes: t[yes] if ok else t["t8_close_tested"]  # the positive status only when the data supports it
     trend = t["t8_close_trend_beats"] if forecast_beats_repeat(cfg) else t["t8_close_first"]  # forecast against repeating last year
     blocks = [("timing", status(beats[p["label_timing"]], "t8_close_beats"), pal["timing"]), ("style", status(beats[p["label_style"]], "t8_close_beats"), pal["style"]), ("trends", trend, pal["highlight"])]  # key, status, color
@@ -272,7 +272,7 @@ def results_data(cfg: dict) -> pd.DataFrame:  # chart table of tab 5
         d = round(100 * (model[0] - rule[0]))  # advantage in whole points
         base = {"panel": panel, "title_color": color, "subtitle": lines[panel], "tag": None, "tag_tip": None, "d": None}  # shared fields
         rows.append({**base, "label": t["t5_col_chance"], "value": chance, "lo": None, "hi": None, "color": pal["chance"], "score_txt": f"{chance:.3f}", "range_txt": None})  # By chance
-        rows.append({**base, "label": t["t5_col_rule"], "value": rule[0], "lo": rule[1], "hi": rule[2], "color": pal["rule"], "score_txt": f"{rule[0]:.3f}", "range_txt": t["t5_range_fmt"].format(lo=f"{rule[1]:.3f}", hi=f"{rule[2]:.3f}")})  # Past habits
+        rows.append({**base, "label": t["t5_col_rule"], "value": rule[0], "lo": rule[1], "hi": rule[2], "color": pal["rule"], "score_txt": f"{rule[0]:.3f}", "range_txt": t["t5_range_fmt"].format(lo=f"{rule[1]:.3f}", hi=f"{rule[2]:.3f}")})  # Release counts
         rows.append({**base, "label": t["t5_col_model"], "value": model[0], "lo": model[1], "hi": model[2], "color": color, "score_txt": f"{model[0]:.3f}", "range_txt": t["t5_range_fmt"].format(lo=f"{model[1]:.3f}", hi=f"{model[2]:.3f}"), "d": str(d), "tag": t["t5_advantage"].format(d=d), "tag_tip": t["t5_tip_advantage"]})  # Our model with its advantage tag
     return pd.DataFrame(rows)  # six rows
 
@@ -298,7 +298,7 @@ def tab5_head_html(cfg: dict, data: pd.DataFrame) -> str:  # headline and subtit
 
 
 def tab5_chips_html(cfg: dict) -> str:  # the three column labels with tooltips
-    """By chance, Past habits, Our model: one chip each, the tooltip explains the bar."""
+    """By chance, Release counts, Our model: one chip each, the tooltip explains the bar."""
     t, pal, p = cfg["static_tabs"]["texts"], cfg["design"]["palette"], cfg["poc"]["texts"]  # texts, palette, labels
     rule = f"{p['label_timing']}: {t['t5_tip_rule_timing']} {p['label_style']}: {t['t5_tip_rule_style']}"  # both baseline definitions
     chips = chip(t["t5_col_chance"], pal["chance"], t["t5_tip_chance"]) + chip(t["t5_col_rule"], pal["rule"], rule) + chip(t["t5_col_model"], pal["text"], t["t5_tip_model"])  # three chips

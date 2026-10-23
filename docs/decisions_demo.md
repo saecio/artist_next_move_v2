@@ -395,3 +395,15 @@ Decision: (1) Tab 6 Result column is one aligned column: per row a Next year lin
 One expression for the top-picks idea: the artists it rates highest (22-10-2026). Tab 1 third card and its tooltip, the tab 5 dot card (headline, grid title, strip label) and tab 8 (What works with a tooltip, last What to keep in mind line) all say "the artists it rates highest" for the highest-scored tenth; the numbers and rounding are unchanged.
 
 Wording "a style new to them" (22-10-2026): every on-screen text about the next release bringing a style uses "a style new to them" (new for that artist, not new to the world); the tab 1 Style question names the artist and says "new to him". The tab 7 subtitle shows the tested years as "{first}-{last}". Tab 5 Can you trust the score uses a wide chart (height design.chart.calibration_height, width of the card, both axes 0 to 100%, dashed perfect line kept) instead of a square one; tab 1 cards are taller (photo.card_height, photo.question_extra) so a wrapped question and credit are not clipped; the right column of tab 2 Volume and tab 5 trust view, and the two cards of tab 4 What the model sees, stretch to equal height.
+
+## Wording fixes: tab 1 card 2 and tab 5 Style baseline line (23-10-2026)
+
+Decision: tab 1 card 2 reads "models compared" with the line "final Timing model tested on {tests} predictions from unseen years" (t1_s2_label, t1_s2_sub). The tab 5 Style panel line reads "Past habits: use the usual rate of artists with a similar history and output." (t5_line_style).
+
+Reason: card 2: the five models were compared on the development years and only the final Timing model is scored on the sealed holdout, and {tests} is the Timing holdout size. Style line: the Style baseline is a lookup of the training rate of rows with the same number of earlier releases and the same output in the year, not the artist's own rate (see the entry "Baseline ladder for the WHAT kill gate" in docs/decisions_core.md).
+
+## Wording: Release counts and tab 7 status line (23-10-2026)
+
+Decision: the on-screen name of the simple reference is "Release counts" instead of "Past habits" (t5_col_rule and the texts that mention it: t5_headline, t5_line_timing, t5_line_style, t5_advantage, t5y_headline, t8_works_1, t8_close_beats; README table and terms). Tab 7 no longer shows the status line "This year is part of the tested results." for counted years (flag_counted is empty and the app shows no message for it); flagged years keep their reason and years without forecast keep none_text.
+
+Reason: the name "Past habits" was not understood by a reader with no machine learning background; "Release counts" says exactly what the simple reference uses (Timing: releases per year of activity so far; Style: the number of earlier releases and of releases in the year). The line about tested results raised questions without helping the reader.
