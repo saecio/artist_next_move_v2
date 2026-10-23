@@ -28,7 +28,7 @@ MB_MIN_YEAR = 1860
 MB_YEAR_RE = re.compile(r"^\d{4}")
 
 
-def load_masters_for_check(path: str = str(PROCESSED / "masters.parquet")) -> pd.DataFrame:
+def load_masters_for_check(path: str = str(PROCESSED / "masters.parquet")) -> pd.DataFrame:  # Load masters once so the year checks reuse the same table
     """Load raw masters with one row per master and its first credited artist."""
     # Read only the columns this check needs, the file has 2.5M rows
     df = pd.read_parquet(path, columns=["master_id", "artist_ids", "artist_names", "title", "year"])
@@ -46,7 +46,7 @@ def load_masters_for_check(path: str = str(PROCESSED / "masters.parquet")) -> pd
     return df[["master_id", "artist_id", "artist_name", "title", "year"]].reset_index(drop=True)
 
 
-def consecutive_pair_stats(df: pd.DataFrame, min_dated: int = 5) -> tuple[float, pd.DataFrame]:
+def consecutive_pair_stats(df: pd.DataFrame, min_dated: int = 5) -> tuple[float, pd.DataFrame]:  # Measure how often neighbouring dated rows agree on year
     """Share of consecutive same-artist pairs whose year does not decrease as master_id grows."""
     # Only masters with a known year can be compared
     dated = df.dropna(subset=["year"])
@@ -72,7 +72,7 @@ def consecutive_pair_stats(df: pd.DataFrame, min_dated: int = 5) -> tuple[float,
     return pairs["non_decreasing"].mean(), by_size
 
 
-def parse_release_groups(
+def parse_release_groups(  # Stream the dump into release group rows without loading it whole
     path: str = "../data/raw/release-group",
     out_path: str = str(PROCESSED / "musicbrainz_release_groups.parquet"),
     log_every: int = 500_000,
@@ -91,7 +91,7 @@ def parse_release_groups(
             skipped["total"] += 1
             # Progress line every log_every lines: lines read, rows kept, rows skipped, elapsed minutes
             if skipped["total"] % log_every == 0:
-                print(
+                print(  # Progress print split over lines for readability
                     f"{skipped['total']:,} lines | kept {len(rows):,} | skipped {skipped['total'] - len(rows):,}"
                     f" | {(time.time() - start) / 60:.1f} min",
                     flush=True,
@@ -134,7 +134,7 @@ def parse_release_groups(
     return df, skipped  # table plus the skip counts
 
 
-def build_missing_year_subset(
+def build_missing_year_subset(  # Isolate rows lacking a year, the only ones imputation targets
     path: str = str(PROCESSED / "works_checkpoint.parquet"),
     out_path: str = str(PROCESSED / "works_missing_year.parquet"),
 ) -> tuple[pd.DataFrame, int]:
@@ -150,7 +150,7 @@ def build_missing_year_subset(
 
 
 @lru_cache(maxsize=None)
-def normalize_name(text: str) -> str:
+def normalize_name(text: str) -> str:  # Normalize text so equal names match despite case and punctuation
     """Lowercase, drop a Discogs '(2)' suffix and a leading 'the', strip punctuation, collapse spaces."""
     # Lowercase and trim the edges
     text = text.lower().strip()
@@ -164,13 +164,13 @@ def normalize_name(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def sample_by_source(missing: pd.DataFrame, n_per_source: int = 250, seed: int = 42) -> pd.DataFrame:
+def sample_by_source(missing: pd.DataFrame, n_per_source: int = 250, seed: int = 42) -> pd.DataFrame:  # Equal sample per source keeps the pilot from being dominated by one
     """Same number of rows from each work_source, so match quality can be judged separately."""
     # Even split per source, fixed seed so the pilot is reproducible
     return missing.groupby("work_source").sample(n=n_per_source, random_state=seed).reset_index(drop=True)
 
 
-def title_variants(raw_title: str, use_split: bool) -> list[str]:
+def title_variants(raw_title: str, use_split: bool) -> list[str]:  # Try the full and split title so more candidates can match
     """Normalized title plus, when it holds a '/', each side on its own (Discogs multi-track singles)."""
     # Full title always compared
     variants = [normalize_name(raw_title)]
@@ -181,7 +181,7 @@ def title_variants(raw_title: str, use_split: bool) -> list[str]:
     return list(dict.fromkeys(v for v in variants if v))
 
 
-def differs_by_number_marker(title_a: str, title_b: str) -> bool:
+def differs_by_number_marker(title_a: str, title_b: str) -> bool:  # Avoid matching sequels like Vol 1 and Vol 2 as one work
     """Reuse the works.py number/roman guard, treating 'volume' and 'vol' as the same word."""
     # works.py tokenizes 'Vol.' and 'Volume' as different words (documented limitation), unify them first
     title_a, title_b = (re.sub(r"\bvolume\b", "vol", t) for t in (title_a, title_b))
@@ -189,7 +189,7 @@ def differs_by_number_marker(title_a: str, title_b: str) -> bool:
     return differs_only_by_number_or_roman(title_a, title_b)
 
 
-def fuzzy_match_pilot(
+def fuzzy_match_pilot(  # Small fuzzy match run to judge quality before full scale
     sample: pd.DataFrame, mb: pd.DataFrame, artist_cutoff: int = 90, use_split: bool = True, use_guard: bool = True
 ) -> pd.DataFrame:
     """Best MusicBrainz match per row: artist block (score >= cutoff), then best title inside the block."""
@@ -244,13 +244,13 @@ def fuzzy_match_pilot(
     return pd.DataFrame(out)  # one row per sampled work
 
 
-def normalize_catno(text: str) -> str:
+def normalize_catno(text: str) -> str:  # Normalize catalog numbers so formatting differences still join
     """Uppercase and keep only letters and numbers, so 'ABC-123', 'abc 123' and 'ABC123' share one key."""
     # Same character filter as normalize_name (any script), without lowercasing or collapsing spaces
     return "".join(ch for ch in text.upper() if unicodedata.category(ch)[0] in "LN")
 
 
-def parse_releases(
+def parse_releases(  # Stream the releases dump into catalog number rows
     path: str = "../data/raw/release.ndjson",
     out_path: str = str(PROCESSED / "musicbrainz_releases.parquet"),
     log_every: int = 100_000,
@@ -269,7 +269,7 @@ def parse_releases(
             stats["releases"] += 1
             # Progress line: releases read, rows kept, elapsed minutes
             if stats["releases"] % log_every == 0:
-                print(f"{stats['releases']:,} releases | rows {len(rows):,} | {(time.time() - start) / 60:.1f} min", flush=True)
+                print(f"{stats['releases']:,} releases | rows {len(rows):,} | {(time.time() - start) / 60:.1f} min", flush=True)  # Progress print so long dump reads show they are alive
             # A truncated or corrupt line is skipped, not fatal
             try:
                 rel = json.loads(line)  # parse the line into a dict
@@ -305,7 +305,7 @@ def parse_releases(
             stats["with_catno" if kept else "no_catno"] += 1
             # Of the joinable releases, split by whether the release has a usable own year
             if kept:
-                stats["catno_and_year" if not np.isnan(year) else "catno_no_year"] += 1
+                stats["catno_and_year" if not np.isnan(year) else "catno_no_year"] += 1  # Count releases with a catalog number and a usable year
     # Build the table, normalized join keys included
     df = pd.DataFrame(rows, columns=["mb_release_id", "mb_rg_id", "mb_title", "mb_artist_name", "mb_label",
                                      "mb_catno", "mb_date", "mb_year", "mb_country", "mb_status"])
@@ -321,7 +321,7 @@ def parse_releases(
 EMPTY_CATNO_KEYS = {"", "NONE", "NA"}
 
 
-def discogs_label_catno(works: pd.DataFrame, releases_path: str = str(PROCESSED / "releases.parquet")) -> pd.DataFrame:
+def discogs_label_catno(works: pd.DataFrame, releases_path: str = str(PROCESSED / "releases.parquet")) -> pd.DataFrame:  # Get Discogs label and catalog number keys for the join
     """One row per (work, label, catalog number) from the Discogs release that represents each work."""
     # Synthetic works are one release (work_id minus the offset), masters are looked up by master_id
     is_master = works["work_source"] == "master"
@@ -346,7 +346,7 @@ def discogs_label_catno(works: pd.DataFrame, releases_path: str = str(PROCESSED 
     return works[["work_id", "work_source", "artist", "title"]].merge(pairs, on="work_id", how="left")  # attach the pairs to every work, keeping works without pairs
 
 
-def catno_join(works: pd.DataFrame, mb: pd.DataFrame, releases_path: str = str(PROCESSED / "releases.parquet")) -> pd.DataFrame:
+def catno_join(works: pd.DataFrame, mb: pd.DataFrame, releases_path: str = str(PROCESSED / "releases.parquet")) -> pd.DataFrame:  # Join works to MusicBrainz releases on label and catalog number
     """Join works to MusicBrainz releases on (label, catalog number); one row per matched pair, plus unmatched works."""
     # Works with their Discogs keys (works with no usable pair keep NaN keys)
     pairs = discogs_label_catno(works, releases_path)
@@ -359,7 +359,7 @@ def catno_join(works: pd.DataFrame, mb: pd.DataFrame, releases_path: str = str(P
     return out  # one row per matched pair, plus unmatched works
 
 
-def summarize_catno_join(joined: pd.DataFrame) -> pd.DataFrame:
+def summarize_catno_join(joined: pd.DataFrame) -> pd.DataFrame:  # Count join outcomes to judge how much year coverage it adds
     """One row per work: outcome, matched-year spread and the best-agreeing MusicBrainz record."""
     # Best agreeing record first, so groupby.first() keeps it for display
     ordered = joined.sort_values(["artist_score", "title_score"], ascending=False)

@@ -46,7 +46,7 @@ GENRES = [
 ]
 
 
-def build_features(snapshots: pd.DataFrame) -> pd.DataFrame:
+def build_features(snapshots: pd.DataFrame) -> pd.DataFrame:  # Single place that turns snapshots into model inputs
     """Model input matrix: the numeric allowlist plus one 0/1 column per genre."""
     numeric = snapshots[NUMERIC_FEATURES].astype(float)  # booleans become 0.0 / 1.0, NaN stays NaN
     dummies = pd.get_dummies(snapshots["genres"].explode()).groupby(level=0).max()  # one row per snapshot, True if the Work carries the genre
@@ -55,25 +55,25 @@ def build_features(snapshots: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([numeric, genres], axis=1)  # numeric allowlist first, then genres
 
 
-def _make_pair(target: str, make_model):
+def _make_pair(target: str, make_model):  # Pair fit and score so every model shares one interface
     """Fit/score pair around any model builder: fit on the train rows, score the test rows.
 
     `make_model()` returns a fresh, unfitted sklearn estimator or Pipeline.
     The imputation (when the model has one) lives inside the Pipeline, so
     its statistics are learned on the fold's train rows only.
     """
-    def fit(train: pd.DataFrame):
+    def fit(train: pd.DataFrame):  # Train the model on the training split
         """Fit a fresh model on the train rows of a fold. Input: the train dataframe. Output: the fitted estimator."""
         return make_model().fit(build_features(train), train[target])  # fitted on the fold's train rows only
 
-    def score(test: pd.DataFrame, fitted):
+    def score(test: pd.DataFrame, fitted):  # Predict on the test split with the fitted model
         """Score test rows with a fitted model. Inputs: the test dataframe and the fitted estimator. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(build_features(test))[:, 1]  # probability of target == 1
 
     return fit, score  # return both functions for the folds
 
 
-def make_logistic_regression(target: str):
+def make_logistic_regression(target: str):  # Linear baseline, simple and easy to interpret
     """Untuned Logistic Regression pair.
 
     NaN in years_since_last and historical_rate (an artist's first Work, or
@@ -100,7 +100,7 @@ def make_logistic_regression(target: str):
     ]))
 
 
-def make_naive_bayes(target: str):
+def make_naive_bayes(target: str):  # Probabilistic baseline, fast and needs little tuning
     """Untuned Gaussian Naive Bayes pair, a cheap probabilistic reference point.
 
     Known mismatch: GaussianNB models every feature as an independent
@@ -122,7 +122,7 @@ def make_naive_bayes(target: str):
     ]))
 
 
-def make_random_forest(target: str):
+def make_random_forest(target: str):  # Tree ensemble that captures nonlinear feature effects
     """Untuned Random Forest pair, the standard tree-ensemble reference.
 
     Same median imputation as the other non-native-NaN models. Trees do not
@@ -150,7 +150,7 @@ def make_random_forest(target: str):
     ]))
 
 
-def make_hist_gradient_boosting(target: str):
+def make_hist_gradient_boosting(target: str):  # Fast boosted trees, handles missing values natively
     """Untuned HistGradientBoostingClassifier pair, boosting before XGBoost.
 
     No imputer and no scaler: the model sends NaN (years_since_last and
@@ -176,7 +176,7 @@ def make_hist_gradient_boosting(target: str):
     ))
 
 
-def make_xgboost(target: str, **overrides):
+def make_xgboost(target: str, **overrides):  # Boosted trees with overrides for tuning
     """Untuned XGBoost pair, the starting point of the staged tuning.
 
     No imputer and no scaler: XGBoost learns a default direction for NaN at
@@ -242,7 +242,7 @@ WHAT_FEATURES = WHAT_TABLE_INPUTS + WHAT_FEATURE_COLUMNS
 WHAT_FORBIDDEN_INPUTS = ["artist_id", "year", "next_active_year", "new_style_year", "n_works_next_year"]
 
 
-def _what_matrix(rows: pd.DataFrame, features: pd.DataFrame, feature_columns: list) -> pd.DataFrame:
+def _what_matrix(rows: pd.DataFrame, features: pd.DataFrame, feature_columns: list) -> pd.DataFrame:  # Build the feature matrix for the given rows
     """Model input matrix of WHAT rows: the requested columns, as floats, in the order of `feature_columns`.
 
     `rows` is a train or test table from build_what_table (with `artist_id` and `year`),
@@ -265,7 +265,7 @@ def _what_matrix(rows: pd.DataFrame, features: pd.DataFrame, feature_columns: li
     return matrix.astype(float)  # booleans become 0.0 / 1.0, NaN stays NaN
 
 
-def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year", **overrides):
+def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year", **overrides):  # Boosted trees for the what target on its own features
     """WHAT sibling of the WHEN XGBoost stage 0: untuned reference model, one configuration.
 
     Same hyperparameters as `make_xgboost` (stage 0), copied here because that function
@@ -281,7 +281,7 @@ def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATU
     assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"  # stop if a forbidden column is requested
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"  # stop if a column name is repeated
 
-    def fit(train: pd.DataFrame):
+    def fit(train: pd.DataFrame):  # Train on the training split
         """Fit a fresh XGBoost with the stage 0 settings plus `overrides` on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted model."""
         model = XGBClassifier(  # fresh XGBoost with the stage 0 settings
             n_estimators=300,        # Same as the WHEN stage 0: boosting rounds.
@@ -298,14 +298,14 @@ def make_what_xgboost(features: pd.DataFrame, feature_columns: list = WHAT_FEATU
         ).set_params(**overrides)  # tuned values replace the stage 0 ones, nothing changes when empty
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
-    def score(test: pd.DataFrame, fitted):
+    def score(test: pd.DataFrame, fitted):  # Predict on the test split
         """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
     return fit, score  # return both functions for the folds
 
 
-def make_what_logistic_regression(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
+def make_what_logistic_regression(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):  # Linear baseline for the what target
     """WHAT sibling of the WHEN Logistic Regression: untuned linear reference, one configuration.
 
     Same Pipeline and settings as `make_logistic_regression`, copied here because that function
@@ -321,7 +321,7 @@ def make_what_logistic_regression(features: pd.DataFrame, feature_columns: list 
     assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"  # stop if a forbidden column is requested
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"  # stop if a column name is repeated
 
-    def fit(train: pd.DataFrame):
+    def fit(train: pd.DataFrame):  # Train on the training split
         """Fit a fresh Logistic Regression pipeline (median imputation, scaling) on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted pipeline."""
         model = Pipeline([  # pipeline: median fill, scaling, logistic regression
             ("impute", SimpleImputer(strategy="median")),  # Same: median, not mean, the counts are heavy-tailed.
@@ -334,14 +334,14 @@ def make_what_logistic_regression(features: pd.DataFrame, feature_columns: list 
         ])
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
-    def score(test: pd.DataFrame, fitted):
+    def score(test: pd.DataFrame, fitted):  # Predict on the test split
         """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
     return fit, score  # return both functions for the folds
 
 
-def make_what_naive_bayes(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
+def make_what_naive_bayes(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):  # Probabilistic baseline for the what target
     """WHAT sibling of the WHEN Gaussian Naive Bayes: untuned probabilistic reference point, one configuration.
 
     Same Pipeline and settings as `make_naive_bayes`, copied here because that function builds
@@ -360,7 +360,7 @@ def make_what_naive_bayes(features: pd.DataFrame, feature_columns: list = WHAT_F
     assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"  # stop if a forbidden column is requested
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"  # stop if a column name is repeated
 
-    def fit(train: pd.DataFrame):
+    def fit(train: pd.DataFrame):  # Train on the training split
         """Fit a fresh Gaussian Naive Bayes pipeline (median imputation) on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted pipeline."""
         model = Pipeline([  # pipeline: median fill, Gaussian naive Bayes
             ("impute", SimpleImputer(strategy="median")),  # Same: median imputation as the other non-native-NaN models.
@@ -370,14 +370,14 @@ def make_what_naive_bayes(features: pd.DataFrame, feature_columns: list = WHAT_F
         ])
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
-    def score(test: pd.DataFrame, fitted):
+    def score(test: pd.DataFrame, fitted):  # Predict on the test split
         """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
     return fit, score  # return both functions for the folds
 
 
-def make_what_random_forest(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
+def make_what_random_forest(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):  # Tree ensemble for the what target
     """WHAT sibling of the WHEN Random Forest: untuned tree-ensemble reference, one configuration.
 
     Same Pipeline and settings as `make_random_forest`, copied here because that function
@@ -393,7 +393,7 @@ def make_what_random_forest(features: pd.DataFrame, feature_columns: list = WHAT
     assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"  # stop if a forbidden column is requested
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"  # stop if a column name is repeated
 
-    def fit(train: pd.DataFrame):
+    def fit(train: pd.DataFrame):  # Train on the training split
         """Fit a fresh Random Forest pipeline (median imputation) on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted pipeline."""
         model = Pipeline([  # pipeline: median fill, random forest
             ("impute", SimpleImputer(strategy="median")),  # Same: median imputation as the other non-native-NaN models.
@@ -409,14 +409,14 @@ def make_what_random_forest(features: pd.DataFrame, feature_columns: list = WHAT
         ])
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
-    def score(test: pd.DataFrame, fitted):
+    def score(test: pd.DataFrame, fitted):  # Predict on the test split
         """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
     return fit, score  # return both functions for the folds
 
 
-def make_what_hist_gradient_boosting(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):
+def make_what_hist_gradient_boosting(features: pd.DataFrame, feature_columns: list = WHAT_FEATURES, target: str = "new_style_year"):  # Boosted trees for the what target, native missing values
     """WHAT sibling of the WHEN HistGradientBoostingClassifier: untuned boosting reference, one configuration.
 
     Same settings as `make_hist_gradient_boosting`, copied here because that function builds its
@@ -431,7 +431,7 @@ def make_what_hist_gradient_boosting(features: pd.DataFrame, feature_columns: li
     assert not set(feature_columns) & set(WHAT_FORBIDDEN_INPUTS), "a forbidden column is in the feature list"  # stop if a forbidden column is requested
     assert len(set(feature_columns)) == len(feature_columns), "the feature list has repeated names"  # stop if a column name is repeated
 
-    def fit(train: pd.DataFrame):
+    def fit(train: pd.DataFrame):  # Train on the training split
         """Fit a fresh HistGradientBoosting model on the WHAT matrix of the train rows. Input: the train dataframe. Output: the fitted model."""
         model = HistGradientBoostingClassifier(  # fresh boosting model with the stage 0 settings
             learning_rate=0.1,      # Same: step size of each new tree.
@@ -443,7 +443,7 @@ def make_what_hist_gradient_boosting(features: pd.DataFrame, feature_columns: li
         )
         return model.fit(_what_matrix(train, features, feature_columns), train[target])  # fitted on the fold's train rows only
 
-    def score(test: pd.DataFrame, fitted):
+    def score(test: pd.DataFrame, fitted):  # Predict on the test split
         """Score test rows on the WHAT matrix with a fitted model. Inputs: the test dataframe and the fitted model. Output: the probability of target == 1 for each row."""
         return fitted.predict_proba(_what_matrix(test, features, feature_columns))[:, 1]  # probability target == 1
 
