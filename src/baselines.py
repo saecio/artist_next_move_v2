@@ -42,11 +42,11 @@ Usage:
         ...
 """
 
-from __future__ import annotations
+from __future__ import annotations  # allow type hints to be read lazily
 
-import numpy as np
-import pandas as pd
-from sklearn.metrics import average_precision_score
+import numpy as np  # fast array maths
+import pandas as pd  # tables of data
+from sklearn.metrics import average_precision_score  # metric that scores how well rows are ranked
 
 from config import CONFIG  # project settings read from config.yaml
 from eda import VOLUME_BUCKET_EDGES, VOLUME_BUCKET_LABELS, _bucket_by_prior_works  # same history and volume buckets as the Work-level EDA
@@ -68,7 +68,7 @@ SEED = CONFIG["project"]["SEED"]  # project.SEED
 # trusted. With fewer than 30 rows a rate has a standard error of about 9
 # points or more (sqrt(0.25 / 30)), too noisy to rank rows better than the
 # global rate, so smaller cells fall back to the global rate instead.
-MIN_CELL_ROWS = 30
+MIN_CELL_ROWS = 30  # below this many rows a cell rate is too noisy
 
 
 # --------------------------------------------------------------------------
@@ -92,7 +92,7 @@ MIN_CELL_ROWS = 30
 # should be.
 
 
-def fit_when_baseline(train_snapshots: pd.DataFrame) -> dict:
+def fit_when_baseline(train_snapshots: pd.DataFrame) -> dict:  # fit the WHEN baseline on train data only
     """Learn the one number this baseline needs from TRAIN only: the
     fallback score for an artist with no history yet (history_count == 0).
 
@@ -100,21 +100,21 @@ def fit_when_baseline(train_snapshots: pd.DataFrame) -> dict:
     saved/logged like any other fitted artifact, not a surprise function
     closure.
     """
-    with_history = train_snapshots.loc[train_snapshots["history_count"] > 0, "historical_rate"]
+    with_history = train_snapshots.loc[train_snapshots["history_count"] > 0, "historical_rate"]  # train rates of artists that already have history
     # Median, not mean: historical_rate is a ratio of small integers for
     # most artists and can have a long right tail (a handful of very
     # prolific artists), the median is a more honest "typical" fallback.
-    fallback_rate = float(with_history.median()) if len(with_history) else 0.0
-    return {"fallback_rate": fallback_rate}
+    fallback_rate = float(with_history.median()) if len(with_history) else 0.0  # typical rate, or 0 when no row qualifies
+    return {"fallback_rate": fallback_rate}  # return the fitted fallback as a plain dict
 
 
-def score_when_baseline(snapshots: pd.DataFrame, fitted: dict) -> pd.Series:
+def score_when_baseline(snapshots: pd.DataFrame, fitted: dict) -> pd.Series:  # score rows for the WHEN baseline
     """Score every row for the WHEN baseline: historical_rate, or the
     fitted fallback for a first Work (history_count == 0 / rate missing).
     """
-    scores = snapshots["historical_rate"].copy()
-    scores = scores.fillna(fitted["fallback_rate"])
-    return scores
+    scores = snapshots["historical_rate"].copy()  # copy so the caller's table is untouched
+    scores = scores.fillna(fitted["fallback_rate"])  # first Works get the train fallback rate
+    return scores  # one score per row
 
 
 # --------------------------------------------------------------------------
@@ -132,22 +132,22 @@ def score_when_baseline(snapshots: pd.DataFrame, fitted: dict) -> pd.Series:
 # predictive, however good its raw numbers look in isolation.
 
 
-def fit_what_baseline(train_snapshots: pd.DataFrame) -> dict:
+def fit_what_baseline(train_snapshots: pd.DataFrame) -> dict:  # fit the WHAT baseline on train data only
     """Learn the TRAIN set's new_style positive rate, ignoring rows where
     new_style itself is unknown (see src/snapshots.py: no next Work, or no
     style tags to compare)."""
-    known = train_snapshots["new_style"].dropna()
-    positive_rate = float(known.mean()) if len(known) else 0.0
-    return {"positive_rate": positive_rate}
+    known = train_snapshots["new_style"].dropna()  # keep only rows where the label is known
+    positive_rate = float(known.mean()) if len(known) else 0.0  # share of positives, or 0 when nothing is known
+    return {"positive_rate": positive_rate}  # return the fitted rate as a plain dict
 
 
-def score_what_baseline(snapshots: pd.DataFrame, fitted: dict) -> pd.Series:
+def score_what_baseline(snapshots: pd.DataFrame, fitted: dict) -> pd.Series:  # score rows for the WHAT baseline
     """Score every row for the WHAT baseline: the fitted constant,
     repeated. A constant score cannot rank rows against each other, so
     this baseline's PR-AUC is expected to equal the positive rate itself;
     that is the point, it is the "no information" floor WHAT has to clear.
     """
-    return pd.Series(fitted["positive_rate"], index=snapshots.index)
+    return pd.Series(fitted["positive_rate"], index=snapshots.index)  # same constant score for every row
 
 
 # --------------------------------------------------------------------------
@@ -165,7 +165,7 @@ def score_what_baseline(snapshots: pd.DataFrame, fitted: dict) -> pd.Series:
 # the reference a WHAT model has to beat.
 
 
-def add_what_buckets(table: pd.DataFrame, min_previous_works: int = 3) -> pd.DataFrame:
+def add_what_buckets(table: pd.DataFrame, min_previous_works: int = 3) -> pd.DataFrame:  # add the history and volume buckets to a table
     """Add `history_bucket` and `volume_bucket` to a WHAT modeling table.
 
     `table` is the output of `build_what_table`. `history_bucket` comes from
@@ -185,10 +185,10 @@ def add_what_buckets(table: pd.DataFrame, min_previous_works: int = 3) -> pd.Dat
     result["history_bucket"] = bucketed["prior_work_bucket"]
     # Volume bucket of the current year, never of the next one.
     result["volume_bucket"] = pd.cut(table["n_works_year"], bins=VOLUME_BUCKET_EDGES, labels=VOLUME_BUCKET_LABELS)
-    return result
+    return result  # table with the two new bucket columns
 
 
-def fit_what_lookup_baseline(train: pd.DataFrame, group_columns: list) -> dict:
+def fit_what_lookup_baseline(train: pd.DataFrame, group_columns: list) -> dict:  # fit the per-cell positive rates on train data
     """Learn, from TRAIN only, the new_style_year positive rate of each
     combination of `group_columns`, and the global train rate.
 
@@ -207,10 +207,10 @@ def fit_what_lookup_baseline(train: pd.DataFrame, group_columns: list) -> dict:
     cells = cells[cells["size"] >= MIN_CELL_ROWS]
     # Keys as tuples even with one column, so scoring looks them up the same way.
     rates = {(key if isinstance(key, tuple) else (key,)): float(rate) for key, rate in zip(cells.index, cells["mean"])}
-    return {"global_rate": global_rate, "group_columns": list(group_columns), "rates": rates}
+    return {"global_rate": global_rate, "group_columns": list(group_columns), "rates": rates}  # bundle everything scoring needs into one dict
 
 
-def score_what_lookup_baseline(rows: pd.DataFrame, fitted: dict) -> pd.Series:
+def score_what_lookup_baseline(rows: pd.DataFrame, fitted: dict) -> pd.Series:  # score rows with the fitted cell rates
     """Score every row with the fitted rate of its own cell, or the global
     train rate when the cell was unseen or too small. PR-AUC only cares about
     ranking, so the rates are used directly as scores.
@@ -219,7 +219,7 @@ def score_what_lookup_baseline(rows: pd.DataFrame, fitted: dict) -> pd.Series:
     keys = zip(*[rows[column] for column in fitted["group_columns"]])
     # Cell rate if stored, global train rate otherwise.
     scores = [fitted["rates"].get(key, fitted["global_rate"]) for key in keys]
-    return pd.Series(scores, index=rows.index)
+    return pd.Series(scores, index=rows.index)  # one score per row, in the table's own order
 
 
 # --------------------------------------------------------------------------
@@ -227,7 +227,7 @@ def score_what_lookup_baseline(rows: pd.DataFrame, fitted: dict) -> pd.Series:
 # --------------------------------------------------------------------------
 
 
-def _bootstrap_pr_auc(y_true: np.ndarray, scores: np.ndarray, artist_ids: np.ndarray,
+def _bootstrap_pr_auc(y_true: np.ndarray, scores: np.ndarray, artist_ids: np.ndarray,  # bootstrap PR-AUC over artists
                        n_bootstrap: int, rng: np.random.Generator) -> np.ndarray:
     """Artist-level bootstrap of PR-AUC: resample ARTISTS with replacement
     (not individual rows), then take every row belonging to the resampled
@@ -236,28 +236,28 @@ def _bootstrap_pr_auc(y_true: np.ndarray, scores: np.ndarray, artist_ids: np.nda
     career, same style habits), so resampling rows directly would
     understate how uncertain this really is.
     """
-    unique_artists = np.unique(artist_ids)
+    unique_artists = np.unique(artist_ids)  # all distinct artists in the test rows
     # Precompute each artist's row positions once, instead of re-filtering
     # the full array on every one of n_bootstrap iterations.
-    rows_by_artist = {a: np.flatnonzero(artist_ids == a) for a in unique_artists}
+    rows_by_artist = {a: np.flatnonzero(artist_ids == a) for a in unique_artists}  # row positions of each artist, computed once
 
-    pr_aucs = np.empty(n_bootstrap)
-    for i in range(n_bootstrap):
-        sampled_artists = rng.choice(unique_artists, size=len(unique_artists), replace=True)
-        row_idx = np.concatenate([rows_by_artist[a] for a in sampled_artists])
-        y_sample = y_true[row_idx]
+    pr_aucs = np.empty(n_bootstrap)  # empty array to hold one PR-AUC per resample
+    for i in range(n_bootstrap):  # repeat once per resample
+        sampled_artists = rng.choice(unique_artists, size=len(unique_artists), replace=True)  # draw artists at random, the same artist can repeat
+        row_idx = np.concatenate([rows_by_artist[a] for a in sampled_artists])  # gather every row of the drawn artists
+        y_sample = y_true[row_idx]  # true labels of the resampled rows
         # A resample that happens to contain only one class has no PR-AUC
         # (undefined); skipped rather than crashing the whole bootstrap,
         # and this is rare enough at realistic sample sizes not to bias
         # the resulting interval in practice.
-        if len(np.unique(y_sample)) < 2:
-            pr_aucs[i] = np.nan
-            continue
-        pr_aucs[i] = average_precision_score(y_sample, scores[row_idx])
-    return pr_aucs
+        if len(np.unique(y_sample)) < 2:  # only one class means PR-AUC cannot be computed
+            pr_aucs[i] = np.nan  # mark this resample as missing
+            continue  # move on to the next resample
+        pr_aucs[i] = average_precision_score(y_sample, scores[row_idx])  # PR-AUC of this resample
+    return pr_aucs  # all resampled PR-AUC values
 
 
-def evaluate_kill_gate(
+def evaluate_kill_gate(  # compare a model to its baseline with confidence intervals
     y_true: pd.Series,
     model_scores: pd.Series,
     baseline_scores: pd.Series,
@@ -286,22 +286,22 @@ def evaluate_kill_gate(
     boolean, so a human reviewing this later can see exactly how close the
     call was.
     """
-    y = np.asarray(y_true)
-    model_s = np.asarray(model_scores)
-    baseline_s = np.asarray(baseline_scores)
-    artists = np.asarray(artist_ids)
+    y = np.asarray(y_true)  # plain arrays so positions line up
+    model_s = np.asarray(model_scores)  # model scores as an array
+    baseline_s = np.asarray(baseline_scores)  # baseline scores as an array
+    artists = np.asarray(artist_ids)  # artist ids as an array
 
-    assert len(y) == len(model_s) == len(baseline_s) == len(artists), (
+    assert len(y) == len(model_s) == len(baseline_s) == len(artists), (  # all four inputs must have the same length
         "evaluate_kill_gate: y_true, model_scores, baseline_scores and "
         "artist_ids must all be the same length and row-aligned."
     )
-    assert not pd.isna(y).any(), (
+    assert not pd.isna(y).any(), (  # labels must be fully known
         "evaluate_kill_gate: y_true contains missing values. Drop censored "
         "/ unknown rows (see src/snapshots.py) before calling this, do not "
         "pass them in and hope they're ignored."
     )
-    n_pos, n_neg = int((y == 1).sum()), int((y == 0).sum())
-    assert n_pos > 0 and n_neg > 0, (
+    n_pos, n_neg = int((y == 1).sum()), int((y == 0).sum())  # count positive and negative rows
+    assert n_pos > 0 and n_neg > 0, (  # PR-AUC needs both classes present
         f"evaluate_kill_gate: y_true has {n_pos} positive and {n_neg} negative "
         "rows, so PR-AUC is undefined with only one class present. This usually "
         "means the test split is too small or too narrow (e.g. a temporal "
@@ -309,22 +309,22 @@ def evaluate_kill_gate(
         "check the split before re-running."
     )
 
-    model_point = float(average_precision_score(y, model_s))
-    baseline_point = float(average_precision_score(y, baseline_s))
+    model_point = float(average_precision_score(y, model_s))  # model PR-AUC on the full test set
+    baseline_point = float(average_precision_score(y, baseline_s))  # baseline PR-AUC on the full test set
 
-    rng = np.random.default_rng(seed)
-    alpha = 1 - confidence
-    lower_pct, upper_pct = 100 * (alpha / 2), 100 * (1 - alpha / 2)
+    rng = np.random.default_rng(seed)  # seeded random generator, so results repeat
+    alpha = 1 - confidence  # share of probability left outside the interval
+    lower_pct, upper_pct = 100 * (alpha / 2), 100 * (1 - alpha / 2)  # percentiles that bound the interval
 
-    model_boot = _bootstrap_pr_auc(y, model_s, artists, n_bootstrap, rng)
-    baseline_boot = _bootstrap_pr_auc(y, baseline_s, artists, n_bootstrap, rng)
+    model_boot = _bootstrap_pr_auc(y, model_s, artists, n_bootstrap, rng)  # PR-AUC values of the model across resamples
+    baseline_boot = _bootstrap_pr_auc(y, baseline_s, artists, n_bootstrap, rng)  # PR-AUC values of the baseline across resamples
 
-    model_ci = tuple(np.nanpercentile(model_boot, [lower_pct, upper_pct]))
-    baseline_ci = tuple(np.nanpercentile(baseline_boot, [lower_pct, upper_pct]))
+    model_ci = tuple(np.nanpercentile(model_boot, [lower_pct, upper_pct]))  # model interval, ignoring missing resamples
+    baseline_ci = tuple(np.nanpercentile(baseline_boot, [lower_pct, upper_pct]))  # baseline interval, ignoring missing resamples
 
-    model_beats_baseline = model_ci[0] > baseline_ci[1]
+    model_beats_baseline = model_ci[0] > baseline_ci[1]  # pass only if the model's low end beats the baseline's high end
 
-    return {
+    return {  # full result, so a reviewer sees how close it was
         "model_pr_auc": model_point,
         "baseline_pr_auc": baseline_point,
         "model_pr_auc_ci": model_ci,
