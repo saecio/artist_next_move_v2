@@ -25,10 +25,10 @@ Usage:
     snapshots = build_snapshots(works)
 """
 
-from __future__ import annotations
+from __future__ import annotations  # allow type hints to be read lazily
 
-import numpy as np
-import pandas as pd
+import numpy as np  # fast array maths
+import pandas as pd  # tables of data
 
 from config import CONFIG  # project settings read from config.yaml
 
@@ -36,7 +36,7 @@ from config import CONFIG  # project settings read from config.yaml
 # last year that is fully observed (config.yaml, years.last_complete) is 2025,
 # and it is the boundary used to decide whether "no next active year" is a
 # real 0 or simply not known yet.
-LAST_COMPLETE_YEAR = CONFIG["years"]["last_complete"]
+LAST_COMPLETE_YEAR = CONFIG["years"]["last_complete"]  # last year with complete data, read from config
 
 # Seed for the order of Works inside one artist-year. The data only knows the
 # year, so that order is not real chronology; sorting same-year Works by
@@ -45,15 +45,15 @@ LAST_COMPLETE_YEAR = CONFIG["years"]["last_complete"]
 # work_source. Instead the order follows a hash of work_id plus this seed: it
 # looks random, but it is identical on every run and does not depend on the
 # row order of the input. It is the project seed of config.yaml (project.SEED).
-WITHIN_YEAR_ORDER_SEED = CONFIG["project"]["SEED"]
+WITHIN_YEAR_ORDER_SEED = CONFIG["project"]["SEED"]  # fixed seed so the same-year order repeats on every run
 
 # Discogs format_descriptions tags that mark an album-like or a single-like
 # release. Everything else (including no tag at all) is "other".
-ALBUM_FORMATS = {"Album", "LP", "EP", "Mini-Album"}
-SINGLE_FORMATS = {"Single", "Maxi-Single"}
+ALBUM_FORMATS = {"Album", "LP", "EP", "Mini-Album"}  # release tags that count as an album
+SINGLE_FORMATS = {"Single", "Maxi-Single"}  # release tags that count as a single
 
 
-def _split_styles(styles_value) -> set:
+def _split_styles(styles_value) -> set:  # turn a cell of tags into a set
     """Turn a list-valued cell (styles, format_descriptions) into a set of tags.
 
     `styles_value` is whatever the cell actually holds: a list (or numpy
@@ -64,17 +64,17 @@ def _split_styles(styles_value) -> set:
     # None and NaN (a bare float, pandas' missing-value marker here) both
     # mean "nothing recorded"; a list/array is never a float, so this
     # check cannot misfire on a real, non-empty list.
-    if styles_value is None or isinstance(styles_value, float):
-        return set()
+    if styles_value is None or isinstance(styles_value, float):  # missing cell: nothing was recorded
+        return set()  # no tags
     # An empty list/array also means "nothing recorded", same outcome
     # as the None/NaN case above, just a different shape for it.
-    if len(styles_value) == 0:
-        return set()
+    if len(styles_value) == 0:  # empty list: nothing was recorded
+        return set()  # no tags
     # Otherwise it is a real list (or array) of tags, turn it into a set.
-    return set(styles_value)
+    return set(styles_value)  # real tags, as a set
 
 
-def classify_work_type(format_descriptions) -> str:
+def classify_work_type(format_descriptions) -> str:  # label a Work as album, single or other
     """Normalize a Work's format_descriptions into "album", "single" or "other".
 
     Album-like (Album, LP, EP, Mini-Album) wins over single-like (Single,
@@ -82,18 +82,18 @@ def classify_work_type(format_descriptions) -> str:
     without either kind, including an empty list, is "other".
     """
     # Same list-to-set conversion used for styles, so missing values are safe.
-    tags = _split_styles(format_descriptions)
+    tags = _split_styles(format_descriptions)  # tags as a set, safe for missing cells
     # Album-like tags take precedence.
-    if tags & ALBUM_FORMATS:
-        return "album"
+    if tags & ALBUM_FORMATS:  # any album-like tag
+        return "album"  # album wins over single
     # Then single-like tags.
-    if tags & SINGLE_FORMATS:
-        return "single"
+    if tags & SINGLE_FORMATS:  # any single-like tag
+        return "single"  # single
     # Everything else, including no tags at all.
-    return "other"
+    return "other"  # no album or single tag
 
 
-def build_snapshots(works: pd.DataFrame, last_complete_year: int = LAST_COMPLETE_YEAR) -> pd.DataFrame:
+def build_snapshots(works: pd.DataFrame, last_complete_year: int = LAST_COMPLETE_YEAR) -> pd.DataFrame:  # main function: one row per snapshot
     """Turn a one row per Work table into one row per temporal snapshot.
 
     Every Work with a known year becomes one snapshot, anchored at that
@@ -194,112 +194,112 @@ def build_snapshots(works: pd.DataFrame, last_complete_year: int = LAST_COMPLETE
     # A Work with no artist_id cannot belong to any artist's timeline (95 in
     # the real checkpoint), so it is dropped up front and counted, not lost
     # silently inside a groupby.
-    has_artist = works["artist_id"].notna()
-    dropped_missing_artist = int((~has_artist).sum())
-    works = works[has_artist]
+    has_artist = works["artist_id"].notna()  # True where the Work has an artist
+    dropped_missing_artist = int((~has_artist).sum())  # count the Works without an artist
+    works = works[has_artist]  # keep only Works with an artist
 
     # A Work with no known year cannot be placed on a timeline.
-    year_missing_work = works["year"].isna()
+    year_missing_work = works["year"].isna()  # True where the year is unknown
     # How many Works were dropped for that reason, reported on the result.
-    dropped_missing_year = int(year_missing_work.sum())
+    dropped_missing_year = int(year_missing_work.sum())  # count the undated Works
 
     # Kept aside so the two aggregates below still see every undated Work.
-    undated_works = works[year_missing_work]
+    undated_works = works[year_missing_work]  # undated Works, kept for the artist-level numbers
     # How many undated Works each artist has, reported on every snapshot row.
-    undated_work_count_by_artist = undated_works.groupby("artist_id").size()
+    undated_work_count_by_artist = undated_works.groupby("artist_id").size()  # undated Works per artist
     # Every style used on any of an artist's undated Works, one set per artist.
-    undated_styles_by_artist = undated_works.groupby("artist_id")["styles"].apply(
+    undated_styles_by_artist = undated_works.groupby("artist_id")["styles"].apply(  # styles used on undated Works, per artist
         lambda styles_column: set().union(*(_split_styles(s) for s in styles_column))
     )
 
     # From here on only dated Works, with year as a plain integer.
-    snapshots = works[~year_missing_work].copy()
-    snapshots["year"] = snapshots["year"].astype(int)
+    snapshots = works[~year_missing_work].copy()  # keep only dated Works
+    snapshots["year"] = snapshots["year"].astype(int)  # whole-number years
     # Pseudo-random but reproducible rank of each Work inside its year: a hash
     # of work_id shifted by the fixed seed, so it ignores the input row order.
-    snapshots["within_year_rank"] = pd.util.hash_array(snapshots["work_id"].to_numpy() + WITHIN_YEAR_ORDER_SEED)
+    snapshots["within_year_rank"] = pd.util.hash_array(snapshots["work_id"].to_numpy() + WITHIN_YEAR_ORDER_SEED)  # stable pseudo-random order inside a year
     # Chronological order per artist, then year, then the seeded rank; work_id
     # only settles the (practically impossible) case of equal hashes.
-    snapshots = snapshots.sort_values(["artist_id", "year", "within_year_rank", "work_id"]).reset_index(drop=True)
+    snapshots = snapshots.sort_values(["artist_id", "year", "within_year_rank", "work_id"]).reset_index(drop=True)  # sort each artist's Works from oldest to newest
 
     # Per-artist views of the sorted table, for the vectorised features.
-    by_artist = snapshots.groupby("artist_id", sort=False)
+    by_artist = snapshots.groupby("artist_id", sort=False)  # group the Works of each artist
     # Same value as year, kept under its own name as the known/unknown boundary.
-    snapshots["cutoff_year"] = snapshots["year"]
+    snapshots["cutoff_year"] = snapshots["year"]  # the line between known and unknown
 
     # Works strictly before this one in the sort order.
-    snapshots["history_count"] = by_artist.cumcount()
+    snapshots["history_count"] = by_artist.cumcount()  # number of earlier Works
     # Years since the previous Work (0 for a same-year sibling) and since the first.
-    snapshots["years_since_last"] = snapshots["year"] - by_artist["year"].shift(1)
-    snapshots["years_active_so_far"] = snapshots["year"] - by_artist["year"].transform("first")
+    snapshots["years_since_last"] = snapshots["year"] - by_artist["year"].shift(1)  # years since the previous Work
+    snapshots["years_active_so_far"] = snapshots["year"] - by_artist["year"].transform("first")  # years since the first Work
     # Rate of Works per elapsed year, unknown when no years have elapsed.
-    snapshots["historical_rate"] = np.where(
+    snapshots["historical_rate"] = np.where(  # Works per year of career
         snapshots["years_active_so_far"] > 0,
         snapshots["history_count"] / snapshots["years_active_so_far"].where(snapshots["years_active_so_far"] > 0),
         np.nan,
     )
 
     # Year-level activity: the distinct years each artist has at least one Work in.
-    active_years = snapshots[["artist_id", "year"]].drop_duplicates()
+    active_years = snapshots[["artist_id", "year"]].drop_duplicates()  # one row per artist and active year
     # The artist's next active year after each of those years (NaN for the last).
-    active_years["next_active_year"] = active_years.groupby("artist_id")["year"].shift(-1)
+    active_years["next_active_year"] = active_years.groupby("artist_id")["year"].shift(-1)  # next year with activity
     # Back onto every Work; a left merge keeps the sorted order of snapshots.
-    snapshots = snapshots.merge(active_years, on=["artist_id", "year"], how="left")
+    snapshots = snapshots.merge(active_years, on=["artist_id", "year"], how="left")  # attach it to every Work
 
     # Works in the snapshot's own year: up to and including this one (model-safe),
     # and the whole year (descriptive only, it counts later same-year Works).
-    snapshots["works_so_far_this_year"] = snapshots.groupby(["artist_id", "year"]).cumcount() + 1
-    snapshots["works_this_year"] = snapshots.groupby(["artist_id", "year"])["work_id"].transform("size")
+    snapshots["works_so_far_this_year"] = snapshots.groupby(["artist_id", "year"]).cumcount() + 1  # Works so far in this year
+    snapshots["works_this_year"] = snapshots.groupby(["artist_id", "year"])["work_id"].transform("size")  # all Works in this year (not for models)
 
     # WHEN targets: gap to the next active year, always >= 1 by construction.
-    has_next = snapshots["next_active_year"].notna()
-    gap_years = snapshots["next_active_year"] - snapshots["year"]
+    has_next = snapshots["next_active_year"].notna()  # True when a later active year exists
+    gap_years = snapshots["next_active_year"] - snapshots["year"]  # years until the next active year
     # Fully observed years that follow this snapshot, for the censoring rule.
-    observed_after = last_complete_year - snapshots["year"]
+    observed_after = last_complete_year - snapshots["year"]  # complete years after this snapshot
     # With a next active year the target is measured; without one it is a
     # confident 0 only when enough complete years followed, else unknown.
-    snapshots["next_1y"] = np.where(has_next, (gap_years <= 1).astype(float), np.where(observed_after >= 1, 0.0, np.nan))
-    snapshots["next_2y"] = np.where(has_next, (gap_years <= 2).astype(float), np.where(observed_after >= 2, 0.0, np.nan))
+    snapshots["next_1y"] = np.where(has_next, (gap_years <= 1).astype(float), np.where(observed_after >= 1, 0.0, np.nan))  # 1 if next activity within a year, else 0 or unknown
+    snapshots["next_2y"] = np.where(has_next, (gap_years <= 2).astype(float), np.where(observed_after >= 2, 0.0, np.nan))  # 1 if next activity within two years, else 0 or unknown
 
     # WHAT target needs a running set of styles per artist, so one pass in Python.
-    artist_ids = snapshots["artist_id"].to_numpy()
-    work_styles = snapshots["styles"].map(_split_styles).tolist()
-    new_style = np.full(len(snapshots), np.nan)
-    current_artist = None
-    styles_seen_so_far: set = set()
-    for i in range(len(snapshots)):
+    artist_ids = snapshots["artist_id"].to_numpy()  # artist of each row
+    work_styles = snapshots["styles"].map(_split_styles).tolist()  # style set of each row
+    new_style = np.full(len(snapshots), np.nan)  # result array, unknown until filled
+    current_artist = None  # artist being processed
+    styles_seen_so_far: set = set()  # styles seen so far for that artist
+    for i in range(len(snapshots)):  # go through the rows in order
         # A new artist starts from their undated-Works styles, not from empty.
-        if artist_ids[i] != current_artist:
-            current_artist = artist_ids[i]
-            styles_seen_so_far = set(undated_styles_by_artist.get(current_artist, set()))
+        if artist_ids[i] != current_artist:  # first row of a new artist
+            current_artist = artist_ids[i]  # remember the new artist
+            styles_seen_so_far = set(undated_styles_by_artist.get(current_artist, set()))  # start from the styles of undated Works
         # This Work's styles are known at its cutoff, so they count as seen.
-        styles_seen_so_far |= work_styles[i]
+        styles_seen_so_far |= work_styles[i]  # add this Work's styles to the seen ones
         # Compare against the next Work only when it exists, is the same
         # artist, and has styles recorded (otherwise "new" is unknowable).
-        if i + 1 < len(snapshots) and artist_ids[i + 1] == current_artist and work_styles[i + 1]:
-            new_style[i] = float(len(work_styles[i + 1] - styles_seen_so_far) > 0)
-    snapshots["new_style"] = new_style
+        if i + 1 < len(snapshots) and artist_ids[i + 1] == current_artist and work_styles[i + 1]:  # next Work exists, same artist, has styles
+            new_style[i] = float(len(work_styles[i + 1] - styles_seen_so_far) > 0)  # 1 if the next Work has a style not seen yet, else 0
+    snapshots["new_style"] = new_style  # store the target
 
     # Artist-level undated-Works count and flag, repeated on every row.
-    snapshots["artist_undated_work_count"] = (
+    snapshots["artist_undated_work_count"] = (  # undated Works per artist, 0 if none
         snapshots["artist_id"].map(undated_work_count_by_artist).fillna(0).astype(int)
     )
-    snapshots["year_missing"] = snapshots["artist_undated_work_count"] > 0
+    snapshots["year_missing"] = snapshots["artist_undated_work_count"] > 0  # True if the artist has undated Works
 
     # Work type of each Work, then the same counts summed over its year.
-    work_type = snapshots["format_descriptions"].map(classify_work_type)
-    snapshots["is_album_like"] = work_type == "album"
-    snapshots["is_single_like"] = work_type == "single"
-    year_groups = snapshots.groupby(["artist_id", "year"])
+    work_type = snapshots["format_descriptions"].map(classify_work_type)  # album, single or other for each Work
+    snapshots["is_album_like"] = work_type == "album"  # True for album-like Works
+    snapshots["is_single_like"] = work_type == "single"  # True for single-like Works
+    year_groups = snapshots.groupby(["artist_id", "year"])  # group Works by artist and year
     # Running counts up to and including this Work (model-safe) and whole-year
     # counts (descriptive only, they include later same-year Works).
-    snapshots["albums_so_far_this_year"] = year_groups["is_album_like"].cumsum()
-    snapshots["singles_so_far_this_year"] = year_groups["is_single_like"].cumsum()
-    snapshots["albums_this_year"] = year_groups["is_album_like"].transform("sum")
-    snapshots["singles_this_year"] = year_groups["is_single_like"].transform("sum")
+    snapshots["albums_so_far_this_year"] = year_groups["is_album_like"].cumsum()  # albums so far this year
+    snapshots["singles_so_far_this_year"] = year_groups["is_single_like"].cumsum()  # singles so far this year
+    snapshots["albums_this_year"] = year_groups["is_album_like"].transform("sum")  # all albums this year (not for models)
+    snapshots["singles_this_year"] = year_groups["is_single_like"].transform("sum")  # all singles this year (not for models)
 
     # Column order: identity, passthrough, features, targets, flags.
-    snapshots = snapshots[[
+    snapshots = snapshots[[  # keep only the final columns, in order
         "artist_id", "work_id", "year", "cutoff_year", "work_source", "genres",
         "works_so_far_this_year", "albums_so_far_this_year", "singles_so_far_this_year",
         "is_album_like", "is_single_like", "works_this_year", "albums_this_year", "singles_this_year",
@@ -307,7 +307,7 @@ def build_snapshots(works: pd.DataFrame, last_complete_year: int = LAST_COMPLETE
         "next_1y", "next_2y", "new_style", "artist_undated_work_count", "year_missing",
     ]]
     # Bookkeeping that would otherwise be silently lost.
-    snapshots.attrs["dropped_missing_year"] = dropped_missing_year
-    snapshots.attrs["dropped_missing_artist"] = dropped_missing_artist
-    snapshots.attrs["last_complete_year"] = last_complete_year
-    return snapshots
+    snapshots.attrs["dropped_missing_year"] = dropped_missing_year  # remember how many undated Works were dropped
+    snapshots.attrs["dropped_missing_artist"] = dropped_missing_artist  # remember how many Works had no artist
+    snapshots.attrs["last_complete_year"] = last_complete_year  # remember the cutoff year used
+    return snapshots  # give back the finished table
