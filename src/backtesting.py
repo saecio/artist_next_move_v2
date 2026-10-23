@@ -11,7 +11,7 @@ Usage:
     table = year_distribution(snapshots)
 """
 
-from __future__ import annotations
+from __future__ import annotations  # allow type hints to be read lazily
 
 from pathlib import Path  # path handling for the cache file
 
@@ -34,10 +34,10 @@ PARTIAL_YEAR = CONFIG["years"]["partial"]  # years.partial
 
 # A complete year is "low volume" when its snapshot count is below this
 # quantile of the yearly counts of all complete years.
-LOW_VOLUME_QUANTILE = 0.10
+LOW_VOLUME_QUANTILE = 0.10  # years below this share of yearly counts are low volume
 
 
-def load_or_build_snapshots(works_path: Path = WORKS_PATH, snapshots_path: Path = SNAPSHOTS_PATH) -> pd.DataFrame:
+def load_or_build_snapshots(works_path: Path = WORKS_PATH, snapshots_path: Path = SNAPSHOTS_PATH) -> pd.DataFrame:  # loads cached snapshots, or builds and caches them
     """Read the cached snapshots, or build them from the Works table and cache them."""
     if snapshots_path.exists():  # cache hit, skip the expensive rebuild
         return pd.read_parquet(snapshots_path)  # return the cached snapshots as they were saved
@@ -47,7 +47,7 @@ def load_or_build_snapshots(works_path: Path = WORKS_PATH, snapshots_path: Path 
     return snapshots  # hand back the freshly built snapshots
 
 
-def year_distribution(snapshots: pd.DataFrame, low_quantile: float = LOW_VOLUME_QUANTILE, partial_year: int = PARTIAL_YEAR) -> pd.DataFrame:
+def year_distribution(snapshots: pd.DataFrame, low_quantile: float = LOW_VOLUME_QUANTILE, partial_year: int = PARTIAL_YEAR) -> pd.DataFrame:  # table of snapshot counts per year, with flags
     """Count snapshots per year and flag low-volume and partial years.
 
     The low-volume threshold is the `low_quantile` quantile of the yearly
@@ -67,7 +67,7 @@ def year_distribution(snapshots: pd.DataFrame, low_quantile: float = LOW_VOLUME_
     return table  # indexed by year
 
 
-def plot_year_distribution(table: pd.DataFrame) -> None:
+def plot_year_distribution(table: pd.DataFrame) -> None:  # draws the bar chart of snapshots per year
     """Bar chart of snapshots per year, low-volume and partial years in different colors."""
     colors = table.apply(lambda r: "tab:orange" if r["partial"] else ("tab:red" if r["low_volume"] else "tab:blue"), axis=1)  # color by flag
     fig, ax = plt.subplots(figsize=(14, 4))  # wide figure, one bar per year
@@ -87,7 +87,7 @@ HOLDOUT_START_YEAR = CONFIG["years"]["holdout_start"]  # years.holdout_start
 HOLDOUT_END_YEAR = CONFIG["years"]["holdout_end"]  # years.holdout_end
 
 
-def split_holdout(snapshots: pd.DataFrame, holdout_start: int = HOLDOUT_START_YEAR, holdout_end: int = HOLDOUT_END_YEAR, partial_year: int = PARTIAL_YEAR) -> dict:
+def split_holdout(snapshots: pd.DataFrame, holdout_start: int = HOLDOUT_START_YEAR, holdout_end: int = HOLDOUT_END_YEAR, partial_year: int = PARTIAL_YEAR) -> dict:  # splits snapshots into four time buckets
     """Split snapshots by year into development, holdout, excluded_recent and demo.
 
     - development: years before `holdout_start`, used for walk-forward folds and tuning.
@@ -98,7 +98,7 @@ def split_holdout(snapshots: pd.DataFrame, holdout_start: int = HOLDOUT_START_YE
     - demo: the partial year (and anything after), kept for demo use only.
     """
     year = snapshots["year"]  # anchor year of each snapshot
-    parts = {
+    parts = {  # four buckets, each a slice of the snapshots
         "development": snapshots[year < holdout_start],  # everything before the holdout window
         "holdout": snapshots[(year >= holdout_start) & (year <= holdout_end)],  # final evaluation window
         "excluded_recent": snapshots[(year > holdout_end) & (year < partial_year)],  # complete but lag-affected years
@@ -108,10 +108,10 @@ def split_holdout(snapshots: pd.DataFrame, holdout_start: int = HOLDOUT_START_YE
     return parts  # dict of the four dataframes
 
 
-def split_summary(parts: dict) -> pd.DataFrame:
+def split_summary(parts: dict) -> pd.DataFrame:  # one summary row per bucket
     """Rows, share of all snapshots, year range and artist count for each bucket."""
     total = sum(len(p) for p in parts.values())  # all snapshots across buckets
-    rows = {
+    rows = {  # one dict of figures per bucket
         name: {
             "snapshots": len(p),  # rows in the bucket
             "share": len(p) / total,  # fraction of all snapshots
@@ -134,8 +134,8 @@ GAP_YEARS = CONFIG["years"]["label_gap"]  # years.label_gap
 # development years are split into N_FOLD_TRANCHES consecutive tranches of
 # TRANCHE_YEARS calendar years each (1993-1997 ... 2013-2017 for a holdout
 # starting in 2018). Defaults of make_what_folds, same values as make_folds.
-N_FOLD_TRANCHES = 5
-TRANCHE_YEARS = 5
+N_FOLD_TRANCHES = 5  # how many test periods the walk-forward check uses
+TRANCHE_YEARS = 5  # how many years each test period covers
 
 
 def method_spans(holdout_start: int = HOLDOUT_START_YEAR, holdout_end: int = HOLDOUT_END_YEAR, n_folds: int = N_FOLD_TRANCHES, test_years: int = TRANCHE_YEARS, gap_years: int = GAP_YEARS) -> list:  # years of the practice runs and of the final exam
@@ -149,7 +149,7 @@ def method_spans(holdout_start: int = HOLDOUT_START_YEAR, holdout_end: int = HOL
     runs.append({"train_end": holdout_start - gap_years - 1, "gap_start": holdout_start - gap_years, "test_start": holdout_start, "test_end": holdout_end})  # final split, as holdout_gap and split_holdout
     return runs  # five practice runs and the final exam
 
-def holdout_gap(development: pd.DataFrame, holdout_start: int = HOLDOUT_START_YEAR, gap_years: int = GAP_YEARS) -> tuple:
+def holdout_gap(development: pd.DataFrame, holdout_start: int = HOLDOUT_START_YEAR, gap_years: int = GAP_YEARS) -> tuple:  # separates safe training rows from the boundary gap
     """Split development into rows safe to train the final model on and the gap rows.
 
     A development row with `year >= holdout_start - gap_years` has a
@@ -161,7 +161,7 @@ def holdout_gap(development: pd.DataFrame, holdout_start: int = HOLDOUT_START_YE
     return development[~in_gap], development[in_gap]  # (final_train, boundary_gap)
 
 
-def make_folds(development: pd.DataFrame, n_folds: int = 5, test_years: int = 5, target: str = "next_1y", low_volume_years=(), gap_years: int = GAP_YEARS) -> list:
+def make_folds(development: pd.DataFrame, n_folds: int = 5, test_years: int = 5, target: str = "next_1y", low_volume_years=(), gap_years: int = GAP_YEARS) -> list:  # builds the train and test splits, one per test period
     """Expanding-window walk-forward folds cut by calendar year, with a gap before each test tranche.
 
     The last `n_folds * test_years` calendar years of `development` are split
@@ -188,12 +188,12 @@ def make_folds(development: pd.DataFrame, n_folds: int = 5, test_years: int = 5,
         start = first_test_year + k * test_years  # first test year of this fold
         end = start + test_years - 1  # last test year of this fold
         if set(range(start, end + 1)) & set(low_volume_years):  # a tranche must not sit in a low-volume zone
-            raise ValueError(f"fold {k + 1} test tranche {start}-{end} overlaps a low-volume year")
+            raise ValueError(f"fold {k + 1} test tranche {start}-{end} overlaps a low-volume year")  # stop if a test period falls in a thin-data year
         before = development[development["year"] < start]  # everything before the tranche
         train = before[before["year"] < start - gap_years]  # expanding window minus the gap
         test_all = development[(development["year"] >= start) & (development["year"] <= end)]  # calendar tranche
         test = test_all[test_all[target].notna()]  # censoring: keep only resolved targets
-        folds.append({
+        folds.append({  # store this fold's counts and dataframes
             "fold": k + 1,  # 1-based fold number
             "train_years": f"{train['year'].min()}-{start - gap_years - 1}",  # train window after the gap
             "gap_years": f"{start - gap_years}-{start - 1}",  # years removed from train
@@ -212,7 +212,7 @@ def make_folds(development: pd.DataFrame, n_folds: int = 5, test_years: int = 5,
     return folds  # list of fold dicts
 
 
-def fold_summary(folds: list) -> pd.DataFrame:
+def fold_summary(folds: list) -> pd.DataFrame:  # counts per fold, without the data itself
     """One row per fold with the counts of make_folds, without the dataframes."""
     table = pd.DataFrame([{k: v for k, v in f.items() if k not in ("train", "test")} for f in folds]).set_index("fold")  # drop dataframes
     table = table.rename(columns={"test_artists_in_train": "test_rows_with_train_artist"})  # it counts rows, not artists
@@ -220,7 +220,7 @@ def fold_summary(folds: list) -> pd.DataFrame:
     return table  # one row per fold
 
 
-def make_what_folds(table: pd.DataFrame, n_folds: int = N_FOLD_TRANCHES, test_years: int = TRANCHE_YEARS, holdout_start: int = HOLDOUT_START_YEAR) -> list:
+def make_what_folds(table: pd.DataFrame, n_folds: int = N_FOLD_TRANCHES, test_years: int = TRANCHE_YEARS, holdout_start: int = HOLDOUT_START_YEAR) -> list:  # same splits for the WHAT target, no fixed gap
     """Expanding-window walk-forward folds for WHAT, cut by calendar year, with a label-resolution rule instead of a gap.
 
     `table` is the output of `build_what_table` (labelled artist-year rows
@@ -257,7 +257,7 @@ def make_what_folds(table: pd.DataFrame, n_folds: int = N_FOLD_TRANCHES, test_ye
         train = before[before["next_active_year"] < start]  # expanding window, only labels resolved before the test starts
         test = development[(development["year"] >= start) & (development["year"] <= end)]  # calendar tranche, all rows labelled
         dropped = len(before) - len(train)  # train rows removed by the resolution rule
-        folds.append({
+        folds.append({  # store this fold's counts and dataframes
             "fold": k + 1,  # 1-based fold number
             "train_years": f"{train['year'].min()}-{train['year'].max()}",  # train window after the rule
             "gap_years": "resolution rule",  # no fixed gap, the rule replaces it
@@ -278,7 +278,7 @@ def make_what_folds(table: pd.DataFrame, n_folds: int = N_FOLD_TRANCHES, test_ye
     return folds  # list of fold dicts
 
 
-def point_in_time_check(works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, seed: int = SEED) -> pd.Series:
+def point_in_time_check(works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, seed: int = SEED) -> pd.Series:  # checks that features use no future information
     """Count, per snapshot column, the rows whose value changes when the future is removed.
 
     Builds the snapshots twice for a random sample of artists: once from all
@@ -302,7 +302,7 @@ def point_in_time_check(works: pd.DataFrame, cutoff_year: int, n_artists: int = 
     return pd.Series(differs)  # 0 means identical with and without the future
 
 
-def presence_truncation_check(clean_fn, works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, n_big_artists: int = 10000, seed: int = SEED) -> dict:
+def presence_truncation_check(clean_fn, works: pd.DataFrame, cutoff_year: int, n_artists: int = 30000, n_big_artists: int = 10000, seed: int = SEED) -> dict:  # checks that a cleaning step ignores later Works
     """Test whether a cleaning step lets later Works decide the fate of earlier ones.
 
     Applies `clean_fn` (a function Works -> Works that only removes rows)
@@ -323,7 +323,7 @@ def presence_truncation_check(clean_fn, works: pd.DataFrame, cutoff_year: int, n
     kept_cut = set(clean_fn(truncated)["work_id"])  # survivors when it is not
     dated = truncated[truncated["year"].notna()]["work_id"]  # dated Works inside the window
     undated = truncated[truncated["year"].isna()]["work_id"]  # undated Works, kept in both runs
-    return {
+    return {  # counts of how many Works changed survival
         "dated_works": len(dated),  # dated Works compared
         "dated_changed": int(sum((w in kept_full) != (w in kept_cut) for w in dated)),  # survival differs with and without the future
         "undated_works": len(undated),  # undated Works compared
@@ -331,7 +331,7 @@ def presence_truncation_check(clean_fn, works: pd.DataFrame, cutoff_year: int, n
     }
 
 
-def mass_upload_truncation_check(works: pd.DataFrame, remove_fn, cutoff_years=(1990, 2000, 2010), min_work_count: int = 50) -> pd.DataFrame:
+def mass_upload_truncation_check(works: pd.DataFrame, remove_fn, cutoff_years=(1990, 2000, 2010), min_work_count: int = 50) -> pd.DataFrame:  # checks the mass-upload rule ignores later Works
     """Compare which artists the mass-upload rule flags with and without later Works.
 
     The rule needs at least `min_work_count` Works, so only artists above
@@ -345,7 +345,7 @@ def mass_upload_truncation_check(works: pd.DataFrame, remove_fn, cutoff_years=(1
     flagged = lambda df: set(df["artist_id"]) - set(remove_fn(df)["artist_id"])  # artists the rule removes from df
     full = flagged(big)  # flagged with the whole catalog
     rows = []  # one row per cutoff
-    for year in cutoff_years:
+    for year in cutoff_years:  # one pass per cutoff year
         truncated = big[big["year"].isna() | (big["year"] <= year)]  # the same Works without the future
         cut = flagged(truncated)  # flagged without the future
         rows.append({"cutoff": year, "flagged_full": len(full), "flagged_truncated": len(cut),
@@ -353,7 +353,7 @@ def mass_upload_truncation_check(works: pd.DataFrame, remove_fn, cutoff_years=(1
     return pd.DataFrame(rows).set_index("cutoff")  # one row per cutoff
 
 
-def master_year_provenance(works: pd.DataFrame, masters: pd.DataFrame) -> pd.Series:
+def master_year_provenance(works: pd.DataFrame, masters: pd.DataFrame) -> pd.Series:  # checks where each master Work's year comes from
     """Where each master-side Work's final `year` comes from, against masters.parquet.
 
     `year == 0` in the masters table is a missing-year sentinel, so it counts
@@ -364,7 +364,7 @@ def master_year_provenance(works: pd.DataFrame, masters: pd.DataFrame) -> pd.Ser
     master_year = masters.set_index("master_id")["year"].astype(float).replace(0, float("nan"))  # sentinel 0 counts as missing
     original = master_works["work_id"].map(master_year)  # the year Discogs holds for this master
     final = master_works["year"].astype(float)  # the year in the final Works table
-    return pd.Series({
+    return pd.Series({  # counts of each year source
         "master_works": len(master_works),  # all master-side Works
         "same_as_masters_year": int((final == original).sum()),  # untouched
         "recovered_from_own_releases": int((original.isna() & final.notna()).sum()),  # filled by recover_missing_master_years
@@ -373,7 +373,7 @@ def master_year_provenance(works: pd.DataFrame, masters: pd.DataFrame) -> pd.Ser
     })
 
 
-def _weighted_average_precision(y_sorted: np.ndarray, weights: np.ndarray, group_ends: np.ndarray) -> float:
+def _weighted_average_precision(y_sorted: np.ndarray, weights: np.ndarray, group_ends: np.ndarray) -> float:  # PR-AUC from rows sorted by score, with weights
     """Average precision (the PR-AUC of sklearn) of rows already sorted by score, descending, with row weights.
 
     `group_ends` holds the last position of every block of tied scores, so
@@ -382,13 +382,13 @@ def _weighted_average_precision(y_sorted: np.ndarray, weights: np.ndarray, group
     tp = np.cumsum(weights * y_sorted)[group_ends]  # weighted positives found up to each threshold
     seen = np.cumsum(weights)[group_ends]  # weighted rows seen up to each threshold
     if tp[-1] == 0 or tp[-1] == seen[-1]:  # one class only, PR-AUC undefined
-        return np.nan
+        return np.nan  # PR-AUC cannot be computed with a single class
     precision = np.divide(tp, seen, out=np.zeros_like(tp), where=seen > 0)  # precision at each threshold, 0 where nothing weighted was seen yet
     recall = tp / tp[-1]  # recall at each threshold
     return float(np.sum(np.diff(recall, prepend=0.0) * precision))  # sum of recall steps times precision
 
 
-def _artist_bootstrap_pr_auc(y_true: np.ndarray, scores: np.ndarray, artist_ids: np.ndarray, n_bootstrap: int, seed: int) -> np.ndarray:
+def _artist_bootstrap_pr_auc(y_true: np.ndarray, scores: np.ndarray, artist_ids: np.ndarray, n_bootstrap: int, seed: int) -> np.ndarray:  # repeats PR-AUC on resampled artists to get an interval
     """Artist-clustered bootstrap of PR-AUC, same idea as baselines._bootstrap_pr_auc but fast.
 
     Resampling artists with replacement is the same as giving every row of
@@ -407,13 +407,13 @@ def _artist_bootstrap_pr_auc(y_true: np.ndarray, scores: np.ndarray, artist_ids:
     s_sorted = scores[order]  # scores in that order
     group_ends = np.append(np.flatnonzero(s_sorted[1:] != s_sorted[:-1]), len(s_sorted) - 1)  # last row of each tie block
     pr_aucs = np.empty(n_bootstrap)  # one PR-AUC per draw
-    for i in range(n_bootstrap):
+    for i in range(n_bootstrap):  # one resampled PR-AUC per pass
         draws = np.bincount(rng.integers(0, n_artists, n_artists), minlength=n_artists)  # times each artist was drawn
         pr_aucs[i] = _weighted_average_precision(y_sorted, draws[codes_sorted].astype(float), group_ends)  # weights by artist
     return pr_aucs  # NaN where a draw had one class only
 
 
-def evaluate_folds(folds: list, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = SEED) -> pd.DataFrame:
+def evaluate_folds(folds: list, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = SEED) -> pd.DataFrame:  # per-fold scores with confidence intervals
     """Per-fold metrics for one fit/score pair, one row per fold, never averaged.
 
     `fit_fn(train)` returns the fitted object learned from the fold's train
@@ -423,13 +423,13 @@ def evaluate_folds(folds: list, target: str, fit_fn, score_fn, n_bootstrap: int 
     """
     alpha = (1 - confidence) / 2  # two-sided tail, 0.025 each side at 95%
     rows = []  # one dict per fold
-    for f in folds:
+    for f in folds:  # one pass per fold
         train, test = f["train"], f["test"]  # fold dataframes
         assert test[target].notna().all()  # censoring already applied for this target
         scores = np.asarray(score_fn(test, fit_fn(train)))  # fit on train only, score test
         y = test[target].to_numpy()  # resolved labels
         boot = _artist_bootstrap_pr_auc(y, scores, test["artist_id"].to_numpy(), n_bootstrap, seed)  # PR-AUC draws
-        rows.append({
+        rows.append({  # collect this fold's metrics
             "fold": f["fold"],  # 1-based fold number
             "test_years": f["test_years"],  # test tranche
             "train_rows": len(train),  # rows the fit saw
@@ -443,7 +443,7 @@ def evaluate_folds(folds: list, target: str, fit_fn, score_fn, n_bootstrap: int 
     return pd.DataFrame(rows).set_index("fold")  # fold by fold, no average
 
 
-def _sorted_inputs(y: np.ndarray, scores: np.ndarray) -> tuple:
+def _sorted_inputs(y: np.ndarray, scores: np.ndarray) -> tuple:  # prepares sorted labels and tie ends for scoring
     """Unit weights, labels sorted by score and tie-block ends, the inputs of _weighted_average_precision."""
     order = np.argsort(-scores, kind="stable")  # rows by score, descending
     s_sorted = scores[order]  # scores in that order
@@ -451,7 +451,7 @@ def _sorted_inputs(y: np.ndarray, scores: np.ndarray) -> tuple:
     return y[order].astype(float), np.ones(len(y)), group_ends  # (y_sorted, weights, group_ends)
 
 
-def evaluate_holdout(final_train: pd.DataFrame, holdout: pd.DataFrame, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = SEED, threshold: float = 0.5, return_scores: bool = False) -> dict:
+def evaluate_holdout(final_train: pd.DataFrame, holdout: pd.DataFrame, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = SEED, threshold: float = 0.5, return_scores: bool = False) -> dict:  # one-time final test on the holdout years
     """The one-time final evaluation on the sealed holdout.
 
     Fits on `final_train` (development without the label gap), scores the
@@ -469,13 +469,13 @@ def evaluate_holdout(final_train: pd.DataFrame, holdout: pd.DataFrame, target: s
     n_artists = codes.max() + 1  # number of distinct artists
     rng = np.random.default_rng(seed)  # same draws style as the fold bootstrap
     roc_boot = np.empty(n_bootstrap)  # one ROC-AUC per draw
-    for i in range(n_bootstrap):
+    for i in range(n_bootstrap):  # one resampled ROC-AUC per pass
         weights = np.bincount(rng.integers(0, n_artists, n_artists), minlength=n_artists)[codes]  # times each row's artist was drawn
         roc_boot[i] = roc_auc_score(y, scores, sample_weight=weights)  # weighted ROC-AUC, same as resampling artists
     pr_boot = _artist_bootstrap_pr_auc(y, scores, test["artist_id"].to_numpy(), n_bootstrap, seed)  # PR-AUC draws
     by_year = {int(yr): {"rows": int(m.sum()), "positive_rate": float(y[m].mean()), "pr_auc": float(average_precision_score(y[m], scores[m])), "roc_auc": float(roc_auc_score(y[m], scores[m]))}
                for yr in sorted(test["year"].unique()) for m in [(test["year"] == yr).to_numpy()]}  # descriptive, one entry per holdout year
-    result = {
+    result = {  # all holdout metrics in one dict
         "target": target, "train_rows": len(final_train), "test_rows": len(test), "test_artists": int(n_artists),
         "dropped_unresolved": len(holdout) - len(test), "positive_rate": float(y.mean()),
         "pr_auc": float(average_precision_score(y, scores)), "pr_auc_lo": float(np.nanquantile(pr_boot, alpha)), "pr_auc_hi": float(np.nanquantile(pr_boot, 1 - alpha)),
@@ -486,21 +486,21 @@ def evaluate_holdout(final_train: pd.DataFrame, holdout: pd.DataFrame, target: s
     if return_scores:  # only when asked, so the stored JSON results of the WHEN callers keep their keys
         result["scores"] = scores  # holdout scores, same row order as the labels
         result["labels"] = y  # resolved holdout labels
-    return result
+    return result  # hand back the metrics
 
 
-def holdout_tables(results_dir) -> dict:
+def holdout_tables(results_dir) -> dict:  # reads saved holdout results into three tables
     """Read the saved holdout results into small tables: headline metrics, per-year metrics, precision and recall."""
     import json  # result files are JSON
     from pathlib import Path  # results folder
     headline, by_year, report = [], [], []  # one list per table
     for path in sorted(Path(results_dir).glob("*.json")):  # one file per model and target
-        r = json.loads(path.read_text())
+        r = json.loads(path.read_text())  # load one saved result
         name = path.stem.removesuffix("_" + r["target"])  # model name without the target suffix
         headline.append({"model": name, "target": r["target"], "test_rows": r["test_rows"], "positive_rate": r["positive_rate"],
                          "pr_auc": r["pr_auc"], "pr_auc_lo": r["pr_auc_lo"], "pr_auc_hi": r["pr_auc_hi"],
                          "roc_auc": r["roc_auc"], "roc_auc_lo": r["roc_auc_lo"], "roc_auc_hi": r["roc_auc_hi"]})  # point estimates and intervals
         by_year += [{"model": name, "target": r["target"], "year": y, **v} for y, v in r["by_year"].items()]  # descriptive, per holdout year
         if name == "xgboost_final":  # precision and recall at the threshold are reported for the locked model only
-            report += [{"target": r["target"], "class": c, **{k: r["classification_report"][c][k] for k in ("precision", "recall", "f1-score", "support")}} for c in ("no new work", "new work")]
+            report += [{"target": r["target"], "class": c, **{k: r["classification_report"][c][k] for k in ("precision", "recall", "f1-score", "support")}} for c in ("no new work", "new work")]  # keep precision and recall for the locked model only
     return {"headline": pd.DataFrame(headline), "by_year": pd.DataFrame(by_year), "report": pd.DataFrame(report)}  # three tables
