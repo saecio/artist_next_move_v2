@@ -561,7 +561,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t4i_yes: "yes"  # value of a 0 / 1 fact equal to 1
     t4i_no: "no"  # value of a 0 / 1 fact equal to 0
     t4i_caption: "Every value is computed only from releases before the prediction. Nothing from the future gets in."  # under the cards
-    t4_chips_tip: "The three tree models tied on the practice runs, within the margin of error. We use XGBoost because it works with missing values without filling them in and was the one we tuned the most."  # tooltip of the chip row
+    t4_chips_tip: "The three tree models tied on the practice runs, within the margin of error. We tuned XGBoost in stages and tuning added almost nothing: the limit is the information, not the algorithm."  # tooltip of the chip row
     t5_col_chance: "By chance"  # results column
     t5_col_model: "Our model"  # results column
     t8_headline: "What it can do, what to keep in mind, what comes next."  # tab 8 headline

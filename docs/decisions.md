@@ -4,10 +4,10 @@ The decision log is split by theme; entries are never renamed, so an entry is ci
 
 | File | Holds | Size (KB) |
 |---|---|---|
-| decisions_core.md | Methodology: principles, data and Works table, snapshots, Timing target, backtesting, Timing models and holdout, Style target and kill gate, Style models and holdout, global style forecast, audits, EDA and hypotheses, limitations and future work | 195.3 |
-| decisions_demo.md | Build record of the Streamlit app; block 2 touches the predictions it shows | 144.2 |
-| decisions_pending.md | Open items | 0.5 |
-| decisions_archive.md | Reversed or replaced decisions (CUT) | 24.3 |
+| decisions_core.md | Methodology: principles, data and Works table, snapshots, Timing target, backtesting, Timing models and holdout, Style target and kill gate, Style models and holdout, global style forecast, audits, EDA and hypotheses, limitations and future work | 200.1 |
+| decisions_demo.md | Build record of the Streamlit app; block 2 touches the predictions it shows | 148.4 |
+| decisions_pending.md | Open items | 0.6 |
+| decisions_archive.md | Reversed or replaced decisions (CUT) | 24.9 |
 
 Rules:
 - Read an entry with grep -n on its title and sed -n on the range, never the whole file.
@@ -96,14 +96,15 @@ Rules:
   392: ### Wording fixes: tab 1 card 2 and tab 5 Style baseline line (23-10-2026)
   398: ### Wording: Release counts and tab 7 status line (23-10-2026)
   404: ### Wording: fourth item in tab 8 What comes next (24-10-2026)
+  410: ### Wording: tab 4 models tooltip (24-10-2026)
 
-410: ## 7. Design system and passes
-  412: ### Design system of the demo (20-10-2026)
-  418: ### Design pass 2: header, schemas, dot chart (20-10-2026)
-  424: ### Design pass 3: story slides (20-10-2026)
-  430: ### Design pass 8: alignment, gap wording, calibration wording and tab 1 hook with photos (22-10-2026)
-  436: ### Design pass 10: typography and signature (22-10-2026)
-  442: ### Design pass 11 (editorial identity and responsive) (22-10-2026)
+416: ## 7. Design system and passes
+  418: ### Design system of the demo (20-10-2026)
+  424: ### Design pass 2: header, schemas, dot chart (20-10-2026)
+  430: ### Design pass 3: story slides (20-10-2026)
+  436: ### Design pass 8: alignment, gap wording, calibration wording and tab 1 hook with photos (22-10-2026)
+  442: ### Design pass 10: typography and signature (22-10-2026)
+  448: ### Design pass 11 (editorial identity and responsive) (22-10-2026)
 
 ## decisions_pending.md and decisions_archive.md
 

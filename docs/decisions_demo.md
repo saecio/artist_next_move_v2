@@ -407,6 +407,12 @@ Decision: the "What comes next" card of tab 8 has a fourth item, "Use exact rele
 
 Reason: the models predict the year of the next release; the exact release date is the natural next step for a finer forecast and is listed as future work only.
 
+### Wording: tab 4 models tooltip (24-10-2026)
+
+Decision: the tooltip of the models chip row in tab 4 (t4_chips_tip) now says that the three tree models tied within the margin of error and that XGBoost was tuned in stages with almost no gain; it no longer gives native handling of missing values as the reason to use XGBoost. No model, metric or number changes.
+
+Reason: HistGradientBoosting also handles missing values natively, so that was not a reason that told XGBoost apart; the real record is the entry "XGBoost tuning results, three phases" in docs/decisions_core.md (stage 0 mean PR-AUC 0.7277 and 0.8112, best tuned 0.7280 and 0.8115) and the fact that the sequence of models fixed XGBoost as the only tuned one in advance.
+
 ## 7. Design system and passes
 
 ### Design system of the demo (20-10-2026)
