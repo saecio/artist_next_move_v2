@@ -413,6 +413,42 @@ Decision: the tooltip of the models chip row in tab 4 (t4_chips_tip) now says th
 
 Reason: HistGradientBoosting also handles missing values natively, so that was not a reason that told XGBoost apart; the real record is the entry "XGBoost tuning results, three phases" in docs/decisions_core.md (stage 0 mean PR-AUC 0.7277 and 0.8112, best tuned 0.7280 and 0.8115) and the fact that the sequence of models fixed XGBoost as the only tuned one in advance.
 
+### Wording: usage recommendation in tab 8 What works (24-10-2026)
+
+Decision: the "What works" card of tab 8 has a fourth item, a usage recommendation (t8_works_4): the model is a ranking tool to decide which artists to look at first, not to call a single artist. No model, metric or number changes.
+
+Reason: the evidence supports ranking, not case-by-case calls: in the top tenth by score 60 of 100 artists bring a new style against 31 at random (entry "WHAT final holdout evaluation of stage 0, single evaluation, now spent (14-10-2026)"), and the entry "WHAT reliability line in tab 6 (19-10-2026)" already says the same about reliability. The project rubric asks for a recommendation that supports a decision.
+
+### Wording: tab 1 number strip removed (24-10-2026)
+
+Decision: the strip of four numbers under the two artist cards of tab 1 is removed, together with its function, its texts and its styles. The two artist cards stay as they were. No model, metric or number changes.
+
+Reason: the figures of the strip are shown where they are explained: 5.9M releases and 1M artists in tab 2, the models compared in tab 5 and the 60 of 100 and 31 of 100 comparison in tab 8. The first screen keeps one question and the two artists.
+
+### Wording: tab 2 numbers abbreviated and text trimmed (24-10-2026)
+
+Decision: every large number of tab 2 is shown as 2.5M or 120K (one helper, short_number; below one thousand the number is shown as it is), in the three views. The secondary texts of the tab are cut: the tooltips of the dump date, the chart title, the Artists box and the Genres chart title, the source caption of the Cleaning view, and the longer wording of the Cleaning subtitle, lane reasons and duplicates reason. The axis ticks and the hover tooltip of the releases chart keep the exact counts. No number changes, only its display.
+
+Reason: each block keeps one headline, the main chart or flow and at most one short supporting line. The exact counts stay in results/demo/static/cleaning_funnel.csv and data_figures.csv.
+
+### Wording: tab 5 view order (24-10-2026)
+
+Decision: the views of tab 5 follow the order Results, Can you trust the score?, Year by year, Models compared (static_tabs.views.tab5 in app/demo_config.yaml). Results stays the default view and no key is renamed.
+
+Reason: the reliability of the score is the question that follows the headline result; the year-by-year and model comparisons are detail for those who want more.
+
+### Wording: tab 7 random baseline (24-10-2026)
+
+Decision: the subtitle of tab 7 (t7_sub) says that picking {n} styles at random would get "less than 1 of {n}" instead of a rounded value. The exact mean stays in results/style_forecast/random_hits_test.csv (0.42), which no text reads any more, and the random_file and headline keys of style_tab are removed. No number changes.
+
+Reason: the baseline is far below one hit (0.42 of 10), so the plain wording says the same without a decimal that reads as a rounded 0.4.
+
+### Wording: baseline label in models_compared.csv (24-10-2026)
+
+Decision: the baseline rows of results/demo/static/models_compared.csv (Timing 0.6524 and Style 0.35746) are labelled "Release counts" instead of "Past habits", the name the app uses (t5_col_rule). Only the label changes, the numbers and their sources are untouched.
+
+Reason: the stored label was left over from the earlier name; the app and scripts/run_static_apptest.py already use "Release counts" (entry "Demo: timeline rule per artist and year, and baseline label (17-10-2026)").
+
 ## 7. Design system and passes
 
 ### Design system of the demo (20-10-2026)

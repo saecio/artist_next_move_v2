@@ -97,14 +97,20 @@ Rules:
   398: ### Wording: Release counts and tab 7 status line (23-10-2026)
   404: ### Wording: fourth item in tab 8 What comes next (24-10-2026)
   410: ### Wording: tab 4 models tooltip (24-10-2026)
+  416: ### Wording: usage recommendation in tab 8 What works (24-10-2026)
+  422: ### Wording: tab 1 number strip removed (24-10-2026)
+  428: ### Wording: tab 2 numbers abbreviated and text trimmed (24-10-2026)
+  434: ### Wording: tab 5 view order (24-10-2026)
+  440: ### Wording: tab 7 random baseline (24-10-2026)
+  446: ### Wording: baseline label in models_compared.csv (24-10-2026)
 
-416: ## 7. Design system and passes
-  418: ### Design system of the demo (20-10-2026)
-  424: ### Design pass 2: header, schemas, dot chart (20-10-2026)
-  430: ### Design pass 3: story slides (20-10-2026)
-  436: ### Design pass 8: alignment, gap wording, calibration wording and tab 1 hook with photos (22-10-2026)
-  442: ### Design pass 10: typography and signature (22-10-2026)
-  448: ### Design pass 11 (editorial identity and responsive) (22-10-2026)
+452: ## 7. Design system and passes
+  454: ### Design system of the demo (20-10-2026)
+  460: ### Design pass 2: header, schemas, dot chart (20-10-2026)
+  466: ### Design pass 3: story slides (20-10-2026)
+  472: ### Design pass 8: alignment, gap wording, calibration wording and tab 1 hook with photos (22-10-2026)
+  478: ### Design pass 10: typography and signature (22-10-2026)
+  484: ### Design pass 11 (editorial identity and responsive) (22-10-2026)
 
 ## decisions_pending.md and decisions_archive.md
 
