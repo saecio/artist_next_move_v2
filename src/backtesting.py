@@ -413,6 +413,35 @@ def _artist_bootstrap_pr_auc(y_true: np.ndarray, scores: np.ndarray, artist_ids:
     return pr_aucs  # NaN where a draw had one class only
 
 
+def paired_pr_auc_difference(y_true: np.ndarray, scores_a: np.ndarray, scores_b: np.ndarray, artist_ids: np.ndarray, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = SEED) -> dict:  # interval of the PR-AUC difference between two score vectors on the same rows
+    """Paired artist-clustered bootstrap of PR-AUC(a) - PR-AUC(b), descriptive.
+
+    Both score vectors are evaluated on the same artist draws in every pass, which are the draws
+    _artist_bootstrap_pr_auc makes with the same seed, so the intervals of a and b in evaluate_folds
+    are the marginals of this joint resample. The difference of the two PR-AUC in each draw is
+    summarised with the percentile interval; shared sampling noise cancels in the subtraction, so it
+    is narrower than the rule "lower bound of a above upper bound of b". Used only to read thin
+    separations; it changes no rule.
+    """
+    rng = np.random.default_rng(seed)  # same stream as _artist_bootstrap_pr_auc
+    codes = pd.factorize(artist_ids)[0]  # artist id -> 0..n_artists-1
+    n_artists = codes.max() + 1  # number of distinct artists
+    prepared = []  # sorted inputs of a and b
+    for scores in (scores_a, scores_b):  # each vector has its own order and tie blocks
+        order = np.argsort(-scores, kind="stable")  # rows by score, descending
+        s_sorted = scores[order]  # scores in that order
+        group_ends = np.append(np.flatnonzero(s_sorted[1:] != s_sorted[:-1]), len(s_sorted) - 1)  # last row of each tie block
+        prepared.append((y_true[order].astype(float), codes[order], group_ends))  # labels, artist codes, tie ends
+    diffs = np.empty(n_bootstrap)  # one difference per draw
+    for i in range(n_bootstrap):  # one resample per pass
+        draws = np.bincount(rng.integers(0, n_artists, n_artists), minlength=n_artists)  # times each artist was drawn
+        a, b = (_weighted_average_precision(y, draws[c].astype(float), g) for y, c, g in prepared)  # PR-AUC of a and b on the same draw
+        diffs[i] = a - b  # NaN where a draw had one class only
+    alpha = (1 - confidence) / 2  # two-sided tail
+    point = _weighted_average_precision(*_sorted_inputs(y_true, scores_a)) - _weighted_average_precision(*_sorted_inputs(y_true, scores_b))  # difference on the full test set
+    return {"diff": point, "lo": float(np.nanquantile(diffs, alpha)), "hi": float(np.nanquantile(diffs, 1 - alpha)), "share_positive": float(np.nanmean(diffs > 0))}  # point, bounds, share of draws with a above b
+
+
 def evaluate_folds(folds: list, target: str, fit_fn, score_fn, n_bootstrap: int = N_BOOTSTRAP, confidence: float = KILL_GATE_CONFIDENCE, seed: int = SEED) -> pd.DataFrame:  # per-fold scores with confidence intervals
     """Per-fold metrics for one fit/score pair, one row per fold, never averaged.
 
