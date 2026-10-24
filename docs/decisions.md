@@ -4,7 +4,7 @@ The decision log is split by theme; entries are never renamed, so an entry is ci
 
 | File | Holds | Size (KB) |
 |---|---|---|
-| decisions_core.md | Methodology: principles, data and Works table, snapshots, Timing target, backtesting, Timing models and holdout, Style target and kill gate, Style models and holdout, global style forecast, audits, EDA and hypotheses, limitations and future work | 200.1 |
+| decisions_core.md | Methodology: principles, data and Works table, snapshots, Timing target, backtesting, Timing models and holdout, Style target and kill gate, Style models and holdout, global style forecast, audits, EDA and hypotheses, limitations and future work | 203.3 |
 | decisions_demo.md | Build record of the Streamlit app; block 2 touches the predictions it shows | 148.4 |
 | decisions_pending.md | Open items | 0.6 |
 | decisions_archive.md | Reversed or replaced decisions (CUT) | 24.9 |
@@ -24,19 +24,19 @@ Rules:
 97: ### 6. Style target, baselines and kill gate (21 entries)
 121: ### 7. Style models, tuning and holdout (16 entries)
 140: ### 8. Global style forecast (9 entries)
-152: ### 9. Audits and checks (3 entries)
-156: #### Leakage in model selection: label look-ahead in development fold 5 (17-10-2026)
-159: #### Duplicate audit: sensitivity analysis (17-10-2026)
-167: #### Duplicate audit: sensitivity result (17-10-2026)
-178: #### Style forecast: duplicate audit design (17-10-2026)
-186: #### Style forecast: duplicate audit result (17-10-2026)
-199: ### 10. EDA and hypotheses (12 entries)
-203: #### EDA
-207: #### Hypothesis Testing
-241: ### 11. Limitations and future work (20 entries)
-243: #### Future improvements
-248: #### Limitations
-266: ##### Known limitation: catalogue date (17-10-2026)
+152: ### 9. Audits and checks (4 entries)
+157: #### Leakage in model selection: label look-ahead in development fold 5 (17-10-2026)
+160: #### Duplicate audit: sensitivity analysis (17-10-2026)
+168: #### Duplicate audit: sensitivity result (17-10-2026)
+179: #### Style forecast: duplicate audit design (17-10-2026)
+187: #### Style forecast: duplicate audit result (17-10-2026)
+200: ### 10. EDA and hypotheses (12 entries)
+204: #### EDA
+208: #### Hypothesis Testing
+242: ### 11. Limitations and future work (20 entries)
+244: #### Future improvements
+249: #### Limitations
+267: ##### Known limitation: catalogue date (17-10-2026)
 
 ## decisions_demo.md (line: heading)
 
