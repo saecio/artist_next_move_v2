@@ -407,3 +407,9 @@ Reason: card 2: the five models were compared on the development years and only 
 Decision: the on-screen name of the simple reference is "Release counts" instead of "Past habits" (t5_col_rule and the texts that mention it: t5_headline, t5_line_timing, t5_line_style, t5_advantage, t5y_headline, t8_works_1, t8_close_beats; README table and terms). Tab 7 no longer shows the status line "This year is part of the tested results." for counted years (flag_counted is empty and the app shows no message for it); flagged years keep their reason and years without forecast keep none_text.
 
 Reason: the name "Past habits" was not understood by a reader with no machine learning background; "Release counts" says exactly what the simple reference uses (Timing: releases per year of activity so far; Style: the number of earlier releases and of releases in the year). The line about tested results raised questions without helping the reader.
+
+## Wording: fourth item in tab 8 What comes next (24-10-2026)
+
+Decision: the "What comes next" card of tab 8 has a fourth item, "Use exact release dates, to predict the week and not only the year." (t8_next_4). It changes no model, metric, number or other text; the card has four items and the static test counts them (12 items in tab 8).
+
+Reason: the models predict the year of the next release; the exact release date is the natural next step for a finer forecast and is listed as future work only.

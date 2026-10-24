@@ -591,6 +591,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t8_next_1_plain: "Add new information (labels, credits, collaborations)."  # item 1 otherwise
     t8_next_2: "Predict how long until the next release, and which style comes next."  # item
     t8_next_3: "Retrain and recheck every year, and test it with a real label or platform."  # item
+    t8_next_4: "Use exact release dates, to predict the week and not only the year."  # item
     t3_headline: "More history means fewer styles new to them. A longer silence means fewer releases."  # tab 3 headline, shown only when both series decrease in the data
     t3_card_style: "A style new to them, by number of earlier releases"  # Style card title
     t3_card_timing: "Release next year by years since the last one"  # Timing card title

@@ -254,11 +254,11 @@ gap_pts = {k: round(100 * float(v)) for k, v in summ["ece"].items()}  # round(10
 pts_text = lambda n: cfg["ui"]["point_one" if n == 1 else "point_many"].format(n=n)  # singular for one point, plural otherwise
 tim_top = pd.read_csv(ROOT / pa["calibration_timing"]).sort_values("bin").iloc[-1]["observed_rate"]  # highest Timing bin, as the tab 1 third card reads it
 vals = {"n": nn, "t": round(nn * tim_top), "tb": round(nn * wm["positive_rate"]), "s": k_s, "sb": b_s, "m": nn - k_s}  # placeholders of the tab 8 items: group size, top picks and random picking for Timing and Style, and the Style misses; read from the files, not from the app code
-assert raws[7].count("class='ui-card'") == 3 and raws[7].count("ui-close-dot'") == 3 and raws[7].count("class='ui-close-item'") == 11, "tab 8: three cards, a marker each, three items in What works, four in What to keep in mind, three in What comes next and the closing sentence"  # structure
+assert raws[7].count("class='ui-card'") == 3 and raws[7].count("ui-close-dot'") == 3 and raws[7].count("class='ui-close-item'") == 12, "tab 8: three cards, a marker each, three items in What works, four in What to keep in mind, four in What comes next and the closing sentence"  # structure
 for key in ("works", "mind", "next"):  # each card
     assert t[f"t8_{key}_title"] in texts[7], f"card title {key}"  # title
     assert key != "works" or html.escape(t["t8_works_tip"], quote=True) in raws[7], "What works title tooltip"  # tooltip
-    for i in {"works": (1, 2, 3), "mind": (1, 2, 3, 4), "next": (1, 2, 3)}[key]:  # items
+    for i in {"works": (1, 2, 3), "mind": (1, 2, 3, 4), "next": (1, 2, 3, 4)}[key]:  # items
         want = t[f"t8_{key}_{i}"].format(**vals)  # item with its numbers
         if (key, i) == ("next", 1) and not trees_tie(models_data(cfg), cfg):  # the tie clause is not supported by the data
             want = t["t8_next_1_plain"]  # first item without the tie clause
