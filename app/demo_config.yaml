@@ -328,8 +328,6 @@ style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
   top_n: 10  # styles in the table, also the k of the hits
   paired_file: results/style_forecast/paired_differences_test.csv  # paired differences (forecast model minus repeat last year, 95% interval) of the test years, copied by hand from the test output; read by the tab 8 Trends chip
   base_years: 3  # years in the base mean the growth is measured against (the panel base of src/style_forecast.py); also hard-coded in src/style_forecast.py build_panel (base line), guarded by scripts/run_style_apptest.py
-  headline: "Tested on {first} to {last}: on average {k} of the top {n} styles in reality are in the forecast top {n}."  # one neutral line, always visible, figures computed from the data
-  random_file: results/style_forecast/random_hits_test.csv  # mean top hits of picking styles at random over the counted test years (method, mean, low, high), copied by hand from the test output
   years:  # every target year of the selector, none is hidden
     counted: [2018, 2019, 2020, 2021, 2022]  # final test years, counted in the summary
     flagged: [2023, 2024]  # shown for reference only with the asterisk marks, no summary
@@ -347,7 +345,7 @@ style_tab:  # tab 7: Random Forest style forecast, two steps, per target year
     predict: style_predict  # Predict button
     reveal: style_reveal  # Show reality button
   texts:  # texts of the tab
-    t7_sub: "Each year, we ask the model for the {n} styles it expects to grow most. On average, {hits} of those {n} were really among the {n} that grew most (tested on {y_from}-{y_to}). Picking {n} styles at random would get about {rand} of {n}."  # subtitle of the headline, hits and the years from the data, rand from random_file
+    t7_sub: "Each year, we ask the model for the {n} styles it expects to grow most. On average, {hits} of those {n} were really among the {n} that grew most (tested on {y_from}-{y_to}). Picking {n} styles at random would get less than 1 of {n}."  # subtitle of the headline, hits and the years from the data
     year_label: "Year to forecast"  # year selector label
     flag_counted: ""  # status line of a counted year
     col_rank: "Rank"  # table column
@@ -413,7 +411,6 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     timing_artist: Taylor Swift  # artist of the Timing question
     style_artist: Bad Bunny  # artist of the Style question
     future_years: 3  # empty years drawn after the cutoff, ending in the question mark
-    pair_gap: 32  # px between the Timing half and the Style half of story card 3
   controls:  # values the asset script must reproduce (notebook 02 cell 50 and the Hypothesis 6 cells, cleaned Works table)
     h1_transitions: 3254604  # sum of the Hypothesis 1 buckets
     h1_rates: [26.88, 20.64, 15.72, 11.18, 6.20]  # Hypothesis 1 rates, percent, two decimals
@@ -438,7 +435,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     tab2: [t2_view_volume, t2_view_genres, t2_view_cleaning]  # tab 2
     tab3: [t3_view_patterns, t3_view_tests]  # tab 3
     tab4: [t4_view_method, t4_view_inputs]  # tab 4
-    tab5: [t5_view_results, t5_view_years, t5_view_models, t5_view_trust]  # tab 5
+    tab5: [t5_view_results, t5_view_trust, t5_view_years, t5_view_models]  # tab 5
   inputs:  # tab 4 inputs view: families of facts per model and the plain label of every non-genre fact (never the code name)
     row_min: 56  # min height in px of a family row, so the rows of the two cards line up
     genres_name: "Genres"  # family of the 0 / 1 genre columns, in both models
@@ -495,18 +492,8 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t1_tip_year: "year"  # tooltip title of a timeline dot: year
     t1_tip_count: "releases"  # tooltip title of a timeline dot: releases that year
     t1_tip_title: "release"  # tooltip title of a timeline dot: picked title
-    t1_tip_models: "Compared on past years before the final test: {names}."  # tooltip of the second number, names from models_compared
-    t1_s1_big: "{millions}M"  # big number of story card 1, Works in millions with one decimal
-    t1_s1_label: "Discogs releases analysed"  # label of story card 1
-    t1_s1_sub: "by {artists} artists, from {y0} to {y1}"  # muted line of story card 1, artists from data_figures.csv, years from works_per_year.csv
-    t1_s1_tip: "Data dump of {date} from Discogs, the largest music database. Recent years are still being filled in, so the latest counts are incomplete."  # tooltip of story card 1, date is static_tabs.dump_date
-    t1_s2_label: "models compared"  # label of story card 2
-    t1_s2_sub: "final Timing model tested on {tests} predictions from unseen years"  # muted line of story card 2, tests from the Timing test snapshots
-    t1_s3_big: "{k} in {n}"  # big number of each half of story card 3, k of n artists
-    t1_s3_blind: "random picks: {b} in {n}"  # muted line of each half, b = positive rate of the holdout as a whole number of n
     t1_s3_cap_timing: "of the artists it rates highest release the next year"  # caption of the Timing half
     t1_s3_cap_style: "of the artists it rates highest bring a style new to them"  # caption of the Style half
-    t1_s3_tip: "The artists it rates highest are the {s}% of artists with the highest score, the ones the model rates most likely. Random picks means choosing artists with no model: the share is just how common the event is among all artists. Scored on the test years {y_from} to {y_to}, never used to train the models."  # tooltip of story card 3
     t1_use: "When will they release again? Will the next release bring a style new to them?"  # tab 1 subtitle
     t1_credit: "Photo: {author}, {license}"  # muted credit under the photo, shown when the photo exists and the license is filled and the author is too
     t1_credit_noauthor: "Photo: {license}"  # muted credit under the photo when the author is empty and the license is filled
@@ -514,20 +501,17 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t2_headline: "Releases peaked in {peak_year}; the latest years are still being filled in"  # tab 2 headline, peak_year from works_per_year.csv, shown only when the peak is before design.incomplete_from_year and the later years are below it
     t2_headline_neutral: "Releases per year"  # tab 2 headline otherwise
     t2_chart_title: "Releases per year"  # title of the area chart card
-    t2_tip_chart: "Only releases with a known year are counted."  # tooltip of the chart title
     t2_incomplete: "Recent years are still being filled in"  # label of the shaded band
     t2_band_tip: "The drop after the {year} peak is very likely late submissions to Discogs, not less music."  # tooltip of the shaded band, year computed from the data
     t2_undated: "{pct}% of releases have no year"  # chip under the cleaning flow, pct from data_quality.csv
-    t2_tip_undated: "These releases are kept and flagged, but cannot be placed on the timeline."  # tooltip of the chip, checked against docs/decisions.md (keep-and-flag handling)
-    t2_tip_sub: "Discogs publishes a full copy of its database every month."  # tooltip of the subtitle
+    t2_tip_undated: "Kept, but not placed on the timeline."  # tooltip of the chip, checked against docs/decisions.md (keep-and-flag handling)
     t2_peak: "Peak {year}: {works}"  # label of the peak point, both values computed from the data
-    t2_tip_artists: "People or groups with at least one release."  # tooltip of the Artists number
     t2_in_master: "Masters"  # cleaning schema input 1
     t2_in_standalone: "Standalone releases of artists with at least {n} of them"  # cleaning schema input 2
     t2_out: "Releases"  # cleaning schema output
     t2_tip_master: "A Master groups all versions of one release."  # tooltip of input 1
     t2_tip_standalone: "Releases without a Master. They count only for artists with enough of them."  # tooltip of input 2
-    t2_tip_out: "The unit of the project: one release family per row. A release here is a Discogs master or a standalone release."  # tooltip of the output
+    t2_tip_out: "A Discogs master or a standalone release."  # tooltip of the output
     t2_by: "by"  # muted connector word between the releases box and the artists box
     t2_artists: "Artists"  # label of the second big number
     t4_headline: "Every score comes from years the models never saw."  # tab 4 headline
@@ -570,6 +554,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t8_works_1: "On both questions it does better than release counts alone, tested only on years it never saw."  # item, shown only when the model is clearly above past habits on both questions (tab 5 condition)
     t8_works_2: "Timing: of every {n} artists it rates highest, {t} release the next year. Picked at random, {tb}."  # item, n, t and tb equal the Timing numbers of the tab 1 third card, shown only when the highest-rated artists beat random picking
     t8_works_3: "Style: of every {n} artists it rates highest, {s} bring a style new to them. Picked at random, {sb}."  # item, n, s and sb equal the Style numbers of the tab 1 third card and the tab 5 dot card, shown only when the highest-rated artists beat random picking
+    t8_works_4: "Use it as a ranking, to decide which artists to look at first, not to call a single artist."  # item, always shown
     t8_mind_title: "What to keep in mind"  # card title
     t8_mind_1: "Discogs is a collector database: some releases are missing and recent years are incomplete."  # item
     t8_mind_2: "\"A style new to them\" means new for that artist, not new to the world. It is a Discogs style tag, not measured from the sound."  # item
@@ -599,28 +584,26 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t2_view_genres: "Genres"  # tab 2 view label
     t2_view_cleaning: "Cleaning"  # tab 2 view label
     t2c_headline: "From raw files to the modelling table"  # Cleaning view headline
-    t2c_sub: "Each step removes records that would mislead the models. The numbers are releases left after each step."  # Cleaning view subtitle
+    t2c_sub: "Releases left after each step."  # Cleaning view subtitle
     t2c_masters: "Masters"  # title of the first lane
     t2c_standalone: "Standalone releases"  # title of the second lane
     t2c_read: "Read"  # first box of the Masters lane
     t2c_nomaster: "Without a master"  # first box of the Standalone lane
     t2c_cleaned: "Cleaned"  # second box of a lane
-    t2c_masters_reason: "Placeholder artists, non-music, classical and compilations out"  # muted line under the Masters lane
-    t2c_standalone_reason: "Fewer than three releases per artist, same filters, compilations out"  # muted line under the Standalone lane
+    t2c_masters_reason: "Non-music, classical and compilations out"  # muted line under the Masters lane
+    t2c_standalone_reason: "Fewer than three per artist, compilations out"  # muted line under the Standalone lane
     t2c_combined: "Combined"  # box where the two lanes merge
     t2c_noise: "Duplicates and noise out"  # box after the merge
     t2c_before: "Before"  # small label over the combined releases number in the duplicates box
     t2c_after: "After"  # small label over the final table releases number in the duplicates box
-    t2c_noise_reason: "Exact and near duplicates, reissues, live, remixes and similar titles out"  # muted line inside the noise box
+    t2c_noise_reason: "Duplicates, reissues, live and remixes out"  # muted line inside the noise box
     t2c_final: "Modelling table"  # last box
     t2c_releases: "releases"  # chip of the releases number
     t2c_artists: "artists"  # chip of the artists number
     t2c_undated: "No year on record: {n}, left out of the Timing table"  # chip beside the flow, n from data_quality.csv
-    t2c_source: "Source: Discogs data dump."  # caption under the flow
     t2g_headline: "Music keeps changing: {genre} went from {a}% of releases in {y0} to {b}% in {y1}."  # Genres view headline, genre and numbers from genre_share_by_year.csv
     t2g_sub: "That is why we always test on later years, never on a random split."  # Genres view subtitle
     t2g_title: "Share of releases by genre"  # title of the genre chart card
-    t2g_tip_title: "Each year is split between all genres. Click a genre in the legend to highlight it."  # tooltip of the genre chart title
     t2g_note: "Years after {year} are not shown: still being filled in"  # muted note under the genre chart
     t2g_tip_year: "year"  # tooltip title in the genre chart: year
     t2g_tip_genre: "genre"  # tooltip title in the genre chart: genre
@@ -653,8 +636,8 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t5_caption_tip: "PR-AUC rewards a model for ranking the real cases first. 1 is perfect; the by-chance bar shows what random picking scores."  # tooltip next to the caption
     t5_col_rule: "Release counts"  # bar label of the baseline
     t5_tip_chance: "Always guessing the overall share of cases where the answer is yes."  # tooltip of the By chance label
-    t5_tip_rule_timing: "Ranks artists only by how often they released per year of activity so far."  # Past habits, Timing
-    t5_tip_rule_style: "Uses only the artist's number of earlier releases and their output this year."  # Past habits, Style
+    t5_tip_rule_timing: "Ranks artists only by how often they released per year of activity so far."  # Release counts, Timing
+    t5_tip_rule_style: "Uses only the artist's number of earlier releases and their output this year."  # Release counts, Style
     t5_tip_model: "Gradient-boosted trees: many small decision trees, each one correcting the previous, trained on each artist's history up to a past date."  # tooltip of the Our model label
     t5_dot_left: "Picking at random"  # title of the left grid
     t5_dot_right: "Rated highest"  # title of the right grid
@@ -730,7 +713,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     timing: "#0F6B6B"  # the Timing question, on every tab and chart
     style: "#D9482B"  # the Style question, on every tab and chart
     chance: "#C9C4B8"  # By chance bar
-    rule: "#8A8578"  # Past habits bar
+    rule: "#8A8578"  # Release counts bar
     highlight: "#C98A12"  # accent for emphasis
     style_text: "#B83A20"  # darker Style color for small text only (contrast 5.7 on cards, the plain color is 4.3)
     highlight_text: "#8A5C00"  # darker highlight for small text only (contrast 5.8 on cards, the plain color is 3.0)
@@ -802,7 +785,6 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     note_gap: 0.02  # gap of the top Timing bin above which the "too confident" note is shown
   photo: {width: 200, height: 206, content_weight: 430, card_height: 316, question_extra: 52, radius: 4, focus: "50% 20%", name_font: 22, question_font: 16, monogram_font: 64, monogram_opacity: 0.25, credit_font: 10, credit_line: 12, credit_margin: 6, credit_opacity: 1, bottom_pad: 16}  # tab 1 artist card (credit_font, credit_line and credit_margin in px for the one-line credit under the photo, credit_opacity of the muted credit text, bottom_pad px under the credit line, equal to the space above the photo; the photo height is the card content height minus the credit line and margin): photo column width and height, relative width of the content column, card height (px), corner radius (px), object-position of the photo, name and question sizes (px), monogram size (px) and background opacity
   story:  # tab 1 timeline marker
-    big_font: 26  # px of the big "{k} in {n}" of the tab 1 card 3, small enough for "60 in 100" to stay on one line at 1280 px
     marker_below: 6  # px the "You are here" marker continues below the timeline line, so it stops above the year labels
     label_dy: 14  # px the year labels sit lower than the lane position, so the marker never touches them
   chart:  # Altair settings

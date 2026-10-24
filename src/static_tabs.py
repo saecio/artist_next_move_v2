@@ -11,11 +11,11 @@ import pandas as pd  # tables
 from PIL import Image, ImageOps  # artist photo crop and resize
 import streamlit as st  # cache decorator
 
-from ui_components import card, card_title, chip, headline, info, kpi_card  # design system helpers
+from ui_components import card, card_title, chip, headline, info  # design system helpers
 from static_diagrams import clean_flow, close_css, final_models_html, dots_html, funnel_css, funnel_flow, inputs_card, inputs_css, method_card, method_chips, method_css, method_legend  # HTML and CSS schemas of tabs 2, 4 and 8
 
 from config import CONFIG, ROOT  # project settings and root
-from static_charts import genre_chart, steps_chart, strength_chart, timeline_chart  # Altair charts of tabs 3, 2 and 1
+from static_charts import genre_chart, short_number, steps_chart, strength_chart, timeline_chart  # Altair charts of tabs 3, 2 and 1
 from backtesting import method_spans  # fold and final split years
 from models import GENRES, NUMERIC_FEATURES, WHAT_FEATURES, make_what_xgboost, make_xgboost  # builders of the Timing and Style final models (their names give the model names), and their input lists
 from what_target import ABLATION_GROUPS  # Style input families
@@ -145,23 +145,6 @@ def story_halves(cfg: dict) -> list:  # numbers of story card 3
     chance = load_json(sc["paths"]["when_model"])["positive_rate"]  # same value as the By chance bar of tab 5
     return [(p["label_timing"], pal["timing"], t["t1_s3_cap_timing"].format(s=top_share(cfg)[1]), round(n * top["observed_rate"]), round(n * chance)), (p["label_style"], pal["style"], t["t1_s3_cap_style"].format(s=top_share(cfg)[1]), style[1]["k"], style[0]["k"])]  # Timing then Style
 
-def tab1_kpis_html(cfg: dict) -> str:  # story strip of tab 1
-    """Three cards: Works analysed, models compared, and the top 10% rate against picking at random (only when the model is above random in both halves)."""
-    sc, pal = cfg["static_tabs"], cfg["design"]["palette"]  # settings and palette
-    t, y, p = sc["texts"], CONFIG["years"], cfg["poc"]["texts"]  # texts, split years and Timing / Style labels
-    fig, years = figure_values(cfg), works_per_year(cfg)["year"]  # counts and years of the Works chart
-    tests = load_json(sc["paths"]["when_tests"])["test_rows"]  # test snapshots
-    one = kpi_card(t["t1_s1_label"], t["t1_s1_big"].format(millions=f"{int(fig['works']) / 1e6:.1f}"), t["t1_s1_sub"].format(artists=f"{int(fig['artists']):,}", y0=years.min(), y1=years.max()), pal["highlight"], t["t1_s1_tip"].format(date=sc["dump_date"]))  # Works card
-    two = kpi_card(t["t1_s2_label"], str(len(sc["models_compared"])), t["t1_s2_sub"].format(tests=f"{int(tests):,}"), pal["highlight"], t["t1_tip_models"].format(names=", ".join(sc["models_compared"])))  # models card
-    halves = story_halves(cfg)  # Timing and Style numbers
-    small = {pal["style"]: pal["style_text"], pal["highlight"]: pal["highlight_text"]}  # darker variants for small text
-    n = sc["sizes"]["dots_side"] ** 2  # artists per group
-    cards = [one, two]  # always shown
-    if all(k > b for _, _, _, k, b in halves):  # model above random in both halves
-        half = lambda lab, color, cap, k, b, tip="": f"<div style='flex:1;min-width:0'><div class='ui-label ui-eyebrow' style='color:{small.get(color, color)}'>{html.escape(lab)}{tip}</div><div class='ui-big' style='color:{color};font-size:clamp({round(cfg['design']['story']['big_font'] * 0.75)}px,2.2vw,{cfg['design']['story']['big_font']}px);white-space:nowrap'>{html.escape(t['t1_s3_big'].format(k=k, n=n))}</div><div class='ui-caption' style='color:{small.get(color, color)}'>{html.escape(cap)}</div><div class='ui-caption'>{html.escape(t['t1_s3_blind'].format(b=b, n=n))}</div></div>"  # one half
-        cards.append(f"<div class='ui-kpi'><div class='ui-halves'>{''.join(half(*h, tip=info(t['t1_s3_tip'].format(s=top_share(cfg)[1], y_from=y['holdout_start'], y_to=y['holdout_end'])) if i == 0 else "") for i, h in enumerate(halves))}</div></div>")  # parallel halves, the tooltip sits by the label of the first half
-    return "<div class='ui-row'>" + "".join(card(c) for c in cards) + "</div>"  # two or three equal cards
-
 def tab2_headline_text(cfg: dict) -> str:  # headline text of tab 2
     """The peak headline when the peak year is before design.incomplete_from_year and every later year is below it, else the neutral headline."""
     t = cfg["static_tabs"]["texts"]  # texts
@@ -178,19 +161,19 @@ def dump_date_text(cfg: dict) -> str:  # dump date with the month name
     return f"{d.day} {d.strftime('%B')} {d.year}"  # day, English month name, year
 
 def tab2_head_html(cfg: dict) -> str:  # headline of tab 2
-    """Headline and the dump date subtitle with its tooltip."""
+    """Headline and the dump date subtitle."""
     sc = cfg["static_tabs"]  # settings
     t = sc["texts"]  # texts
-    return headline(tab2_headline_text(cfg), t["t2_source"].format(date=dump_date_text(cfg)), t["t2_tip_sub"])  # block
+    return headline(tab2_headline_text(cfg), t["t2_source"].format(date=dump_date_text(cfg)))  # block
 
 def works_per_year(cfg: dict) -> pd.DataFrame:  # chart table of tab 2
     """Dated cleaned Works per year, from works_per_year.csv."""
     return load_csv(static_path(cfg["static_tabs"], "works_per_year"))  # year, works
 
 def tab2_chart_title_html(cfg: dict) -> str:  # title line of the chart card
-    """Chart title with its tooltip."""
+    """Chart title."""
     t = cfg["static_tabs"]["texts"]  # texts
-    return card_title(t["t2_chart_title"], t["t2_tip_chart"])  # title
+    return card_title(t["t2_chart_title"])  # title
 
 def tab2_right_html(cfg: dict) -> str:  # right blocks of tab 2
     """The cleaning flow card, then the chip with the share of Works without a year."""
@@ -198,7 +181,7 @@ def tab2_right_html(cfg: dict) -> str:  # right blocks of tab 2
     t, rw = sc["texts"], sc["rows"]  # texts and row names
     fig = figure_values(cfg)  # counts
     n = CONFIG["works"]["min_standalone_releases"]  # threshold of standalone releases
-    counts = {"master": f"{int(fig[rw['metric_master']]):,}", "standalone": f"{int(fig[rw['metric_standalone']]):,}", "works": f"{int(fig['works']):,}", "artists": f"{int(fig['artists']):,}"}  # flow numbers
+    counts = {"master": short_number(fig[rw['metric_master']]), "standalone": short_number(fig[rw['metric_standalone']]), "works": short_number(fig['works']), "artists": short_number(fig['artists'])}  # flow numbers
     undated = int(load_csv(static_path(sc, "data_quality")).set_index("metric").loc["works_undated", "value"])  # Works without a year
     pct = f"{undated / int(fig['works']) * 100:.1f}"  # share in percent
     return "<div class='ui-fill-right'>" + card(clean_flow(cfg, t, n, counts)) + "<div class='ui-chips' style='margin:0'>" + chip(t["t2_undated"].format(pct=pct), pal["muted"], t["t2_tip_undated"]) + "</div></div>"  # flow and chip
@@ -388,7 +371,7 @@ def tab2g_parts(cfg: dict) -> dict:  # parts of the Genres card
     t = cfg["static_tabs"]["texts"]  # texts
     chart = genre_chart(genre_share_data(cfg), {"year": t["t2g_tip_year"], "genre": t["t2g_tip_genre"], "share": t["t2g_tip_share"]}, cfg)  # stacked areas
     note = f"<div class='ui-caption'>{html.escape(t['t2g_note'].format(year=cfg['design']['incomplete_from_year'] - 1))}</div>"  # last shown year
-    return {"title": card_title(t["t2g_title"], t["t2g_tip_title"]), "chart": chart, "note": note}  # card parts
+    return {"title": card_title(t["t2g_title"]), "chart": chart, "note": note}  # card parts
 
 
 def cards_table(cfg: dict) -> pd.DataFrame:  # rows of the Six tests chart
@@ -414,14 +397,14 @@ def load_funnel(path: str) -> pd.DataFrame:  # cleaning_funnel.csv
     return pd.read_csv(ROOT / path, comment="#")  # step, lane, rows_in, rows_out, source_line
 
 def tab2c_html(cfg: dict) -> str:  # Cleaning view of tab 2
-    """Headline, the two-lane cleaning flow, the chip with the releases without a year and the source line; every number comes from cleaning_funnel.csv."""
+    """Headline, the two-lane cleaning flow and the chip with the releases without a year; every number comes from cleaning_funnel.csv."""
     sc = cfg["static_tabs"]  # settings
     t = sc["texts"]  # texts
     out = load_funnel(static_path(sc, "funnel")).set_index("step")["rows_out"]  # step -> rows left
-    v = {k: f"{int(n):,}" for k, n in out.items()}  # counts with thousands separators
+    v = {k: short_number(n) for k, n in out.items()}  # counts as 2.5M or 120K
     flow = card(funnel_flow(cfg, t, v))  # flow card
     undated = chip(t["t2c_undated"].format(n=v["undated"]), cfg["design"]["palette"]["muted"])  # releases without a year
-    return funnel_css(cfg) + "<div class='ui-stack'>" + headline(t["t2c_headline"], html.escape(t["t2c_sub"])) + flow + f"<div class='ui-chips' style='margin:0'>{undated}</div><div class='ui-caption'>{html.escape(t['t2c_source'])}</div></div>"  # page
+    return funnel_css(cfg) + "<div class='ui-stack'>" + headline(t["t2c_headline"], html.escape(t["t2c_sub"])) + flow + f"<div class='ui-chips' style='margin:0'>{undated}</div></div>"  # page
 
 @st.cache_data  # cache the row
 def example_row(path: str, artist_id: int, year: int, year_col: str, order: str) -> dict:  # one example row of a feature file

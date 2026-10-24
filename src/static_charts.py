@@ -89,6 +89,14 @@ def steps_chart(df: pd.DataFrame, bucket: str, rate: str, count: str, color: str
     return alt.layer(bars, text).properties(height=ch["height_steps"])  # chart
 
 
+def short_number(n: float) -> str:  # big number as 2.5M or 120K
+    """Millions with one decimal (a trailing .0 dropped), thousands without decimals, smaller numbers as they are."""
+    n = int(n)  # whole count
+    if n >= 1_000_000:  # millions
+        return f"{n / 1e6:.1f}".removesuffix(".0") + "M"  # 2.5M, 2M
+    return f"{round(n / 1e3)}K" if n >= 1_000 else str(n)  # 120K, or the number itself
+
+
 def works_chart(df: pd.DataFrame, incomplete_from: int, texts: dict, cfg: dict) -> alt.LayerChart:  # Works per year
     """Smooth area with a thin line, a labelled peak, a shaded band for the years still being filled in, and a tooltip."""
     register_theme(cfg)  # shared theme
@@ -103,7 +111,7 @@ def works_chart(df: pd.DataFrame, incomplete_from: int, texts: dict, cfg: dict) 
     band_data = pd.DataFrame({"x0": [incomplete_from], "x1": [last], "label": [texts["incomplete"]], "tip": [texts["band_tip"].format(year=int(peak["year"]))]})  # shaded years
     band = alt.Chart(band_data).mark_rect(color=c["text"], opacity=ch["band_opacity"]).encode(x=alt.X("x0:Q", scale=alt.Scale(domain=[first, last], nice=False)), x2="x1:Q", tooltip=alt.Tooltip("tip:N", title=" "))  # band with the late submissions sentence
     note = alt.Chart(band_data).mark_text(align="right", baseline="top", dx=-6, color=c["muted"], fontSize=ch["axis_font"]).encode(x=alt.X("x0:Q", scale=alt.Scale(domain=[first, last], nice=False)), y=alt.value(4), text="label:N")  # band label
-    peak_data = pd.DataFrame({"year": [int(peak["year"])], "works": [int(peak["works"])], "label": [texts["peak"].format(year=int(peak["year"]), works=f"{int(peak['works']):,}")]})  # peak point
+    peak_data = pd.DataFrame({"year": [int(peak["year"])], "works": [int(peak["works"])], "label": [texts["peak"].format(year=int(peak["year"]), works=short_number(peak['works']))]})  # peak point
     dot = alt.Chart(peak_data).mark_point(filled=True, color=c["highlight"], stroke=c["text"], strokeWidth=1.5, size=ch["peak_size"], opacity=1).encode(x=x, y=y)  # peak marker
     tag = alt.Chart(peak_data).mark_text(align="right", dx=-10, dy=-4, color=c["text"], fontSize=ch["label_font"]).encode(x=x, y=y, text="label:N")  # peak label, left of the point so it stays inside the plot
     return alt.layer(band, area, hover, dot, tag, note).properties(height=ch["height_works"])  # chart

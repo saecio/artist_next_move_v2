@@ -23,7 +23,8 @@ from app_data import load_demo_config  # demo settings
 from config import CONFIG  # project settings
 from ui_components import base_css, header_html  # design css and header
 from depth_views import models_data, trees_tie  # models compared table and the tie condition
-from static_tabs import dump_date_text, story_halves, tab2_headline_text  # tab 2 headline built from the data
+from static_charts import short_number  # big numbers as 2.5M or 120K
+from static_tabs import dump_date_text, tab2_headline_text  # tab 2 headline built from the data
 
 cfg = load_demo_config()  # settings
 sc = cfg["static_tabs"]  # static tabs section
@@ -72,7 +73,6 @@ norm = lambda x: re.sub(r"\s+", " ", x)  # whitespace collapsed, wrapped SVG lab
 n1, n2 = norm(texts[0]), norm(texts[1])  # visible text of tabs 1 and 2
 works_file = pd.read_parquet(ROOT / CONFIG["paths"]["works"], columns=["year"])  # year column of the cleaned Works
 undated = int(works_file["year"].isna().sum())  # Works without a year
-tests_rows = json.load(open(ROOT / pa["when_tests"]))["test_rows"]  # test snapshots from the Timing result file
 st_ = sc["story"]  # story settings
 cutoff = st_["cutoff_year"]  # year the reader is in
 assert t["t1_headline"].format(year=cutoff) in n1 and t["t1_use"] in n1, "tab 1 headline with the configured year and the use sentence"  # tab 1 sentences
@@ -94,36 +94,15 @@ for chart, name in ((chart_a, st_["timing_artist"]), (chart_b, st_["style_artist
     assert any(r.get("text") == t["t1_here"] for r in chart) and any(r.get("text") == "?" for r in chart), "cutoff label and question mark"  # annotations
     year_labels = sorted(int(r["text"]) for r in chart if r.get("text", "").isdigit())  # muted year labels under the line
     assert year_labels == sorted({min(expected_counts), cutoff}) and str(max(expected_counts)) not in [r.get("text") for r in chart], f"year labels of {name}: first data year and the marker year only, no last-data-year label"  # equal to the files
-wpy = pd.read_csv(folder / pa["works_per_year"])["year"]  # years of the Works chart file
-import static_tabs  # module whose results_data the strip calls
+import static_tabs  # module the app uses
 nn = sc["sizes"]["dots_side"] ** 2  # artists per group
 rel_t = pd.read_csv(ROOT / pa["calibration_timing"]).sort_values("bin")  # Timing reliability bins
 assert rel_t["n"].max() - rel_t["n"].min() <= 1, "the ten Timing bins hold equal row counts"  # equal bins, so the last one is the top 10%
 rel_s = pd.read_csv(ROOT / pa["calibration_style"])  # Style reliability bins
 assert rel_s["n"].max() - rel_s["n"].min() <= 1, "the ten Style bins hold equal row counts"  # equal bins
-k_t, b_t = round(nn * rel_t["observed_rate"].iloc[-1]), round(nn * json.load(open(ROOT / pa["when_model"]))["positive_rate"])  # Timing top bin rate and By chance rate
 k_s, b_s = round(nn * top["precision_top"]), round(nn * top["holdout_positive_rate"])  # Style top group rate and positive rate, as the dot chart
 pl = cfg["poc"]["texts"]  # Timing and Style labels
-story = [  # the three cards: big number, label, muted line
-    (t["t1_s1_big"].format(millions=f"{int(fig['works']) / 1e6:.1f}"), t["t1_s1_label"], t["t1_s1_sub"].format(artists=f"{int(fig['artists']):,}", y0=wpy.min(), y1=wpy.max())),  # Works
-    (str(len(sc["models_compared"])), t["t1_s2_label"], t["t1_s2_sub"].format(tests=f"{int(tests_rows):,}")),  # models
-    (t["t1_s3_big"].format(k=k_t, n=nn), pl["label_timing"], t["t1_s3_blind"].format(b=b_t, n=nn)),  # Timing half
-    (t["t1_s3_big"].format(k=k_s, n=nn), pl["label_style"], t["t1_s3_blind"].format(b=b_s, n=nn)),  # Style half
-]
-assert k_t > b_t and k_s > b_s and t["t1_s3_cap_timing"].format(s=round(100 * top["selected_share"])) in n1 and t["t1_s3_cap_style"].format(s=round(100 * top["selected_share"])) in n1, "both halves above random, captions shown"  # card 3 shown
-for number, label, line in story:  # three cards
-    assert number in n1 and label in n1 and line in n1, f"tab 1 story card {label}"  # equal to the files and the config
-assert t["t1_s1_tip"].format(date=sc["dump_date"]) in html.unescape(raws[0]) and t["t1_tip_models"].format(names=", ".join(sc["models_compared"])) in html.unescape(raws[0]) and t["t1_s3_tip"].format(s=round(100 * top["selected_share"]), y_from=y["holdout_start"], y_to=y["holdout_end"]) in html.unescape(raws[0]), "tab 1 tooltips"  # tooltips from the config
-assert raws[0].count("class='ui-card'") == 3 and pl["label_timing"] in n1 and pl["label_style"] in n1, "three story cards"  # card count
-for gone in ("t1_kpi_hyp", "t1_kpi_years", "t1_tip_hyp", "t1_tip_years", "t1_s3_plus", "t1_s3_label"):  # dropped keys
-    assert gone not in t, f"{gone} removed from the config"  # no leftover
-orig_res = static_tabs.story_halves  # real function
-static_tabs.story_halves = lambda c: [(*h[:3], h[4], h[4]) if i else h for i, h in enumerate(orig_res(c))]  # Style k equal to b, not above random
-try:  # always restore
-    two_cards = plain("".join(x.value for x in AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=120).run().tabs[0].get("html")))  # fresh run, tab 1 html
-finally:  # restore
-    static_tabs.story_halves = orig_res  # restore
-assert t["t1_s3_cap_style"].format(s=round(100 * top["selected_share"])) not in norm(two_cards) and t["t1_s3_cap_timing"].format(s=round(100 * top["selected_share"])) not in norm(two_cards) and t["t1_s1_label"] in norm(two_cards) and t["t1_s2_label"] in norm(two_cards), "fallback: only cards 1 and 2"  # two cards
+assert "ui-kpi" not in raws[0] and st_["timing_artist"] in n1 and st_["style_artist"] in n1, "tab 1 has the two artist cards and no number strip"  # strip gone
 assert "<svg" not in raws[0] and len(at.tabs[0].get("vega_lite_chart")) == 2, "tab 1 has no inline svg and two timelines"  # no svg
 print("tab 1 ok")  # result
 
@@ -131,10 +110,10 @@ undated_file = int(pd.read_csv(folder / pa["data_quality"]).set_index("metric").
 pct = f"{undated_file / int(fig['works']) * 100:.1f}"  # share in percent
 assert tab2_headline_text(cfg) in n2 and t["t2_source"].format(date=dump_date_text(cfg)) in n2, "tab 2 headline and dump date"  # headline and date from the config
 for key in ("works", "artists"):  # flow numbers
-    assert f"{int(fig[key]):,}" in n2, f"tab 2 flow {key} equals data_figures.csv"  # file values
+    assert short_number(fig[key]) in n2, f"tab 2 flow {key} equals data_figures.csv"  # file values
 assert fig[sc["rows"]["metric_master"]] + fig[sc["rows"]["metric_standalone"]] == fig["works"], "source counts sum to the total"  # control
 for number in (fig[sc["rows"]["metric_master"]], fig[sc["rows"]["metric_standalone"]]):  # both counts on screen
-    assert f"{int(number):,}" in n2, "tab 2 flow count"  # from the file
+    assert short_number(number) in n2, "tab 2 flow count"  # from the file
 for lab in (t["t2_in_master"], t["t2_in_standalone"].format(n=CONFIG["works"]["min_standalone_releases"]), t["t2_out"], t["t2_artists"], t["t2_chart_title"]):  # labels
     assert lab in n2, f"tab 2 label {lab}"  # threshold from config.yaml
 assert t["t2_by"] in n2 and t["t2_tip_out"] in raws[1] and "Works" not in n2, "tab 2: connector word, releases tooltip and the word releases only"  # one word for one concept
@@ -144,6 +123,7 @@ assert len(boxes) == 4 and all(plain(b_).strip() for b_ in boxes), "every flow b
 assert t["t2_undated"].format(pct=pct) in n2 and html.escape(t["t2_tip_undated"], quote=True) in raws[1], "undated chip equals the file value, with its tooltip"  # chip
 assert undated_file == undated, "undated count equals the Works table"  # control
 assert not any("<svg" in r for r in raws.values()), "no inline svg in any static tab"  # all tabs
+assert [short_number(n) for n in (2_500_000, 2_015_417, 120_000, 510_364, 999)] == ["2.5M", "2M", "120K", "510K", "999"], "short_number abbreviates millions and thousands only"  # helper
 print("tab 2 ok")  # result
 
 charts3 = spec_rows(2)  # the two tab 3 charts
@@ -254,11 +234,11 @@ gap_pts = {k: round(100 * float(v)) for k, v in summ["ece"].items()}  # round(10
 pts_text = lambda n: cfg["ui"]["point_one" if n == 1 else "point_many"].format(n=n)  # singular for one point, plural otherwise
 tim_top = pd.read_csv(ROOT / pa["calibration_timing"]).sort_values("bin").iloc[-1]["observed_rate"]  # highest Timing bin, as the tab 1 third card reads it
 vals = {"n": nn, "t": round(nn * tim_top), "tb": round(nn * wm["positive_rate"]), "s": k_s, "sb": b_s, "m": nn - k_s}  # placeholders of the tab 8 items: group size, top picks and random picking for Timing and Style, and the Style misses; read from the files, not from the app code
-assert raws[7].count("class='ui-card'") == 3 and raws[7].count("ui-close-dot'") == 3 and raws[7].count("class='ui-close-item'") == 12, "tab 8: three cards, a marker each, three items in What works, four in What to keep in mind, four in What comes next and the closing sentence"  # structure
+assert raws[7].count("class='ui-card'") == 3 and raws[7].count("ui-close-dot'") == 3 and raws[7].count("class='ui-close-item'") == 13, "tab 8: three cards, a marker each, four items in What works, four in What to keep in mind, four in What comes next and the closing sentence"  # structure
 for key in ("works", "mind", "next"):  # each card
     assert t[f"t8_{key}_title"] in texts[7], f"card title {key}"  # title
     assert key != "works" or html.escape(t["t8_works_tip"], quote=True) in raws[7], "What works title tooltip"  # tooltip
-    for i in {"works": (1, 2, 3), "mind": (1, 2, 3, 4), "next": (1, 2, 3, 4)}[key]:  # items
+    for i in {"works": (1, 2, 3, 4), "mind": (1, 2, 3, 4), "next": (1, 2, 3, 4)}[key]:  # items
         want = t[f"t8_{key}_{i}"].format(**vals)  # item with its numbers
         if (key, i) == ("next", 1) and not trees_tie(models_data(cfg), cfg):  # the tie clause is not supported by the data
             want = t["t8_next_1_plain"]  # first item without the tie clause
@@ -312,7 +292,7 @@ wpy = pd.read_csv(folder / pa["works_per_year"])  # yearly file
 assert sum(int(r["works"]) for r in main) == int(wpy["works"].sum()) == int(fig["works"]) - undated, "yearly counts equal the dated share of the Works"  # control
 top_row = wpy.loc[wpy["works"].idxmax()]  # maximum of the file
 assert len(peak_rows) == 1 and int(peak_rows[0]["year"]) == int(top_row["year"]) and int(peak_rows[0]["works"]) == int(top_row["works"]) == max(int(r["works"]) for r in main), "peak annotation equals the data maximum"  # peak
-assert peak_rows[0]["label"] == t["t2_peak"].format(year=int(top_row["year"]), works=f"{int(top_row['works']):,}"), "peak label"  # text from the config
+assert peak_rows[0]["label"] == t["t2_peak"].format(year=int(top_row["year"]), works=short_number(top_row['works'])), "peak label"  # text from the config
 assert len(band_rows) == 1 and int(band_rows[0]["x0"]) == cfg["design"]["incomplete_from_year"] and int(band_rows[0]["x1"]) == int(wpy["year"].max()), "band starts at design.incomplete_from_year"  # band
 assert band_rows[0]["label"] == t["t2_incomplete"], "band label"  # text from the config
 assert band_rows[0]["tip"] == t["t2_band_tip"].format(year=int(top_row["year"])), "band tooltip names the data peak year"  # sentence from the config
@@ -700,7 +680,7 @@ for v_ in ("t2_view_volume", "t2_view_genres", "t2_view_cleaning"):  # every vie
     fresh.segmented_control(key=vk["tab2"]).set_value(t[v_]).run()  # open the view
     seen += plain(page(1))  # its visible text
     if v_ == "t2_view_cleaning":  # the new view
-        assert t["t2c_before"] in plain(page(1)) and t["t2c_after"] in plain(page(1)) and t["t2c_releases"] in plain(page(1)) and t["t2c_artists"] in plain(page(1)) and page(1).count("ui-chip'") == 1 and all(f"{int(fund[k]):,}" in plain(page(1)) for k in ("standalone_nomaster", "combined", "final_table", "final_artists", "undated")), "Cleaning shows the no-master, combined, final releases, artists and undated numbers of the csv"  # numbers
+        assert t["t2c_before"] in plain(page(1)) and t["t2c_after"] in plain(page(1)) and t["t2c_releases"] in plain(page(1)) and t["t2c_artists"] in plain(page(1)) and page(1).count("ui-chip'") == 1 and all(short_number(fund[k]) in plain(page(1)) for k in ("standalone_nomaster", "combined", "final_table", "final_artists", "undated")), "Cleaning shows the no-master, combined, final releases, artists and undated numbers of the csv"  # numbers
 assert not re.search(r"\bWorks?\b", seen + text4), "no on-screen text of tab 2 or the new tab 4 view contains Works"  # one word for the unit
 new_keys = [k for k in t if k.startswith(("t4i_", "t2c_"))]  # texts of the two new views
 assert new_keys and not [k for k in new_keys if re.search(r"\d", placeholder.sub("", t[k]))], "no digit outside a placeholder in the new texts"  # digits

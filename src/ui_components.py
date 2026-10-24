@@ -35,9 +35,6 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f"#vg-tooltip-element td.value{{vertical-align:top !important;text-align:left !important}}",  # values start at the same line as their label
         f".ui-read{{font-size:{ty['label']}px;color:{c['text']};line-height:1.5}}",  # sentence-case text in the body font (the reading card of tab 5)
         f".ui-caption{{font-size:{ty['caption']}px;color:{c['muted']}}}",  # caption
-        f".ui-kpi{{margin-top:{b['gap']}px}}",  # one number block
-        f".ui-kpi .ui-eyebrow{{min-height:{ty['eyebrow'] * 2}px}}",  # same label line height in the three story cards, with or without the tooltip icon
-        f".ui-halves{{display:flex;gap:{cfg['static_tabs']['story']['pair_gap']}px}}",  # the two halves of the third story card
         f".ui-chip{{display:inline-block;max-width:100%;border:{b['border']}px solid;border-radius:{ch['radius']}px;padding:{ch['pad_v']}px {ch['pad_h']}px;font-size:{ch['font']}px;text-transform:uppercase;letter-spacing:{ty['eyebrow_tracking']};color:{c['text']};background:transparent}}",  # rectangular chip, border color inline
         f".ui-chips{{display:flex;flex-wrap:wrap;gap:{b['gap'] // 2}px;margin-top:{b['gap']}px;align-items:center}}",  # row of chips
         f".ui-info{{display:inline-block;position:relative;margin-left:6px;width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;border:{b['border']}px solid {c['muted']};color:{c['muted']};font-size:{ty['caption']}px;cursor:help;font-style:normal;font-weight:400}}",  # small i
@@ -95,7 +92,7 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f"@media (max-width:1023px){{[data-testid='stMainBlockContainer']{{padding-left:1.5rem !important;padding-right:1.5rem !important}}"  # tablet: less side padding
         f"[data-testid='stHorizontalBlock']{{flex-wrap:wrap}}[data-testid='stColumn']{{flex:1 1 calc(50% - 1rem) !important;min-width:calc(50% - 1rem) !important}}"  # tablet: at most two columns
         f".ui-row{{flex-wrap:wrap}}.ui-row>.ui-card{{flex:1 1 calc(50% - {b['gap']}px)}}.ui-fill-right{{height:auto}}"  # tablet: at most two cards per row
-        f".ui-halves{{flex-direction:column}}.ui-m-row{{grid-template-columns:{d['method']['label_w'] * 2 // 3}px 1fr}}}}",  # tablet: story halves stack, narrower run labels
+        f".ui-m-row{{grid-template-columns:{d['method']['label_w'] * 2 // 3}px 1fr}}}}",  # tablet: narrower run labels
         f"@media (max-width:639px){{[data-testid='stMainBlockContainer']{{padding-left:1rem !important;padding-right:1rem !important}}"  # phone: smallest side padding
         f"[data-testid='stColumn']{{flex:1 1 100% !important;min-width:100% !important}}"  # phone: one column
         f".ui-row>.ui-card{{flex:1 1 100%}}.ui-flow>.ui-flow-box{{width:100%}}.ui-flow-row{{flex-wrap:wrap}}.ui-flow-row>.ui-flow-box{{flex:1 1 100%}}"  # phone: one card per row, wide flow boxes
@@ -134,12 +131,6 @@ def card(inner: str, title: str = "", tip: str = "") -> str:  # card around html
     """A card with an optional title and tooltip."""
     head = f"<div class='ui-card-title'>{html.escape(title)}{info(tip) if tip else ''}</div>" if title else ""  # title line
     return f"<div class='ui-card'>{head}{inner}</div>"  # card
-
-
-def kpi_card(label: str, value: str, sub: str, color: str, info_text: str = "") -> str:  # one number block
-    """Label (optional), a big number in `color` and a caption under it."""
-    lab = f"<div class='ui-label ui-eyebrow'>{html.escape(label)}{info(info_text) if info_text else ''}</div>" if label else ""  # label line
-    return f"<div class='ui-kpi'>{lab}<div class='ui-big' style='color:{color}'>{html.escape(value)}</div><div class='ui-caption'>{html.escape(sub)}</div></div>"  # block
 
 
 def chip(text: str, color: str, tip: str = "") -> str:  # small pill

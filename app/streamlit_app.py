@@ -18,7 +18,7 @@ from style_tab import style_subtitle, forecast_table, mark_for, style_summary, s
 from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reliability_lines, route_for_year, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
 from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, open_year_text, star_in_row, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
 from static_charts import results_chart, strength_chart, works_chart  # noqa: E402  Altair charts of tabs 2, 3 and 5
-from static_tabs import dots_html, dots_panels, strip_html, results_data, tab1_head_html, tab1_kpis_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2c_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab4i_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
+from static_tabs import dots_html, dots_panels, strip_html, results_data, tab1_head_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2c_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab4i_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
 from depth_views import legend_html, models_charts, models_data, models_head_html, models_note_html, models_title_html, reliability_data, trust_chart, trust_head_html, trust_legend_html, trust_css, trust_right_html, trust_title_html, year_data, years_charts, years_head_html  # noqa: E402  depth views of tab 5
 from ui_components import accent_key, base_css, header_html, headline, info  # noqa: E402  design system
 from demo_game import (  # noqa: E402  pure game functions
@@ -89,7 +89,6 @@ with tabs[0]:  # Problem and question
             body.html(panel["title"])  # artist name in the question color
             body.altair_chart(panel["chart"], theme=None, width="stretch")  # releases up to the cutoff
             body.html(panel["question"])  # the question of this artist
-    st.html(tab1_kpis_html(cfg))  # four numbers
 
 @st.fragment  # a click on a view pill reruns only this tab
 def render_tab2() -> None:  # body of the tab with view pills
@@ -158,7 +157,7 @@ with tabs[2]:  # Data exploration
 @st.fragment  # a click on a view pill reruns only this tab
 def render_tab5() -> None:  # body of the tab with view pills
     """Draw the view chosen with the pills of this tab."""
-    view5 = view_selector(cfg, "tab5")  # Results, Year by year, Models compared or Can you trust the score?
+    view5 = view_selector(cfg, "tab5")  # Results, Can you trust the score?, Year by year or Models compared
     with st.empty().container():  # one slot: the old view disappears as soon as the new one starts drawing
         t5 = cfg["static_tabs"]["texts"]  # texts of the tab 5 views
         if view5 == t5["t5_view_years"]:  # Year by year view

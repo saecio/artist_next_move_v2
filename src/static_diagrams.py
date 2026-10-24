@@ -7,7 +7,7 @@ from ui_components import card, chip, info  # card, pill and small i with a tool
 
 def _box(label: str, count: str, tip: str, color: str) -> str:  # one flow box
     """A box with a label (and its tooltip) and a big count in `color`."""
-    return f"<div class='ui-flow-box' style='border-color:{color}'><div class='ui-label'>{html.escape(label)}{info(tip)}</div><div class='ui-flow-count' style='color:{color}'>{html.escape(count)}</div></div>"  # box
+    return f"<div class='ui-flow-box' style='border-color:{color}'><div class='ui-label'>{html.escape(label)}{info(tip) if tip else ''}</div><div class='ui-flow-count' style='color:{color}'>{html.escape(count)}</div></div>"  # box
 
 
 def clean_flow(cfg: dict, t: dict, n: int, counts: dict) -> str:  # tab 2 cleaning flow
@@ -16,7 +16,7 @@ def clean_flow(cfg: dict, t: dict, n: int, counts: dict) -> str:  # tab 2 cleani
     arrow = "<div class='ui-flow-arrow'></div>"  # CSS arrow pointing down
     by = f"<div class='ui-flow-by'>{html.escape(t['t2_by'])}</div>"  # connector word between releases and artists
     inputs = _box(t["t2_in_master"], counts["master"], t["t2_tip_master"], color) + _box(t["t2_in_standalone"].format(n=n), counts["standalone"], t["t2_tip_standalone"], color)  # the two sources
-    return f"<div class='ui-flow'><div class='ui-flow-row'>{inputs}</div>{arrow}{_box(t['t2_out'], counts['works'], t['t2_tip_out'], color)}{by}{_box(t['t2_artists'], counts['artists'], t['t2_tip_artists'], color)}</div>"  # whole flow
+    return f"<div class='ui-flow'><div class='ui-flow-row'>{inputs}</div>{arrow}{_box(t['t2_out'], counts['works'], t['t2_tip_out'], color)}{by}{_box(t['t2_artists'], counts['artists'], '', color)}</div>"  # whole flow
 
 def method_css(cfg: dict) -> str:  # style rules of the tab 4 infographic and model chips
     """Rules prefixed ui-m-; colors from the palette, sizes from design.method."""

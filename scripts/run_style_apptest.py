@@ -102,8 +102,7 @@ def check_default() -> None:  # test 1
     figs = validation_figures(cfg)  # figures computed from the data
     text = st_cfg["validation_text"].format(**figs)  # expected full text
     assert not any(text in w.value for w in at.warning), "the full text is no longer a permanent warning"  # no warning
-    rand = pd.read_csv(ROOT / st_cfg["random_file"], comment="#").set_index("method").loc["random", "mean"]  # stored mean random hits
-    assert st_cfg["texts"]["t7_sub"].format(n=figs["n"], hits=f"{float(figs['k']):g}", y_from=figs["first"], y_to=figs["last"], rand=f"{rand:.1f}") in "".join(h.value for h in at.get("html")), "the tested-years sentence with the random hits is the subtitle of the headline"  # subtitle
+    assert st_cfg["texts"]["t7_sub"].format(n=figs["n"], hits=f"{float(figs['k']):g}", y_from=figs["first"], y_to=figs["last"]) in "".join(h.value for h in at.get("html")), "the tested-years sentence with the random baseline wording is the subtitle of the headline"  # subtitle
     ex = next(e for e in at.expander if e.label == tx["validation_label"])  # the validation expander, there before Predict
     assert not ex.proto.expanded and [c.value for c in ex.caption] == [text], "closed expander with the validation text only"  # contents
     assert cfg["notices"]["style_notice"] in "".join(h.value for h in at.get("html")) and cfg["notices"]["style_notice"] not in [w.value for w in at.warning], "the question is the headline, no banner"  # headline instead of the notice

@@ -103,13 +103,9 @@ def forecast_beats_repeat(cfg: dict) -> bool:  # verdict of the forecast against
     return len(row) == 1 and bool(row["ci_low"].iloc[0] > 0)  # clearly better only when the whole interval is above zero
 
 def style_subtitle(cfg: dict) -> str:  # subtitle of the tab 7 headline
-    """The subtitle with the model hits, the tested years and the hits of picking at random (one decimal); the older tested-years line when the random file is missing."""
+    """The subtitle with the model hits, the tested years and the random baseline wording of the config."""
     st, figs = cfg["style_tab"], validation_figures(cfg)  # tab settings and figures
-    try:  # the random mean comes from the stored file
-        rand = pd.read_csv(ROOT / st["random_file"], comment="#").set_index("method").loc["random", "mean"]  # mean random hits
-    except (OSError, KeyError, ValueError):  # no file or no row: fall back to the line without the random sentence
-        return st["headline"].format(**figs)  # tested-years line
-    return st["texts"]["t7_sub"].format(n=figs["n"], hits=f"{float(figs['k']):g}", y_from=figs["first"], y_to=figs["last"], rand=f"{rand:.1f}")  # new subtitle
+    return st["texts"]["t7_sub"].format(n=figs["n"], hits=f"{float(figs['k']):g}", y_from=figs["first"], y_to=figs["last"])  # subtitle
 
 def validation_figures(cfg: dict) -> dict:  # figures of the headline and the validation text
     """First and last counted year, mean top n hits of the Random Forest (k) and of repeating last year (b), n and the number of counted years."""
