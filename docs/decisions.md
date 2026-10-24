@@ -1,71 +1,111 @@
 # Decisions index
 
-Decision log split by theme. Entries are moved verbatim from the former single file.
+The decision log is split by theme; entries are never renamed, so an entry is cited by its exact title.
 
-| File | Holds | Size |
+| File | Holds | Size (KB) |
 |---|---|---|
-| decisions_core.md | Data, snapshots, WHEN, WHAT, duplicate audits, leakage, models, holdout, style forecast, EDA, hypotheses, limitations | 211 KB |
-| decisions_demo.md | Demo app: artist selection, pool B, tabs, text rules, design, counting rule, year-end rows | 108 KB |
-| decisions_pending.md | Open items (PENDING) | 2 KB |
-| decisions_archive.md | History of reversed decisions (CUT), not needed for normal work | 24 KB |
+| decisions_core.md | Methodology: principles, data and Works table, snapshots, Timing target, backtesting, Timing models and holdout, Style target and kill gate, Style models and holdout, global style forecast, audits, EDA and hypotheses, limitations and future work | 195.3 |
+| decisions_demo.md | Build record of the Streamlit app; block 2 touches the predictions it shows | 144.2 |
+| decisions_pending.md | Open items | 0.5 |
+| decisions_archive.md | Reversed or replaced decisions (CUT) | 24.3 |
 
-Rule: cite an entry by its exact title. Read an entry with `grep -n` on the title and `sed -n` on the range, never the whole file.
+Rules:
+- Read an entry with grep -n on its title and sed -n on the range, never the whole file.
+- Older mentions of "docs/decisions.md" in code and notebooks, such as docs/decisions.md, entry "<title>", mean: look the title up in decisions_core.md or decisions_demo.md.
 
-Entry titles per file (line number in that file):
+## decisions_core.md (line: heading)
 
-decisions_core.md:
-3: DECIDED
-140: Leakage in model selection: label look-ahead in development fold 5 (17-10-2026)
-143: Duplicate audit: sensitivity analysis (17-10-2026)
-151: Duplicate audit: sensitivity result (17-10-2026)
-162: EDA
-166: Hypothesis Testing
-200: Future improvements
-204: Limitations
-222: Known limitation: catalogue date (17-10-2026)
-231: Style forecast: duplicate audit design (17-10-2026)
-239: Style forecast: duplicate audit result (17-10-2026)
+3: ## DECIDED
+5: ### 1. Principles and project setup (6 entries)
+14: ### 2. Data and the Works table (41 entries)
+58: ### 3. Snapshots and the Timing target (8 entries)
+69: ### 4. Backtesting design (9 entries)
+81: ### 5. Timing models, tuning and holdout (13 entries)
+97: ### 6. Style target, baselines and kill gate (21 entries)
+121: ### 7. Style models, tuning and holdout (16 entries)
+140: ### 8. Global style forecast (9 entries)
+152: ### 9. Audits and checks (3 entries)
+156: #### Leakage in model selection: label look-ahead in development fold 5 (17-10-2026)
+159: #### Duplicate audit: sensitivity analysis (17-10-2026)
+167: #### Duplicate audit: sensitivity result (17-10-2026)
+178: #### Style forecast: duplicate audit design (17-10-2026)
+186: #### Style forecast: duplicate audit result (17-10-2026)
+199: ### 10. EDA and hypotheses (12 entries)
+203: #### EDA
+207: #### Hypothesis Testing
+241: ### 11. Limitations and future work (20 entries)
+243: #### Future improvements
+248: #### Limitations
+266: ##### Known limitation: catalogue date (17-10-2026)
 
-decisions_demo.md:
-1: Demo artist selection: eligibility rule (17-10-2026)
-14: Demo artist selection: cap per genre (17-10-2026)
-19: Demo artist selection: manual exclusions (17-10-2026)
-25: Demo artist selection: data-quality criterion (17-10-2026)
-35: Demo artist selection: final list (17-10-2026)
-49: Demo: re-recordings (17-10-2026)
-54: Demo: WHEN regeneration control (17-10-2026)
-58: Demo: timeline rule per artist and year, and baseline label (17-10-2026)
-62: Demo: live scoring with the final models (17-10-2026)
-71: Demo: live scoring assets, results (17-10-2026)
-78: Demo: live scoring assets for the style forecast, results (17-10-2026)
-87: Demo: works file of the demo artists (17-10-2026)
-94: Demo: tab 6 flow and scoring (19-10-2026)
-101: Demo: tab 7 shows the Random Forest (19-10-2026)
-110: Demo: WHAT live assets, 2018 to the last data year (19-10-2026)
-119: Demo: WHAT labels after the last holdout year (19-10-2026)
-124: Demo pool B: candidates and coverage rule (19-10-2026)
-134: Demo pool B: final list (19-10-2026)
-142: Demo pool B: WHEN assets (19-10-2026)
-151: Demo pool B: WHAT assets (19-10-2026)
-159: Demo: pool switch in tab 6 (19-10-2026)
-167: Demo: route table for choosing a disclosed route (19-10-2026)
-174: Demo: tab 6 mode 2, several artists in one year (19-10-2026)
-186: Demo: tab 6 mode 1 layout: compact bar, windowed timeline, two-column panel (20-10-2026)
-193: Tab 6 panel wording, independent Timing and Style questions, new styles in the WHAT reality (20-10-2026)
-202: Demo: release title of the reality cells (20-10-2026)
-208: Demo: live style forecast for 2023 and later years (19-10-2026)
-217: Demo: WHEN scores for artist-years without a Work (20-10-2026)
-228: WHAT year-end rows (20-10-2026)
-238: Counting rule by reality year and the 2027 forecast (20-10-2026)
-248: Text rules for the audience (20-10-2026)
-253: Static tabs of the demo (20-10-2026)
-259: Design system of the demo (20-10-2026)
-264: Design pass 2: header, schemas, dot chart (20-10-2026)
-269: Design pass 3: story slides (20-10-2026)
-274: Demo: WHEN scores file (17-10-2026)
+## decisions_demo.md (line: heading)
 
-decisions_pending.md:
-1: PENDING
+5: ## 1. Artist selection and pools
+  7: ### Demo artist selection: eligibility rule (17-10-2026)
+  20: ### Demo artist selection: cap per genre (17-10-2026)
+  25: ### Demo artist selection: manual exclusions (17-10-2026)
+  31: ### Demo artist selection: data-quality criterion (17-10-2026)
+  41: ### Demo artist selection: final list (17-10-2026)
+  55: ### Demo pool B: candidates and coverage rule (19-10-2026)
+  65: ### Demo pool B: final list (19-10-2026)
+  73: ### Demo pool B: WHEN assets (19-10-2026)
+  82: ### Demo pool B: WHAT assets (19-10-2026)
+  90: ### Demo: pool switch in tab 6 (19-10-2026)
 
-decisions_archive.md:
-3: CUT
+98: ## 2. Live scoring assets
+  100: ### Demo: re-recordings (17-10-2026)
+  105: ### Demo: WHEN regeneration control (17-10-2026)
+  109: ### Demo: timeline rule per artist and year, and baseline label (17-10-2026)
+  113: ### Demo: live scoring with the final models (17-10-2026)
+  122: ### Demo: live scoring assets, results (17-10-2026)
+  129: ### Demo: live scoring assets for the style forecast, results (17-10-2026)
+  138: ### Demo: works file of the demo artists (17-10-2026)
+  145: ### Demo: WHEN scores file (17-10-2026)
+  151: ### Demo: WHAT live assets, 2018 to the last data year (19-10-2026)
+  160: ### Demo: WHAT labels after the last holdout year (19-10-2026)
+  165: ### Demo: live style forecast for 2023 and later years (19-10-2026)
+  174: ### Demo: WHEN scores for artist-years without a Work (20-10-2026)
+  185: ### WHAT year-end rows (20-10-2026)
+  195: ### Counting rule by reality year and the 2027 forecast (20-10-2026)
+
+205: ## 3. Tab 6 (Time Machine)
+  207: ### Demo: tab 6 flow and scoring (19-10-2026)
+  219: ### Demo: route table for choosing a disclosed route (19-10-2026)
+  229: ### Demo: tab 6 mode 2, several artists in one year (19-10-2026)
+  249: ### Demo: tab 6 mode 1 layout: compact bar, windowed timeline, two-column panel (20-10-2026)
+  259: ### Tab 6 panel wording, independent Timing and Style questions, new styles in the WHAT reality (20-10-2026)
+  273: ### Demo: release title of the reality cells (20-10-2026)
+
+281: ## 4. Tab 7 (style forecast)
+  283: ### Demo: tab 7 shows the Random Forest (19-10-2026)
+
+292: ## 5. Static tabs and story
+  294: ### Static tabs of the demo (20-10-2026)
+  300: ### Data chapters of the demo (21-10-2026)
+  314: ### Method and closing slides (21-10-2026)
+  326: ### Results depth views and calibration texts (22-10-2026)
+  334: ### Tab 1 story strip (22-10-2026)
+  340: ### Tab 4 inputs view and tab 2 cleaning view (22-10-2026)
+  352: ### Trust view, result column, tab 7 subtitle and What works (22-10-2026)
+
+360: ## 6. Text and wording rules
+  362: ### Text rules for the audience (20-10-2026)
+  367: ### Text and coherence pass (22-10-2026)
+  373: ### Review fixes (22-10-2026)
+  386: ### Tooltips, tab 5 chart layout and tab 6 disclaimer (22-10-2026)
+  392: ### Wording fixes: tab 1 card 2 and tab 5 Style baseline line (23-10-2026)
+  398: ### Wording: Release counts and tab 7 status line (23-10-2026)
+  404: ### Wording: fourth item in tab 8 What comes next (24-10-2026)
+
+410: ## 7. Design system and passes
+  412: ### Design system of the demo (20-10-2026)
+  418: ### Design pass 2: header, schemas, dot chart (20-10-2026)
+  424: ### Design pass 3: story slides (20-10-2026)
+  430: ### Design pass 8: alignment, gap wording, calibration wording and tab 1 hook with photos (22-10-2026)
+  436: ### Design pass 10: typography and signature (22-10-2026)
+  442: ### Design pass 11 (editorial identity and responsive) (22-10-2026)
+
+## decisions_pending.md and decisions_archive.md
+
+decisions_pending.md 1: ## PENDING
+decisions_archive.md 3: ## CUT
