@@ -200,6 +200,15 @@ python scripts/run_game_apptest.py
 
 Together they take about 8 minutes. Only `run_static_apptest.py` needs the processed data: it also compares figures with `data/processed/works_checkpoint.parquet`. The other five run from the committed files alone. The style check sometimes times out at 60 seconds: run it again.
 
+## Additional checks
+
+These checks are not shown in the notebooks. Each script refuses to overwrite an existing output and reads development data only, except the calibration check, which reads the already spent holdout.
+
+- Label look-ahead: counts the fold 5 test rows whose label depends on years of the holdout period (2018 onward) and measures whether dropping them changes the fold 5 PR-AUC. Script `scripts/run_label_lookahead_check.py` (and `scripts/run_label_lookahead_ranking_check.py`), output in `results/label_lookahead/`.
+- Artist-disjoint: refits the models on training rows from artists that do not appear in the test fold and scores them on the development folds, so the score no longer benefits from having seen the artist. Script `scripts/run_artist_disjoint_check.py`, output in `results/artist_disjoint/artist_disjoint.csv` and `results/artist_disjoint.out`.
+- Paired confidence interval: gives the interval of the PR-AUC difference itself for three comparisons that were judged by overlapping or barely separated intervals. Script `scripts/run_paired_ci_check.py`, output in `results/paired_ci/paired_differences.csv`.
+- Calibration: read-only calibration check of the final WHAT and WHEN models on the final holdout, with no refit and no recalibration. Script `scripts/run_calibration_check.py`, output in `results/calibration/`.
+
 ## Documentation
 
 | File | Contents |
