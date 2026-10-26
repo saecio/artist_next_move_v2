@@ -245,40 +245,51 @@ gap_pts = {k: round(100 * float(v)) for k, v in summ["ece"].items()}  # round(10
 pts_text = lambda n: cfg["ui"]["point_one" if n == 1 else "point_many"].format(n=n)  # singular for one point, plural otherwise
 tim_top = pd.read_csv(ROOT / pa["calibration_timing"]).sort_values("bin").iloc[-1]["observed_rate"]  # highest Timing bin, as story_halves reads it for tab 8
 vals = {"n": nn, "t": round(nn * tim_top), "tb": round(nn * wm["positive_rate"]), "s": k_s, "sb": b_s, "m": nn - k_s}  # placeholders of the tab 8 items: group size, top picks and random picking for Timing and Style, and the Style misses; read from the files, not from the app code
-assert raws[8].count("class='ui-card'") == 3 and raws[8].count("ui-close-dot'") == 3 and raws[8].count("class='ui-close-item'") == 13, "tab 8: three cards, a marker each, four items in What works, four in What to keep in mind, four in What comes next and the closing sentence"  # structure
-for key in ("works", "mind", "next"):  # each card
+hits8 = f"{float(v8['k']):g}"  # tab 7 hits, formatted as the tab 7 subtitle shows them
+assert raws[8].count("class='ui-card'") == 2 and raws[8].count("ui-close-dot'") == 2 and raws[8].count("class='ui-close-item'") == 7, "tab 8: two cards with a marker each, three items in each, and the closing sentence"  # structure
+for key, items in (("mind", ((t["t8_mind_1"]), t["t8_mind_use"], t["t8_mind_4"])), ("next", (None, t["t8_next_4"], t["t8_next_3"]))):  # each card with its items in order
     assert t[f"t8_{key}_title"] in texts[8], f"card title {key}"  # title
-    assert key != "works" or html.escape(t["t8_works_tip"], quote=True) in raws[8], "What works title tooltip"  # tooltip
-    for i in {"works": (1, 2, 3, 4), "mind": (1, 2, 3, 4), "next": (1, 2, 3, 4)}[key]:  # items
-        want = t[f"t8_{key}_{i}"].format(**vals)  # item with its numbers
-        if (key, i) == ("next", 1) and not trees_tie(models_data(cfg), cfg):  # the tie clause is not supported by the data
-            want = t["t8_next_1_plain"]  # first item without the tie clause
-        assert want in texts[8], f"item {key} {i}"  # item on screen
+    for i, want in enumerate(items):  # items
+        if want is None:  # first item of What comes next depends on the tie check
+            want = t["t8_next_1"] if trees_tie(models_data(cfg), cfg) else t["t8_next_1_plain"]  # with or without the tie clause
+        assert want.format(**vals) in texts[8], f"item {key} {i}"  # item on screen
+assert t["t8_works_title"] in texts[8] and html.escape(t["t8_works_tip"], quote=True) in raws[8], "What works title and tooltip"  # band title
+assert cfg["tabs"][8] == "Conclusions" and "Limits and next steps" not in texts[8], "tab title"  # renamed tab
+rnd = lambda r: t["t8_tile_random"].format(r=r)  # muted random line
+tiles = (("timing", vals["t"], t["t8_tile_timing_cap"], rnd(vals["tb"]), vals["n"]), ("style", vals["s"], t["t8_tile_style_cap"], rnd(vals["sb"]), vals["n"]), ("trends", hits8, t["t8_tile_trends_cap"], rnd(t["t8_tile_trends_rand"]), v8["n"]))  # name key, big number, caption, random line, group size; numbers from the files
+assert raws[8].count("ui-close-block' style=") == 3 and raws[8].count("ui-close-big'") == 3 and raws[8].count("ui-close-of'") == 3 and raws[8].count("ui-close-rand'") == 3, "three tiles"  # structure
+for k, big, cap, rand, g in tiles:  # each tile
+    tile = re.search(rf"ui-close-name'>{re.escape(t[f't8_close_{k}_name'])}</div>(.*?ui-close-rand'>[^<]*)", raws[8], re.S)  # the tile as built
+    assert tile and re.search(rf"ui-close-big' style='color:{cfg['design']['palette'][dict(timing='timing', style='style', trends='highlight')[k]]}'>{re.escape(str(big))}<span class='ui-close-of'>{re.escape(t['t8_tile_of'].format(n=g))}</span>", tile.group(1)), f"tile {k} number and of n"  # number in the question color, then of n
+    assert cap in tile.group(1) and rand in tile.group(1), f"tile {k} caption and random line"  # caption and random line
+assert t["t8_tile_trends_rand"] in cfg["style_tab"]["texts"]["t7_sub"], "same random wording as tab 7"  # wording
+for gone in ("t8_close_beats", "t8_close_tested", "t8_close_first", "t8_close_trend_beats", "t8_tile_big", "t8_works_1", "t8_works_2", "t8_works_3", "t8_works_4", "t8_mind_2", "t8_mind_3", "t8_next_2"):  # removed keys
+    assert gone not in t, f"{gone} removed"  # config
 import depth_views  # module whose tie check the closing slide calls
 import static_tabs  # builder of the closing slide
 for tie, want in ((True, t["t8_next_1"]), (False, t["t8_next_1_plain"])):  # the tie claim both ways
     depth_views.trees_tie = lambda d, c, tie=tie: tie  # forced condition (restored below)
     assert want in html.unescape(static_tabs.tab8_html(cfg)), f"tab 8 first next item with tie {tie}"  # item follows the condition
 depth_views.trees_tie = trees_tie  # real condition back
-chip_text = lambda k, st_: bool(re.search(rf"ui-close-name'>{re.escape(t[f't8_close_{k}_name'])}</div><div class='ui-close-q'>{re.escape(t[f't8_close_{k}_q'])}</div><span class='ui-chip'[^>]*>{re.escape(st_)}", page_now))  # closing block as shown: name, question, verdict chip
 real = (static_tabs.panel_beats_rule, static_tabs.forecast_beats_repeat)  # real conditions, restored below
 for ok in (True, False):  # the closing block both ways
     static_tabs.panel_beats_rule = lambda d, c, ok=ok: pd.Series({poc["label_timing"]: ok, poc["label_style"]: ok})  # forced advantage flags
     static_tabs.forecast_beats_repeat = lambda c, ok=ok: ok  # forced forecast verdict
     page = html.unescape(static_tabs.tab8_html(cfg))  # closing slide with forced conditions
-    sure = t["t8_close_beats"] if ok else t["t8_close_tested"]  # Timing and Style status
-    page_now = page  # page the checker reads
-    assert chip_text("timing", sure) and chip_text("style", sure), f"closing blocks Timing and Style with {ok}"  # statuses
-    assert chip_text("trends", t["t8_close_trend_beats"] if ok else t["t8_close_first"]), f"closing block Trends with {ok}"  # trends status
-    assert t["t8_close_line"] in page and page.count("class='ui-chip'") == 3, f"closing sentence and three chips with {ok}"  # sentence and chip count
+    want = f"{t['t8_band_beats'] if ok else t['t8_band_tested']} {t['t8_band_trend_beats'] if ok else t['t8_band_trend_first']}"  # band sentence for the forced conditions
+    assert f"ui-close-status'>{want}</div>" in page, f"band sentence with {ok}"  # Timing and Style part, then Trends part
+    assert t["t8_close_line"] in page and "ui-chip" not in page, f"closing sentence, no chips with {ok}"  # sentence and no chips
+for a_, b_ in ((True, False), (False, True)):  # Timing and Style mixed: one clearly above, the other not, gives the tested wording
+    static_tabs.panel_beats_rule = lambda d, c, a_=a_, b_=b_: pd.Series({poc["label_timing"]: a_, poc["label_style"]: b_})  # forced flags
+    assert f"ui-close-status'>{t['t8_band_tested']}" in html.unescape(static_tabs.tab8_html(cfg)), f"mixed flags {a_} {b_}"  # not both above
 static_tabs.panel_beats_rule, static_tabs.forecast_beats_repeat = real  # real conditions back
 import copy  # copy of the config for the missing-file case
 import tempfile  # temporary interval files
 paired = pd.read_csv(ROOT / cfg["style_tab"]["paired_file"], comment="#")  # stored interval, read independently of the app
 low = paired[(paired["model"] == FINAL_MODEL) & (paired["metric"] == f"hits@{cfg['style_tab']['top_n']}")]["ci_low"].iloc[0]  # lower bound of the forecast model
-want_trend = t["t8_close_trend_beats"] if low > 0 else t["t8_close_first"]  # chip text follows the sign of ci_low
+want_trend = t["t8_band_trend_beats"] if low > 0 else t["t8_band_trend_first"]  # sentence part follows the sign of ci_low
 page_now = html.unescape(static_tabs.tab8_html(cfg))  # real closing slide
-assert static_tabs.forecast_beats_repeat(cfg) == (low > 0) and chip_text("trends", want_trend), "Trends chip follows the sign of ci_low in the stored file"  # real data
+assert static_tabs.forecast_beats_repeat(cfg) == (low > 0) and want_trend in page_now, "Trends part of the band sentence follows the sign of ci_low in the stored file"  # real data
 for lo, expected in ((0.3, True), (-0.4, False), (0.0, False)):  # lower bound above, below and at zero
     with tempfile.TemporaryDirectory() as tmp:  # scratch folder
         fake = Path(tmp) / "paired.csv"  # interval file with one chosen lower bound
@@ -288,10 +299,9 @@ for lo, expected in ((0.3, True), (-0.4, False), (0.0, False)):  # lower bound a
         assert static_tabs.forecast_beats_repeat(c2) is expected, f"ci_low {lo} gives {expected}"  # sign rule
 c3 = copy.deepcopy(cfg)  # config with a missing file
 c3["style_tab"]["paired_file"] = "results/style_forecast/does_not_exist.csv"  # no such file
-assert static_tabs.forecast_beats_repeat(c3) is False, "missing file gives False"  # chip falls back to A first step
-for pal_key, q in (("timing", "t8_close_timing_q"), ("style", "t8_close_style_q"), ("highlight", "t8_close_trends_q")):  # chip colors on the real page
-    assert t[q] in texts[8] and f"border-color:{cfg['design']['palette'][pal_key]}" in raws[8], f"closing chip {q} on screen in its color"  # question and color
-assert t["t8_headline"] in texts[8] and "poc-st" not in raws[8], "tab 8 headline, old blocks gone"  # clean
+assert static_tabs.forecast_beats_repeat(c3) is False, "missing file gives False"  # sentence falls back to the first-step wording
+assert t["t8_headline"] == "What to keep in mind, what comes next, what works." and t["t8_headline"] in texts[8] and "poc-st" not in raws[8], "tab 8 headline, old blocks gone"  # clean
+assert t["t8_mind_4"].startswith("Style is the harder question: even its top picks miss in {m} of {n} cases.") and "Top picks are the highest-rated tenth." in t["t8_works_tip"], "tab 8 limit item and tooltip wording"  # wording
 assert "<svg" not in raws[8] and not re.search(r"\bWHEN\b|\bWHAT\b", texts[8]), "tab 8: no svg, no WHEN or WHAT"  # clean tab
 print("tab 8 ok")  # result
 
@@ -631,7 +641,7 @@ gap_px = 16  # Streamlit vertical gap between two elements of a column
 need = photo["name_font"] * 1.4 + cfg["design"]["box"]["gap"] + cfg["design"]["chart"]["height_story"] + photo["question_font"] * 1.5 + 2 * gap_px  # name block, timeline and question line
 assert need <= photo["height"] + photo["question_extra"], f"name, timeline and question fit the photo height ({need} px of {photo['height']} px)"  # config proxy
 assert photo["height"] + photo["credit_margin"] + photo["credit_line"] + photo["bottom_pad"] <= photo["card_height"] and all(sum(f"pixel_height: {photo['height']}" in str(c.proto) for c in col.children.values()) >= 0 for col in at.tabs[1].columns), "photo column plus credit and padding fits the card; the right column is a container of the photo height"  # proxy
-assert raws[1].count(f"padding-bottom:{photo['bottom_pad']}px") == len(have) and photo["card_height"] == 262 and photo["height"] + photo["credit_line"] + photo["credit_margin"] == 126, "bottom padding on the question, photo shortened by the same amount"  # padding
+assert raws[1].count(f"padding-bottom:{photo['bottom_pad']}px") == len(have), "bottom padding on the question appears once per photo"  # padding
 marker = re.findall(r'"y2Offset":\s*(\d+)', "".join(e.proto.spec for e in at.tabs[1].get("vega_lite_chart")))  # marker offset sent to the browser
 assert marker and all(int(v) == cfg["design"]["story"]["marker_below"] for v in marker), "marker ends a configured number of pixels below the timeline line"  # marker height proxy
 labels_dy = re.findall(r'"dy":\s*(\d+)', "".join(e.proto.spec for e in at.tabs[1].get("vega_lite_chart")))  # label offset sent to the browser
@@ -696,7 +706,7 @@ assert not re.search(r"\bWorks?\b", seen + text4), "no on-screen text of tab 2 o
 new_keys = [k for k in t if k.startswith(("t4i_", "t2c_"))]  # texts of the two new views
 assert new_keys and not [k for k in new_keys if re.search(r"\d", placeholder.sub("", t[k]))], "no digit outside a placeholder in the new texts"  # digits
 print("tab 4 inputs view and tab 2 cleaning view ok")  # result
-bad = {k: v for k, v in t.items() if k not in ("t3s_line", "cover_programme", "t4_final_forecast", "t5_tip_advantage", "t5_caption", "t5_caption_tip") and re.search(r"\d", placeholder.sub("", v))}  # texts with a digit outside a placeholder, except the 0 to 1 scale of the muted line, the tab number of the forecast tag and the factor 100 of the advantage tooltip
+bad = {k: v for k, v in t.items() if k not in ("t3s_line", "cover_programme", "t4_final_forecast", "t5_tip_advantage", "t5_caption", "t5_caption_tip", "t8_tile_trends_rand") and re.search(r"\d", placeholder.sub("", v))}  # texts with a digit outside a placeholder, except the 0 to 1 scale of the muted line, the tab number of the forecast tag and the factor 100 of the advantage tooltip and the wording "less than 1" of the Trends tile, intentional and mirroring tab 7
 assert not bad, f"digits outside placeholders: {bad}"  # none, no exception was needed
 print("static_tabs texts: no digit outside a placeholder (only the 0 to 1 scale in t3s_line)")  # result
 print("run_static_apptest OK")  # done

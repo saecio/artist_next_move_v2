@@ -206,35 +206,38 @@ def tab4_html(cfg: dict) -> str:  # method
     finals = final_models_html(cfg, final_models(cfg))  # label and the three final-model tags
     return method_css(cfg) + "<div class='ui-stack'>" + headline(t["t4_headline"]) + method_legend(cfg, t) + card_html + f"<div class='ui-caption'>{html.escape(caption)} {info(t['t4_caption_tip'])}</div>" + chips + finals + "</div>"  # page
 
-def tab8_html(cfg: dict) -> str:  # limits and next steps
-    """Closing slide: three equal cards with a marker, a title and up to four items; numbers come from the tab 5 tags, the story_halves top picks and the tab 7 test years."""
+def tab8_html(cfg: dict) -> str:  # conclusions
+    """Closing slide: two cards (what to keep in mind, what comes next) and the What works band; numbers come from the story_halves top picks and the tab 7 test years."""
     from depth_views import models_data, trees_tie  # imported here because depth_views imports this module
-    t, p = cfg["static_tabs"]["texts"], cfg["poc"]["texts"]  # texts and Timing / Style labels
-    res = results_data(cfg)  # the table of tab 5, read by the closing block
+    t = cfg["static_tabs"]["texts"]  # texts
+    res = results_data(cfg)  # the table of tab 5, read by the closing band
     tim, sty = story_halves(cfg)  # Timing and Style top-pick numbers from story_halves, shared with the tab 5 dot card: label, color, caption, top picks, random
     n = cfg["static_tabs"]["sizes"]["dots_side"] ** 2  # artists per group
-    values = {"n": n, "t": tim[3], "tb": tim[4], "s": sty[3], "sb": sty[4], "m": n - sty[3]}  # every placeholder of the items
-    supported = {("works", 1): bool(panel_beats_rule(res, cfg).all()), ("works", 2): tim[3] > tim[4], ("works", 3): sty[3] > sty[4]}  # line 1 needs the model clearly above release counts, lines 2 and 3 the highest-rated artists above random picking
-    cards = ""  # html of the three cards
-    for key in ("works", "mind", "next"):  # left to right
-        texts = [t[f"t8_{key}_{i}"].format(**values) for i in range(1, 5) if f"t8_{key}_{i}" in t and supported.get((key, i), True)]  # items, as many as the config has (up to four)
-        if key == "next" and not trees_tie(models_data(cfg), cfg):  # the tie claim is not supported by the data
-            texts[0] = t["t8_next_1_plain"]  # first item without the tie clause
-        items = "".join(f"<div class='ui-close-item'>{html.escape(x)}</div>" for x in texts)  # one-line items
-        tip = info(t["t8_works_tip"]) if key == "works" else ""  # the What works title explains "highest rated" and "random"
-        cards += card(f"<div class='ui-close-title'><span class='ui-close-dot'></span>{html.escape(t[f't8_{key}_title'])}{tip}</div>{items}")  # one card
+    values = {"n": n, "m": n - sty[3]}  # placeholders of the items
+    first = t["t8_next_1"] if trees_tie(models_data(cfg), cfg) else t["t8_next_1_plain"]  # the tie claim only when the data supports it
+    keys = {"mind": [t["t8_mind_1"], t["t8_mind_use"], t["t8_mind_4"]], "next": [first, t["t8_next_4"], t["t8_next_3"]]}  # items of each card, in screen order
+    cards = ""  # html of the two cards
+    for key, texts in keys.items():  # left to right
+        items = "".join(f"<div class='ui-close-item'>{html.escape(x.format(**values))}</div>" for x in texts)  # one-line items
+        cards += card(f"<div class='ui-close-title'><span class='ui-close-dot'></span>{html.escape(t[f't8_{key}_title'])}</div>{items}")  # one card
     return close_css(cfg) + "<div class='ui-stack'>" + headline(t["t8_headline"]) + f"<div class='ui-row'>{cards}</div>" + closing_html(cfg, res) + "</div>"  # page
 
-
-def closing_html(cfg: dict, res: pd.DataFrame) -> str:  # closing block of tab 8
-    """Three blocks (Timing, Style, Trends) with a name, a question and a verdict chip each, then one sentence; res is the tab 5 table."""
+def closing_html(cfg: dict, res: pd.DataFrame) -> str:  # What works band of tab 8
+    """Title with its tooltip, one status sentence, three tiles (Timing, Style, Trends) with a name, a big number, a caption and the random line each, then the final sentence; res is the tab 5 table."""
     t, p, pal = cfg["static_tabs"]["texts"], cfg["poc"]["texts"], cfg["design"]["palette"]  # texts, Timing / Style labels, palette
     beats = panel_beats_rule(res, cfg)  # per question: model clearly above release counts
-    status = lambda ok, yes: t[yes] if ok else t["t8_close_tested"]  # the positive status only when the data supports it
-    trend = t["t8_close_trend_beats"] if forecast_beats_repeat(cfg) else t["t8_close_first"]  # forecast against repeating last year
-    blocks = [("timing", status(beats[p["label_timing"]], "t8_close_beats"), pal["timing"]), ("style", status(beats[p["label_style"]], "t8_close_beats"), pal["style"]), ("trends", trend, pal["highlight"])]  # key, status, color
-    row = "".join(f"<div class='ui-close-block'><div class='ui-close-name'>{html.escape(t[f't8_close_{k}_name'])}</div><div class='ui-close-q'>{html.escape(t[f't8_close_{k}_q'])}</div>{chip(s, c)}</div>" for k, s, c in blocks)  # name, question and verdict chip each
-    return f"<div class='ui-band'><div class='ui-close-blocks'>{row}</div><div class='ui-close-item'>{html.escape(t['t8_close_line'])}</div></div>"  # band with the chips and the final sentence
+    tim, sty = story_halves(cfg)  # Timing and Style top-pick numbers, the same as the tab 5 dot card
+    n = cfg["static_tabs"]["sizes"]["dots_side"] ** 2  # artists per group
+    fig = validation_figures(cfg)  # tab 7 test years and top size
+    both = bool(beats[p["label_timing"]] and beats[p["label_style"]])  # Timing and Style both clearly above release counts
+    trend = t["t8_band_trend_beats"] if forecast_beats_repeat(cfg) else t["t8_band_trend_first"]  # forecast against repeating last year
+    status = f"{t['t8_band_beats'] if both else t['t8_band_tested']} {trend}"  # one sentence: Timing and Style, then Trends
+    blocks = [("timing", pal["timing"], tim[3], n, t["t8_tile_timing_cap"], t["t8_tile_random"].format(r=tim[4])),  # key, color, hits, group size, caption, random line
+              ("style", pal["style"], sty[3], n, t["t8_tile_style_cap"], t["t8_tile_random"].format(r=sty[4])),
+              ("trends", pal["highlight"], f"{float(fig['k']):g}", fig["n"], t["t8_tile_trends_cap"], t["t8_tile_random"].format(r=t["t8_tile_trends_rand"]))]
+    row = "".join(f"<div class='ui-close-block' style='border-top-color:{c}'><div class='ui-close-name'>{html.escape(t[f't8_close_{k}_name'])}</div><div class='ui-close-big' style='color:{c}'>{html.escape(str(h))}<span class='ui-close-of'>{html.escape(t['t8_tile_of'].format(n=g))}</span></div><div class='ui-close-q'>{html.escape(cap)}</div><div class='ui-close-rand'>{html.escape(rand)}</div></div>" for k, c, h, g, cap, rand in blocks)  # name, big number with its "of n", caption and random line each
+    title = f"<div class='ui-close-title'>{html.escape(t['t8_works_title'])}{info(t['t8_works_tip'])}</div>"  # small title with the tooltip
+    return f"<div class='ui-band'>{title}<div class='ui-close-status'>{html.escape(status)}</div><div class='ui-close-blocks'>{row}</div><div class='ui-close-item'>{html.escape(t['t8_close_line'])}</div></div>"  # band with the sentence, the tiles and the final sentence
 
 
 def results_data(cfg: dict) -> pd.DataFrame:  # chart table of tab 5

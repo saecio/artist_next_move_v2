@@ -221,7 +221,7 @@ with tabs[6]:  # Time Machine demo
     for key in (rt["keys"]["year"], rt["keys"]["genre"], rt["keys"]["artists"], g["keys"]["genre"], g["keys"]["artist"]):  # widgets of the mode that is not shown
         if key in st.session_state:  # Streamlit drops the value of a widget that is not drawn
             st.session_state[key] = st.session_state[key]  # keep it, so a switch of mode loses nothing
-    mode = st.radio(g["mode_label"], modes, format_func=g["mode_options"].get, index=modes.index(g["default_mode"]), horizontal=True, key=g["keys"]["mode"])  # mode switch, mode 2 first
+    mode = st.radio(g["mode_label"], modes, format_func=g["mode_options"].get, index=modes.index(g["default_mode"]), horizontal=True, key=g["keys"]["mode"])  # mode switch, mode 1 first
     if mode == "many":  # mode 2: several artists, read-only table
         render_multi(cfg)  # the page only calls the renderer
     else:  # mode 1: one artist

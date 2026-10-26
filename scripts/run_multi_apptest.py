@@ -4,6 +4,7 @@ Usage:
     venv/bin/python3 scripts/run_multi_apptest.py
 """
 
+import copy  # snapshot of the game state
 import html  # unescape of table text
 import logging  # capture of the Streamlit widget warning
 import re  # extraction of rows from the HTML
@@ -48,10 +49,13 @@ def go(at: AppTest, stage: str) -> AppTest:  # press the buttons up to a stage
     return at  # app
 
 
-def new_app(stage: str = "reveal") -> AppTest:  # first run, mode 2 opens first, then the buttons
-    """Fresh app, first run, with no exception, advanced to a stage (the full table by default)."""
+def new_app(stage: str = "reveal") -> AppTest:  # first run opens on mode 1, mode 2 is selected, then the buttons
+    """Fresh app, first run, with no exception, switched to the Several artists view and advanced to a stage (the full table by default)."""
     at = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=60).run()  # first run
     assert not at.exception, [e.value for e in at.exception]  # no exception
+    assert at.radio(key=g["keys"]["mode"]).value == "one", "tab 6 must open on One artist"  # opening view
+    at.radio(key=g["keys"]["mode"]).set_value("many").run()  # select mode 2
+    assert not at.exception, [e.value for e in at.exception]  # no exception after the switch
     return go(at, stage)  # buttons up to the stage
 
 
@@ -99,9 +103,10 @@ def cascade_reference(ids: list, year: int) -> pd.DataFrame:  # both horizons si
 
 
 def check_default() -> None:  # test 1
-    """Default view: mode 2, year 2019, the 10 prepared artists, the selection note."""
-    at = new_app("placeholder")  # app, nothing pressed
-    assert at.radio(key=g["keys"]["mode"]).value == g["default_mode"], "mode 2 must open first"  # mode
+    """Default view of mode 2 (selected by the test, tab 6 opens on One artist): year 2019, the 10 prepared artists, the selection note."""
+    assert g["default_mode"] == "one" and list(g["mode_options"])[0] == "one", "tab 6 must open on One artist, listed first"  # config
+    at = new_app("placeholder")  # app opened on One artist, switched to Several artists, nothing pressed
+    assert at.radio(key=g["keys"]["mode"]).value == "many", "the Several artists view must be selected"  # mode
     assert at.selectbox(key=k["year"]).value == rt["year"], "the default year"  # year
     assert rt["selection_note"].format(year=rt["year"]) in [c.value for c in at.caption], "the selection note must be on screen"  # disclosure line
     shown = [a for a, _ in rows_of(at)]  # artists in the table
@@ -234,8 +239,12 @@ def check_manual_and_cap() -> None:  # test 6
 
 def check_switch() -> None:  # test 7
     """Mode 1 history survives a switch to mode 2 and back, and mode 2 creates no game state."""
-    at = new_app()  # app
-    assert g["keys"]["state"] not in at.session_state or not at.session_state[g["keys"]["state"]], "mode 2 must not create game state"  # no state
+    at = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=60).run()  # first run, opens on mode 1
+    assert not at.exception, [e.value for e in at.exception]  # no exception
+    snap = copy.deepcopy(at.session_state[g["keys"]["state"]]) if g["keys"]["state"] in at.session_state else None  # game state before the switch
+    at.radio(key=g["keys"]["mode"]).set_value("many").run()  # select mode 2
+    now = at.session_state[g["keys"]["state"]] if g["keys"]["state"] in at.session_state else None  # game state after the switch
+    assert now == snap, "mode 2 must not create game state"  # no new state
     at.radio(key=g["keys"]["mode"]).set_value("one").run()  # mode 1
     at.selectbox(key=g["keys"]["genre"]).select("Pop").run()  # genre
     opts = sorted((a["name"] for a in all_artists(cfg) if a["genre"] == "Pop"), key=str.lower)  # Pop artists

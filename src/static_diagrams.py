@@ -98,16 +98,22 @@ def close_css(cfg: dict) -> str:  # style rules of the tab 8 closing cards and b
     d = cfg["design"]  # design settings
     c, ty, b = d["palette"], d["type"], d["box"]  # palette, type scale and box sizes
     rules = [  # one rule per element
-        f".ui-close-title{{display:flex;align-items:center;gap:{b['gap']}px;font-size:{ty['subtitle']}px;font-weight:700;color:{c['text']};margin-bottom:{b['gap'] * 2}px}}",  # marker and card title
+        f".ui-close-title{{display:flex;align-items:center;gap:{b['gap']}px;font-size:{ty['subtitle']}px;font-weight:700;color:{c['text']};margin-bottom:{b['gap']}px}}",  # marker and card title
         f".ui-close-dot{{width:{d['method']['dot']}px;height:{d['method']['dot']}px;border-radius:50%;background:{c['highlight']};flex:none}}",  # round marker in the highlight color
-        f".ui-close-item{{font-size:{ty['label']}px;color:{c['text']};line-height:1.45;margin-bottom:{b['gap']}px;text-align:left}}",  # one item
-        f".ui-band{{background:{c['tint']};border-top:{b['border']}px solid {c['line']};border-bottom:{b['border']}px solid {c['line']};padding:{b['pad']}px 0 {round(ty['subtitle'] * 1.5)}px;text-align:left}}",  # closing band, paper tint between two thin rules
-        f".ui-close-blocks{{display:flex;gap:{b['gap'] * 2}px;margin-bottom:{round(ty['subtitle'] * 1.5)}px}}",  # the three blocks side by side, one text line above the closing sentence
-        f".ui-close-block{{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:{b['gap'] // 2}px}}",  # name, question and verdict chip, left aligned
+        f".ui-close-item{{font-size:{ty['label']}px;color:{c['text']};line-height:1.4;margin-bottom:{b['gap'] // 2}px;text-align:left}}",  # one item
+        f".ui-band{{background:{c['tint']};border-top:{b['border']}px solid {c['line']};border-bottom:{b['border']}px solid {c['line']};padding:{b['gap']}px;text-align:left}}",  # closing band, paper tint between two thin rules
+        f".ui-close-blocks{{display:flex;gap:{b['gap'] * 2}px;margin-bottom:{b['gap']}px}}",  # the three blocks side by side, one text line above the closing sentence
+        f".ui-close-block{{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:{b['gap'] // 3}px;background:{c['card']};border-top:{b['border'] * 3}px solid {c['line']};border-radius:{b['radius']}px;padding:{b['gap']}px}}",  # tile: name, big number, caption and random line, centered, colored top rule set inline
         f".ui-close-name{{font-family:'{d['font']['heading']}',Georgia,serif;font-size:{ty['subtitle']}px;font-weight:600;color:{c['text']}}}",  # block name in the serif
-        f".ui-close-q{{font-size:{ty['caption']}px;color:{c['muted']}}}",  # muted question line
+        f".ui-close-big{{font-family:'{d['font']['heading']}',Georgia,serif;font-size:{round(ty['big'] * 1.3)}px;line-height:1.1;font-weight:600;white-space:nowrap;letter-spacing:{ty['head_tracking']}}}",  # big number, never wraps, color set inline to the question color
+        f".ui-close-of{{font-family:'{d['font']['body']}',sans-serif;font-size:{round(ty['big'] * 1.3 / 3)}px;font-weight:400;letter-spacing:normal;color:{c['muted']};margin-left:{b['gap'] // 2}px}}",  # small muted "of n" after the number, same baseline
+        f".ui-close-q{{font-size:{ty['label']}px;color:{c['text']};line-height:1.3}}",  # tile caption
+        f".ui-close-rand{{font-size:{ty['caption']}px;color:{c['muted']};line-height:1.3}}",  # muted random line
+        f".ui-close-status{{font-size:{ty['label']}px;color:{c['muted']};text-align:center;margin:-{b['gap'] // 2}px 0 {b['gap']}px}}",  # one sentence under the band title
+        f".ui-row:has(.ui-close-title)>.ui-card{{padding:{b['gap']}px {b['pad']}px}}",  # tab 8 cards, shorter
+        f".ui-band>.ui-close-title{{justify-content:center}}",  # band title centered above the tiles
         f"@media (max-width:1023px){{.ui-close-blocks{{flex-direction:column}}}}",  # tablet and phone: blocks stacked
-        f".ui-band>.ui-close-item{{font-family:'{d['font']['heading']}',Georgia,serif;font-size:clamp({round(ty['subtitle'] * 1.1)}px,1.6vw + 10px,{round(ty['subtitle'] * 1.5)}px);line-height:1.35;margin-bottom:0}}",  # the sentence in the serif
+        f".ui-band>.ui-close-item{{font-family:'{d['font']['heading']}',Georgia,serif;font-size:clamp({round(ty['subtitle'] * 1.1)}px,1.6vw + 10px,{round(ty['subtitle'] * 1.5)}px);line-height:1.35;margin-bottom:0;text-align:center}}",  # the sentence in the serif, centered
     ]
     return "<style>" + "".join(rules) + "</style>"  # the style element
 

@@ -14,7 +14,7 @@ tabs:  # tab titles, in display order
   - Results  # tab title
   - Time Machine demo  # tab title
   - Global style forecast  # tab title
-  - Limits and next steps  # tab title
+  - Conclusions  # tab title
 header:  # fixed header above the tabs
   title: "Artist Next Move"  # project name
   tagline: "Predicts when an artist will release again, and whether the next release will bring a style new to them."  # one line under or beside the name
@@ -149,7 +149,7 @@ live:  # live scoring assets and stored files read by src/app_live.py, relative 
 game:  # tab 6 flow, thresholds, widget keys and texts
   hide_rerecordings: true  # hide cards of Works flagged is_rerecording, scores and labels are unchanged
   similar_gap: 1  # largest gap, in whole artists out of 10, between the outside rate and the base rate still worded "almost the same"
-  default_mode: many  # mode shown first in tab 6: many (several artists) or one (one artist)
+  default_mode: one  # mode shown first in tab 6: one (one artist) or many (several artists)
   t6_disclaimer: "This demo is an illustration, not a measurement. The artists are chosen to show both hits and misses, so the tally above says nothing about the model's overall accuracy. The tested results are on the Results tab."  # muted line at the very bottom of tab 6, both modes
   mode_label: "View"  # mode selector label
   mode_options: {one: "One artist", many: "Several artists"}  # mode selector texts
@@ -167,8 +167,8 @@ game:  # tab 6 flow, thresholds, widget keys and texts
     reveal: "game_reveal_{id}"  # reveal button
     next: "game_next_{id}"  # next year button
     restart: "game_restart_{id}"  # restart button
-  headline: "Go back to {year} and see what the model would have said."  # tab 6 headline, year from route.year
-  subtitle: "To check a prediction we need to know what happened, so the demo travels back in time and compares each prediction with reality."  # tab 6 subtitle
+  headline: "Go back in time and see what the model would have said."  # tab 6 headline, the same for both views
+  subtitle: "A prediction can only be checked against what happened, so the demo starts in a past year and compares each prediction with reality."  # tab 6 subtitle
   user_prediction_label: "My prediction"  # checkbox text
   answer_yes: "Yes"  # yes option and verdict word
   answer_no: "No"  # no option and verdict word
@@ -552,33 +552,30 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t4_chips_tip: "The three tree models tied on the practice runs, within the margin of error. We tuned XGBoost in stages and tuning added almost nothing: the limit is the information, not the algorithm."  # tooltip of the chip row
     t5_col_chance: "By chance"  # results column
     t5_col_model: "Our model"  # results column
-    t8_headline: "What it can do, what to keep in mind, what comes next."  # tab 8 headline
+    t8_headline: "What to keep in mind, what comes next, what works."  # tab 8 headline, same order as on screen
     t8_works_title: "What works"  # card title
-    t8_works_tip: "The model gives every artist a score and ranks them from most to least likely. We look at the highest-rated tenth. Picked at random means choosing artists with no model."  # tooltip next to the card title
-    t8_works_1: "On both questions it does better than release counts alone, tested only on years it never saw."  # item, shown only when the model is clearly above past habits on both questions (tab 5 condition)
-    t8_works_2: "Timing: of every {n} artists it rates highest, {t} release the next year. Picked at random, {tb}."  # item, n, t and tb equal the Timing top-pick numbers computed by story_halves, shown only when the highest-rated artists beat random picking
-    t8_works_3: "Style: of every {n} artists it rates highest, {s} bring a style new to them. Picked at random, {sb}."  # item, n, s and sb equal the Style top-pick numbers computed by story_halves, the same as the tab 5 dot card, shown only when the highest-rated artists beat random picking
-    t8_works_4: "Use it as a ranking, to decide which artists to look at first, not to call a single artist."  # item, always shown
+    t8_works_tip: "The model gives every artist a score and ranks them from most to least likely. Top picks are the highest-rated tenth. Picked at random means choosing artists with no model."  # tooltip of the What works title
     t8_mind_title: "What to keep in mind"  # card title
     t8_mind_1: "Discogs is a collector database: some releases are missing and recent years are incomplete."  # item
-    t8_mind_2: "\"A style new to them\" means new for that artist, not new to the world. It is a Discogs style tag, not measured from the sound."  # item
-    t8_mind_3: "Demo artists are picked to be recognisable, not at random."  # item
-    t8_mind_4: "Style is the harder question: even among the artists it rates highest, {m} in {n} miss."  # item, m = n minus the Style top picks computed by story_halves, the same as the tab 5 dot card
+    t8_mind_use: "Use it as a ranking, to decide which artists to look at first, not to call a single artist."  # item 2 of the left card, always shown
+    t8_mind_4: "Style is the harder question: even its top picks miss in {m} of {n} cases."  # item, m = n minus the Style top picks computed by story_halves, the same as the tab 5 dot card
     t8_close_timing_name: "Timing"  # closing block name
     t8_close_style_name: "Style"  # closing block name
     t8_close_trends_name: "Trends"  # closing block name
-    t8_close_timing_q: "When will an artist release again?"  # closing block, Timing question
-    t8_close_style_q: "Will it bring a style new to them?"  # closing block, Style question
-    t8_close_trends_q: "Which styles will grow?"  # closing block, style forecast question
-    t8_close_beats: "Better than release counts alone"  # status of Timing and Style when the model is clearly above past habits (tab 5 condition per question)
-    t8_close_tested: "Tested"  # status of Timing and Style otherwise
-    t8_close_first: "A first step"  # status of Trends when the forecast is not clearly better than repeating last year
-    t8_close_trend_beats: "Beats last year's ranking"  # status of Trends otherwise
+    t8_tile_of: "of {n}"  # small muted text after the big number of a tile, n is the group size
+    t8_tile_timing_cap: "top picks release the next year"  # Timing tile caption
+    t8_tile_style_cap: "top picks bring a style new to them"  # Style tile caption
+    t8_tile_trends_cap: "forecast styles really grew most"  # Trends tile caption
+    t8_tile_random: "Picked at random: {r}"  # muted line of a tile, r is the random value of the group
+    t8_tile_trends_rand: "less than 1"  # random value of the Trends tile, same wording as t7_sub
+    t8_band_beats: "Timing and Style beat release counts alone."  # first part of the band sentence when Timing and Style are both clearly above release counts (tab 5 condition)
+    t8_band_tested: "Timing and Style were tested against release counts alone."  # first part of the band sentence otherwise
+    t8_band_trend_first: "Trends is a first step."  # second part when the forecast is not clearly better than repeating last year
+    t8_band_trend_beats: "Trends beats last year's ranking."  # second part otherwise
     t8_close_line: "With richer data, this could become an early-warning tool for labels and platforms."  # final sentence, always shown
     t8_next_title: "What comes next"  # card title
     t8_next_1: "Add new information (labels, credits, collaborations): the three tree models tie, so the limit is the information, not the algorithm."  # item 1 when the models compared tie
     t8_next_1_plain: "Add new information (labels, credits, collaborations)."  # item 1 otherwise
-    t8_next_2: "Predict how long until the next release, and which style comes next."  # item
     t8_next_3: "Retrain and recheck every year, and test it with a real label or platform."  # item
     t8_next_4: "Use exact release dates, to predict the week and not only the year."  # item
     t3_headline: "More history means fewer styles new to them. A longer silence means fewer releases."  # tab 3 headline, shown only when both series decrease in the data

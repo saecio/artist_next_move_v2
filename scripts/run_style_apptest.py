@@ -48,6 +48,15 @@ def new_app() -> AppTest:  # first run
     return at  # app
 
 
+def tab6_many(at: AppTest) -> AppTest:  # check the opening view of tab 6, then select Several artists
+    """Tab 6 opens on One artist; select the Several artists view, which these checks need."""
+    mk = cfg["game"]["keys"]["mode"]  # mode radio key
+    assert cfg["game"]["default_mode"] == "one" and at.radio(key=mk).value == "one", "tab 6 must open on One artist"  # opening view
+    at.radio(key=mk).set_value("many").run()  # select mode 2
+    assert not at.exception, [e.value for e in at.exception]  # no exception after the switch
+    return at  # app
+
+
 def go(at: AppTest, stage: str) -> AppTest:  # press the buttons up to a stage
     """Press Predict and then Show reality as far as the stage needs, from the stage the page is in."""
     order = ["placeholder", "predict", "reveal"]  # stages in order
@@ -125,7 +134,8 @@ def check_stages() -> None:  # test 2
     r1 = rows(at)  # rows
     assert len(r1) == N and r1[0][1] == first, "the forecast shows after Predict"  # forecast
     assert "poc-mark" not in table(at) and not any(b.key == k["predict"] for b in at.button) and at.button(key=k["reveal"]), "no mark yet, Show reality offered"  # buttons and marks
-    how = next(e for e in at.expander if e.label == tx["how_label"])  # the expander after Predict
+    growth = st_cfg["growth_note"].format(n=st_cfg["base_years"])  # growth note text, only in the tab 7 expander
+    how = next(e for e in at.expander if e.label == tx["how_label"] and growth in [c.value for c in e.caption])  # the tab 7 expander after Predict
     assert st_cfg["growth_note"].format(n=st_cfg["base_years"]) in [c.value for c in how.caption], "the expander explains the order by expected growth"  # growth note
     at = go(at, "reveal")  # Show reality
     assert marks(at) and not any(b.key in (k["predict"], k["reveal"]) for b in at.button), "marks after Show reality, no step button"  # full
@@ -189,20 +199,21 @@ def check_flagged_and_none() -> None:  # tests 5 and 6
 
 def check_reset_and_tab6() -> None:  # test 7
     """The state resets on a year change; tab 7 does not touch the tab 6 state, and tab 6 keeps its mode."""
-    at = go(set_year(new_app(), 2018), "reveal")  # full table
+    at = tab6_many(new_app())  # tab 6 opens on One artist, Several artists is selected
+    at = go(set_year(at, 2018), "reveal")  # full table
     assert at.session_state[k["stage"]]["stage"] == "reveal"  # revealed
     route_before = at.session_state[cfg["route"]["keys"]["stage"]]["stage"]  # tab 6 mode 2 stage
     set_year(at, 2019)  # year change
     assert at.session_state[k["stage"]]["stage"] == "placeholder" and not marks(at), "a year change must reset to placeholders"  # reset
     assert at.session_state[cfg["route"]["keys"]["stage"]]["stage"] == route_before, "tab 7 must not touch the tab 6 stage"  # tab 6 untouched
-    assert at.radio(key=cfg["game"]["keys"]["mode"]).value == cfg["game"]["default_mode"]  # tab 6 mode unchanged
+    assert at.radio(key=cfg["game"]["keys"]["mode"]).value == "many"  # tab 6 view unchanged by tab 7
     print(f"7 reset: year change returns tab 7 to placeholders; tab 6 stage ({route_before}) and mode untouched")  # result
 
 
 def check_tab6_table() -> None:  # test 8
     """Tab 6 mode 2 shares the table styles with tab 7: after tab 7 is used, the tab 6 table has no Release column, the year-end tag sits under the artist and the reality cells carry titles."""
     route = cfg["route"]["texts"]  # tab 6 texts
-    at = go(set_year(new_app(), 2019), "reveal")  # tab 7 used first
+    at = go(set_year(tab6_many(new_app()), 2019), "reveal")  # tab 6 on Several artists, tab 7 used first
     at.button(key=cfg["route"]["keys"]["predict"]).click().run()  # tab 6 Predict
     at.button(key=cfg["route"]["keys"]["reveal"]).click().run()  # tab 6 Show reality
     page = next(h.value for h in at.get("html") if route["col_artist"] in h.value and route["col_timing"] in h.value)  # the tab 6 table element
