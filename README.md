@@ -40,7 +40,7 @@ The app has eight tabs:
 5. Results
 6. Time Machine demo (pick an artist, hide the future, predict, then reveal)
 7. Global style forecast (the ten styles expected to grow most)
-8. Limits and next steps
+8. Conclusions
 
 ## Terms used in the code and docs
 
@@ -50,6 +50,7 @@ The app has eight tabs:
 | Style | WHAT, `new_style` | The next release has a style the artist has not used before |
 | Global style forecast | Style trend forecast | Which styles will have more works next year, worldwide |
 | Release counts | Baselines | Simple rules built from the artist's own release counts |
+| Release counts (Style and Timing rules) | Baseline (c) and (b) in notebooks 04 and 05; WHEN baseline in notebook 03 | Style rule is (c): train positive rate of the artist's bucket of earlier releases and bucket of releases this year ((b) uses the earlier-releases bucket only and is not shown in the app). Timing rule is the WHEN baseline: releases per year of activity so far (`historical_rate`) |
 | A release | A Work, a work | One row per artist-level creative release: an album, EP or single, not a Discogs release record (see `docs/work_definition.md`) |
 
 ## Project layout
