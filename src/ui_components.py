@@ -99,7 +99,8 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f"@media (max-width:639px){{[data-testid='stMainBlockContainer']{{padding-left:1rem !important;padding-right:1rem !important}}"  # phone: smallest side padding
         f"[data-testid='stColumn']{{flex:1 1 100% !important;min-width:100% !important}}"  # phone: one column
         f".ui-row>.ui-card{{flex:1 1 100%}}.ui-flow>.ui-flow-box{{width:100%}}.ui-flow-row{{flex-wrap:wrap}}.ui-flow-row>.ui-flow-box{{flex:1 1 100%}}"  # phone: one card per row, wide flow boxes
-        f"[class*='st-key-ui-accent'] [data-testid='stVerticalBlock']{{height:auto !important;max-height:none !important}}"  # phone: the artist cards grow with their stacked content
+        f"[class*='st-key-ui-accent'] [data-testid='stVerticalBlock'],[class*='st-key-ui-accent'][class*='-t1']{{height:auto !important;max-height:none !important;overflow:visible !important}}[data-testid='stLayoutWrapper']:has(>[class*='st-key-ui-accent'][class*='-t1']){{height:auto !important;flex:none !important}}"  # phone: the artist cards (the keyed card, its inner blocks and the fixed-height layout wrapper around it) grow with their stacked content
+        f".ui-m-track{{height:auto;min-height:{d['method']['row_h']}px}}.ui-m-train{{white-space:normal;line-height:1.1;font-size:{ty['caption'] * 5 // 6}px}}.ui-m-test{{font-size:{ty['caption'] * 5 // 6}px;min-width:0;overflow:hidden}}.ui-m-sealed{{flex-direction:column;gap:2px}}.ui-m-tick{{white-space:nowrap}}"  # phone: smaller run labels that wrap inside their bars, and a track that grows with its text so the year axis stays below
         f".ui-big{{white-space:normal !important}}.ui-m-row{{grid-template-columns:{d['method']['label_w'] // 2}px 1fr}}}}",  # phone: big numbers may wrap, narrowest run labels
     ]
     return "<style>" + "".join(rules) + "</style>"  # the style element
