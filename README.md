@@ -1,5 +1,7 @@
 # Artist Next Move
 
+**Live demo:** https://artist-next-move.streamlit.app
+
 Predicts two things about an artist's next release, using only information that was available at a past date:
 
 - **Timing** (called WHEN in the code, notebooks and docs): will the artist publish a new work in the next year, and in the next two?
