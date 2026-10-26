@@ -54,15 +54,25 @@ hl = pd.read_csv(ROOT / pa["what_headline"]).set_index("model")  # Style headlin
 top = pd.read_csv(ROOT / pa["what_top10"]).set_index("model").loc[sc["rows"]["what_model"]]  # Style top group
 y = CONFIG["years"]  # split years
 
-raws = {i: tab_text(i) for i in (0, 1, 2, 3, 4, 7)}  # raw html of every static tab
+raws = {i: tab_text(i) for i in (1, 2, 3, 4, 5, 8)}  # raw html of every static tab
 texts = {i: plain(r) for i, r in raws.items()}  # visible text of every static tab
 
 for i, txt in texts.items():  # all six tabs
-    assert txt.strip(), f"tab {i + 1} is empty"  # something is drawn
-    assert "Pending." not in txt, f"tab {i + 1} still pending"  # placeholder gone
-    assert not re.search(r"\bWHEN\b|\bWHAT\b", txt), f"tab {i + 1} shows WHEN or WHAT"  # words not on screen
+    assert txt.strip(), f"tab {i} is empty"  # something is drawn
+    assert "Pending." not in txt, f"tab {i} still pending"  # placeholder gone
+    assert not re.search(r"\bWHEN\b|\bWHAT\b", txt), f"tab {i} shows WHEN or WHAT"  # words not on screen
 assert not any("Pending." in x.value for x in at.info), "no info box says Pending."  # no notice left
 print("all six tabs: not empty, no Pending., no WHEN or WHAT")  # result
+
+cover_raw = tab_text(0)  # raw html of the cover, the first tab
+cover_txt = plain(cover_raw)  # visible text of the cover
+assert at.tabs[0].label == "Introduction" == cfg["tabs"][0], "the first tab is the Introduction"  # opening tab
+assert cfg["header"]["title"] in cover_txt and t["cover_author"] in cover_txt and t["cover_programme"] in cover_txt, "cover shows the project title, the author and the programme from the config"  # texts from the config
+assert cfg["header"]["tagline"] in cover_txt and "Sánchez" in cover_txt, "cover reuses the header tagline and keeps the accent of the author"  # tagline reused, accent intact
+assert not re.search(r"\d", cover_txt.replace(t["cover_programme"], "")), "cover has no digits besides the year of the programme line"  # no numbers, charts or instructions
+assert "data:image/jpeg;base64," in cover_raw and "ui-cover-img" in cover_raw and not at.tabs[0].get("vega_lite_chart"), "cover picture is inlined from the configured file"  # picture
+assert "[data-testid='stMainBlockContainer']:has([data-testid='stTab']:first-of-type[aria-selected='true']) [data-testid='stElementContainer']:has(.ui-app-head){display:none}" in base_css(cfg) and "baseweb" not in base_css(cfg) and "class='ui-app-head'" in header_html(cfg), "base_css hides the header with a :has rule while the first tab is selected"  # css rule and its target
+print("cover ok")  # result
 
 def spec_rows(i: int) -> list:  # data rows of every Altair chart of one tab
     """One list of rows per vega chart of tab i, read from the spec the app sent."""
@@ -70,7 +80,7 @@ def spec_rows(i: int) -> list:  # data rows of every Altair chart of one tab
 
 
 norm = lambda x: re.sub(r"\s+", " ", x)  # whitespace collapsed, wrapped SVG labels read as one line
-n1, n2 = norm(texts[0]), norm(texts[1])  # visible text of tabs 1 and 2
+n1, n2 = norm(texts[1]), norm(texts[2])  # visible text of tabs 1 and 2
 works_file = pd.read_parquet(ROOT / CONFIG["paths"]["works"], columns=["year"])  # year column of the cleaned Works
 undated = int(works_file["year"].isna().sum())  # Works without a year
 st_ = sc["story"]  # story settings
@@ -81,7 +91,7 @@ for name, qkey in ((st_["timing_artist"], "t1_q_timing"), (st_["style_artist"], 
 route = pd.read_csv(ROOT / pa["route_table"])  # artist names and ids
 works_all = pd.concat([pd.read_csv(ROOT / f) for f in pa["works"]])  # Works of both pools
 picks = pd.read_csv(ROOT / pa["release_pick"])  # picked titles
-(chart_a, chart_b) = spec_rows(0)  # the two timelines
+(chart_a, chart_b) = spec_rows(1)  # the two timelines
 for chart, name in ((chart_a, st_["timing_artist"]), (chart_b, st_["style_artist"])):  # Timing then Style card
     aid = int(route.loc[route["artist"] == name, "artist_id"].iloc[0])  # Discogs id from the route table
     w = works_all[(works_all["artist_id"] == aid) & (works_all["year"] <= st_["last_release_year"]) & ~works_all["is_rerecording"]]  # dated up to the last year drawn, no re-recordings
@@ -102,8 +112,8 @@ rel_s = pd.read_csv(ROOT / pa["calibration_style"])  # Style reliability bins
 assert rel_s["n"].max() - rel_s["n"].min() <= 1, "the ten Style bins hold equal row counts"  # equal bins
 k_s, b_s = round(nn * top["precision_top"]), round(nn * top["holdout_positive_rate"])  # Style top group rate and positive rate, as the dot chart
 pl = cfg["poc"]["texts"]  # Timing and Style labels
-assert "ui-kpi" not in raws[0] and st_["timing_artist"] in n1 and st_["style_artist"] in n1, "tab 1 has the two artist cards and no number strip"  # strip gone
-assert "<svg" not in raws[0] and len(at.tabs[0].get("vega_lite_chart")) == 2, "tab 1 has no inline svg and two timelines"  # no svg
+assert "ui-kpi" not in raws[1] and st_["timing_artist"] in n1 and st_["style_artist"] in n1, "tab 1 has the two artist cards and no number strip"  # strip gone
+assert "<svg" not in raws[1] and len(at.tabs[1].get("vega_lite_chart")) == 2, "tab 1 has no inline svg and two timelines"  # no svg
 print("tab 1 ok")  # result
 
 undated_file = int(pd.read_csv(folder / pa["data_quality"]).set_index("metric").loc["works_undated", "value"])  # undated Works from the new file
@@ -116,17 +126,17 @@ for number in (fig[sc["rows"]["metric_master"]], fig[sc["rows"]["metric_standalo
     assert short_number(number) in n2, "tab 2 flow count"  # from the file
 for lab in (t["t2_in_master"], t["t2_in_standalone"].format(n=CONFIG["works"]["min_standalone_releases"]), t["t2_out"], t["t2_artists"], t["t2_chart_title"]):  # labels
     assert lab in n2, f"tab 2 label {lab}"  # threshold from config.yaml
-assert t["t2_by"] in n2 and t["t2_tip_out"] in raws[1] and "Works" not in n2, "tab 2: connector word, releases tooltip and the word releases only"  # one word for one concept
-assert "<svg" not in raws[1] and "ui-flow-box" in raws[1] and raws[1].count("ui-flow-box") == 4, "tab 2 flow is HTML and CSS with four boxes"  # no svg
-boxes = re.findall(r"<div class='ui-flow-box'.*?</div></div>", raws[1])  # flow boxes
+assert t["t2_by"] in n2 and t["t2_tip_out"] in raws[2] and "Works" not in n2, "tab 2: connector word, releases tooltip and the word releases only"  # one word for one concept
+assert "<svg" not in raws[2] and "ui-flow-box" in raws[2] and raws[2].count("ui-flow-box") == 4, "tab 2 flow is HTML and CSS with four boxes"  # no svg
+boxes = re.findall(r"<div class='ui-flow-box'.*?</div></div>", raws[2])  # flow boxes
 assert len(boxes) == 4 and all(plain(b_).strip() for b_ in boxes), "every flow box has text"  # non-empty cards
-assert t["t2_undated"].format(pct=pct) in n2 and html.escape(t["t2_tip_undated"], quote=True) in raws[1], "undated chip equals the file value, with its tooltip"  # chip
+assert t["t2_undated"].format(pct=pct) in n2 and html.escape(t["t2_tip_undated"], quote=True) in raws[2], "undated chip equals the file value, with its tooltip"  # chip
 assert undated_file == undated, "undated count equals the Works table"  # control
 assert not any("<svg" in r for r in raws.values()), "no inline svg in any static tab"  # all tabs
 assert [short_number(n) for n in (2_500_000, 2_015_417, 120_000, 510_364, 999)] == ["2.5M", "2M", "120K", "510K", "999"], "short_number abbreviates millions and thousands only"  # helper
 print("tab 2 ok")  # result
 
-charts3 = spec_rows(2)  # the two tab 3 charts
+charts3 = spec_rows(3)  # the two tab 3 charts
 assert len(charts3) == 2, "tab 3 has two charts"  # Style and Timing
 h6 = pd.read_csv(folder / pa["h6_buckets"])  # Hypothesis 6 buckets
 for rows, table, rate_col, ctrl in ((charts3[0], h1, "new_style_rate", sc["controls"]["h1_rates"]), (charts3[1], h6, "release_next_year_rate", sc["controls"]["h6_rates"])):  # Style then Timing
@@ -134,9 +144,9 @@ for rows, table, rate_col, ctrl in ((charts3[0], h1, "new_style_rate", sc["contr
     assert [r["bucket"] for r in rows] == list(table["bucket"]), "buckets equal the file"  # same order
     assert [round(r["rate_pct"], 2) for r in rows] == [round(v * 100, 2) for v in table[rate_col]] == ctrl, "rates equal the file and the controls"  # file and controls
     assert [r["rate_pct"] for r in rows] == sorted((r["rate_pct"] for r in rows), reverse=True), "bars descend"  # descending
-assert raws[2].count("ui-chip'") == 0, "Two patterns view: no chips under the charts"  # H0 chips and hypothesis chips are gone
-assert t["t3_line_style"] in texts[2] and t["t3_line_timing"] in texts[2], "Two patterns view: muted one-liners under the charts"  # config texts
-assert t["t3_headline"] in texts[2] and "<table" not in raws[2], "tab 3 headline shown, old table gone"  # headline true for the data
+assert raws[3].count("ui-chip'") == 0, "Two patterns view: no chips under the charts"  # H0 chips and hypothesis chips are gone
+assert t["t3_line_style"] in texts[3] and t["t3_line_timing"] in texts[3], "Two patterns view: muted one-liners under the charts"  # config texts
+assert t["t3_headline"] in texts[3] and "<table" not in raws[3], "tab 3 headline shown, old table gone"  # headline true for the data
 print("tab 3 ok")  # result
 
 gap, first, last = y["label_gap"], y["holdout_start"], y["holdout_end"]  # split years
@@ -148,69 +158,70 @@ spans = method_spans()  # years the tab draws
 for f, s in zip(folds, spans[:-1]):  # practice runs
     assert f["train_years"].endswith(f"-{s['train_end']}") and f["gap_years"] == f"{s['gap_start']}-{s['test_start'] - 1}" and f["test_years"] == f"{s['test_start']}-{s['test_end']}", "spans equal make_folds"  # fold outputs
 assert len(folds) == 5 and spans[-1] == {"train_end": first - gap - 1, "gap_start": first - gap, "test_start": first, "test_end": last}, "final split from config.yaml"  # five folds and the final exam
-rows4 = re.findall(r"<div class='ui-m-row( final)?' data-train-end='(\d+)' data-gap='(\d+)-(\d+)' data-test='(\d+)-(\d+)'", raws[3])  # the six rows
+rows4 = re.findall(r"<div class='ui-m-row( final)?' data-train-end='(\d+)' data-gap='(\d+)-(\d+)' data-test='(\d+)-(\d+)'", raws[4])  # the six rows
 assert len(rows4) == 6 and [bool(r[0]) for r in rows4] == [False] * 5 + [True], "tab 4 has six rows, the last one accented"  # five practice runs and the final exam
 assert [tuple(map(int, r[1:])) for r in rows4] == [(s["train_end"], s["gap_start"], s["test_start"] - 1, s["test_start"], s["test_end"]) for s in spans], "row years equal the fold functions and the config"  # years
 for i, s in enumerate(spans):  # visible test years and labels
-    assert t["t4_test"].format(first=s["test_start"], last=s["test_end"]) in texts[3], f"test years of row {i + 1}"  # test block text
-    assert (t["t4_final"] if i == 5 else t["t4_run"].format(n=i + 1)) in texts[3], f"label of row {i + 1}"  # row label
-assert t["t4_sealed"] in texts[3] and raws[3].count("ui-m-lock'") == 1 and t["t4_train"] in texts[3], "Graded once with one lock, train label"  # final row only
-assert t["t4_train_final"].format(year=first - gap - 1) in texts[3] and raws[3].count(t["t4_train"]) == 5, "final exam text uses the last training year of config.yaml, practice runs keep their label"  # year from config.yaml
-assert all(t[k] in texts[3] for k in ("t4_legend_train", "t4_legend_gap", "t4_legend_test")) and raws[3].count("class='ui-m-sw'") == 3 and html.escape(t["t4_tip_gap"], quote=True) in raws[3], "legend with three swatches and the gap tooltip"  # legend
-assert t["t4_headline"] in texts[3] and t["t4_caption"] in texts[3] and html.escape(t["t4_chips_tip"], quote=True) in raws[3] and html.escape(t["t4_caption_tip"], quote=True) in raws[3] and "never used to choose or tune" not in texts[3] and "never touched" not in texts[3] + texts[4], "headline, caption, caption tooltip, chip tooltip, old claims absent"  # config texts
-assert re.findall(r"class='ui-m-tick'[^>]*>(\d+)<", raws[3]) == [str(v) for v in range(1990, last + 1, 10)] and cfg["design"]["method_axis_start"] == 1985, "ticks every ten years from the axis start"  # axis
-chips4 = [html.unescape(c) for c in re.findall(r"class='ui-chip'[^>]*>([^<]*)", raws[3])]  # chip texts of the row
+    assert t["t4_test"].format(first=s["test_start"], last=s["test_end"]) in texts[4], f"test years of row {i + 1}"  # test block text
+    assert (t["t4_final"] if i == 5 else t["t4_run"].format(n=i + 1)) in texts[4], f"label of row {i + 1}"  # row label
+assert t["t4_sealed"] in texts[4] and raws[4].count("ui-m-lock'") == 1 and t["t4_train"] in texts[4], "Graded once with one lock, train label"  # final row only
+assert t["t4_train_final"].format(year=first - gap - 1) in texts[4] and raws[4].count(t["t4_train"]) == 5, "final exam text uses the last training year of config.yaml, practice runs keep their label"  # year from config.yaml
+assert all(t[k] in texts[4] for k in ("t4_legend_train", "t4_legend_gap", "t4_legend_test")) and raws[4].count("class='ui-m-sw'") == 3 and html.escape(t["t4_tip_gap"], quote=True) in raws[4], "legend with three swatches and the gap tooltip"  # legend
+assert t["t4_headline"] in texts[4] and t["t4_caption"] in texts[4] and html.escape(t["t4_chips_tip"], quote=True) in raws[4] and html.escape(t["t4_caption_tip"], quote=True) in raws[4] and "never used to choose or tune" not in texts[4] and "never touched" not in texts[4] + texts[5], "headline, caption, caption tooltip, chip tooltip, old claims absent"  # config texts
+assert re.findall(r"class='ui-m-tick'[^>]*>(\d+)<", raws[4]) == [str(v) for v in range(1990, last + 1, 10)] and cfg["design"]["method_axis_start"] == 1985, "ticks every ten years from the axis start"  # axis
+chips4 = [html.unescape(c) for c in re.findall(r"class='ui-chip'[^>]*>([^<]*)", raws[4])]  # chip texts of the row
 chips4, tags4 = chips4[:-3], chips4[-3:]  # model chips, then the three final-model tags
-assert chips4 == [t["t5_col_rule"]] + sc["models_compared"] and raws[3].count("ui-m-arrow'") == len(chips4) - 1 and t["t4_final_flag"] in texts[3], "chips equal the config list plus release counts, arrows between"  # model row
-assert re.search(r"ui-m-inline'><span class='ui-chip'[^>]*>XGBoost</span><span class='ui-info'", raws[3]), "info icon inline right after the final chip"  # attached to the chip
+assert chips4 == [t["t5_col_rule"]] + sc["models_compared"] and raws[4].count("ui-m-arrow'") == len(chips4) - 1 and t["t4_final_flag"] in texts[4], "chips equal the config list plus release counts, arrows between"  # model row
+assert re.search(r"ui-m-inline'><span class='ui-chip'[^>]*>XGBoost</span><span class='ui-info'", raws[4]), "info icon inline right after the final chip"  # attached to the chip
 from models import make_what_xgboost, make_xgboost  # builders of the Timing and Style final models
 from style_forecast import FINAL_MODEL, make_model  # final model of the forecast and its builder
 assert (make_xgboost.__name__, make_what_xgboost.__name__, FINAL_MODEL, type(make_model(FINAL_MODEL)).__name__) == ("make_xgboost", "make_what_xgboost", "random_forest", "RandomForestRegressor"), "final model sources: XGBoost builders and the forest"  # sources
-assert tags4 == [t["t4_final_timing"].format(model="XGBoost"), t["t4_final_style"].format(model="XGBoost"), t["t4_final_forecast"].format(model="Random Forest")] and t["t4_final_models"] in texts[3], "three final-model tags equal their sources"  # tags
-assert "<svg" not in raws[3] and not re.search(r"\bWHEN\b|\bWHAT\b", texts[3]), "tab 4: no svg, no WHEN or WHAT"  # clean tab
+assert tags4 == [t["t4_final_timing"].format(model="XGBoost"), t["t4_final_style"].format(model="XGBoost"), t["t4_final_forecast"].format(model="Random Forest")] and t["t4_final_models"] in texts[4], "three final-model tags equal their sources"  # tags
+assert "<svg" not in raws[4] and not re.search(r"\bWHEN\b|\bWHAT\b", texts[4]), "tab 4: no svg, no WHEN or WHAT"  # clean tab
 print("tab 4 ok")  # result
 
 m, b = hl.loc[sc["rows"]["what_model"]], hl.loc[sc["rows"]["what_rule"]]  # Style rows
 expected = [(wm["positive_rate"], None, None), (wb["pr_auc"], wb["pr_auc_lo"], wb["pr_auc_hi"]), (wm["pr_auc"], wm["pr_auc_lo"], wm["pr_auc_hi"]), (m["positive_rate"], None, None), (b["pr_auc"], b["pr_auc_lo"], b["pr_auc_hi"]), (m["pr_auc"], m["pr_auc_lo"], m["pr_auc_hi"])]  # chart rows from the files
-rows_timing, rows_style = spec_rows(4)  # the two tab 5 panels
+rows_timing, rows_style = spec_rows(5)  # the two tab 5 panels
 rows5 = rows_timing + rows_style  # all six bars
 got = [(r["value"], *(None if r[k] is None or r[k] != r[k] else r[k] for k in ("lo", "hi"))) for r in rows5]  # chart rows, a missing interval (null or NaN) is None
 assert got == expected, "tab 5 chart data equals the files"  # exact file values
-assert t["t5_headline"] in texts[4] and t["t5_sub"].format(first=first, last=last) in texts[4], "tab 5 headline and subtitle"  # true case
+assert t["t5_headline"] in texts[5] and t["t5_sub"].format(first=first, last=last) in texts[5], "tab 5 headline and subtitle"  # true case
 n_dots = sc["sizes"]["dots_side"] ** 2  # circles per grid
 ks = [round(n_dots * top["holdout_positive_rate"]), round(n_dots * top["precision_top"])]  # expected filled circles, left and right
-grids = re.findall(r"<div class='ui-dots-grid' style='[^']*' title='([^']*)'>(.*?)</div></div><div class='ui-dots-big'", raws[4])  # tooltip and cells of both grids
+grids = re.findall(r"<div class='ui-dots-grid' style='[^']*' title='([^']*)'>(.*?)</div></div><div class='ui-dots-big'", raws[5])  # tooltip and cells of both grids
 assert len(grids) == 2 and all(g[1].count("ui-dots-dot") == n_dots for g in grids), "two grids of circles"  # 2 x n
 for g, k, rate in zip(grids, ks, (top["holdout_positive_rate"], top["precision_top"])):  # left then right
     assert g[1].count("ui-dots-dot on") == k, "filled circles equal round(n x rate)"  # from the files
     assert f"{rate * 100:.1f}%" in g[0], "exact rate in the tooltip"  # from the files
-assert t["t5_col_rule"] == "Release counts" and t["t5_col_rule"] in texts[4], "Release counts label on screen"  # renamed
+assert t["t5_col_rule"] == "Release counts" and t["t5_col_rule"] in texts[5], "Release counts label on screen"  # renamed
 cfg_text = open(ROOT / "app/demo_config.yaml").read()  # config file text
-assert all(w_ not in texts[4] and w_ not in cfg_text and all(r["label"] != w_ for r in rows5) for w_ in ("Rule of thumb", "rule of thumb", "History only", "Simple rule")), "old names are gone"  # no trace
+assert all(w_ not in texts[5] and w_ not in cfg_text and all(r["label"] != w_ for r in rows5) for w_ in ("Rule of thumb", "rule of thumb", "History only", "Simple rule")), "old names are gone"  # no trace
 for key in ("t5_tip_chance", "t5_tip_rule_timing", "t5_tip_rule_style", "t5_tip_model"):  # the three column tooltips
-    assert html.escape(t[key], quote=True) in raws[4], f"tooltip {key}"  # on screen
+    assert html.escape(t[key], quote=True) in raws[5], f"tooltip {key}"  # on screen
 tags = {r["panel"]: r["tag"] for r in rows5 if r.get("tag")}  # advantage tags by panel
 assert tags == {poc["label_timing"]: t["t5_advantage"].format(d=round(100 * (wm["pr_auc"] - wb["pr_auc"]))), poc["label_style"]: t["t5_advantage"].format(d=round(100 * (m["pr_auc"] - b["pr_auc"])))}, "advantage tags are whole points, model minus release counts from the files"  # computed
-spec5 = "".join(e.proto.spec for e in at.tabs[4].get("vega_lite_chart")[:2])  # the two panel specs
-assert len(at.tabs[4].get("vega_lite_chart")) == 2 and re.search(r'"width":\s*"container"', spec5) and all(f in spec5 for f in ("score_txt", "range_txt", "tag_tip")), "two panels fill their equal columns, friendly tooltip fields"  # layout and tooltips
+spec5 = "".join(e.proto.spec for e in at.tabs[5].get("vega_lite_chart")[:2])  # the two panel specs
+assert len(at.tabs[5].get("vega_lite_chart")) == 2 and re.search(r'"width":\s*"container"', spec5) and all(f in spec5 for f in ("score_txt", "range_txt", "tag_tip")), "two panels fill their equal columns, friendly tooltip fields"  # layout and tooltips
 assert all(x in spec5 for x in (t["t5_tt_name"], t["t5_tt_score"], t["t5_tt_range"].format(ci=round(CONFIG["bootstrap"]["confidence"] * 100)))) and not re.search(r'"title": "(value|lo|hi)"', spec5) and t["t5_tip_advantage"] in json.dumps(rows5), "tooltip titles come from the config, no internal field names"  # tooltips
 for r_ in rows5:  # tooltip texts of every bar
     assert r_["score_txt"] == f"{r_['value']:.3f}", "score with three decimals"  # score
     assert (r_["range_txt"] is None) == (r_["label"] == t["t5_col_chance"]) and (r_["range_txt"] is None or r_["range_txt"] == t["t5_range_fmt"].format(lo=f"{r_['lo']:.3f}", hi=f"{r_['hi']:.3f}")), "95% range only on release counts and model bars"  # range
-chart5 = json.dumps([e.proto.spec for e in at.tabs[4].get("vega_lite_chart")])  # specs sent to the browser
+chart5 = json.dumps([e.proto.spec for e in at.tabs[5].get("vega_lite_chart")])  # specs sent to the browser
 assert all(w_ in chart5 for k_ in ("t5_line_timing", "t5_line_style") for w_ in textwrap.wrap(t[k_], cfg["design"]["chart"]["subtitle_wrap"])), "visible release counts line under each panel title"  # chart subtitles
-assert t["t5_caption"] in raws[4] and t["t5_headline"] in raws[4], "caption and headline"  # on screen
+assert t["t5_caption"] in raws[5] and t["t5_headline"] in raws[5], "caption and headline"  # on screen
+assert re.search(r"ui-info ui-info-up' data-tip=[^>]*>i</span></div>", raws[5]) and ".ui-info-up:hover::after{top:auto;bottom:22px}" in base_css(cfg), "tab 5 caption tooltip opens upward"  # class on the caption icon and its css rule
 old_dot = ("the 100 the model ranks highest", "ranks highest", "artists picked at random", "Picking with our model", "Guessing blindly", "guessing blindly")  # removed wording
-assert not any(w_ in texts[4] or w_ in cfg_text for w_ in old_dot), "old dot chart wording is gone"  # no trace
+assert not any(w_ in texts[5] or w_ in cfg_text for w_ in old_dot), "old dot chart wording is gone"  # no trace
 share = float(top["selected_share"])  # share of the top group from the file
 s_ = round(100 * share)  # whole percent
-assert s_ == round(100 * share) and t["t5_dot_head"].format(s=s_, n=n_dots, b=ks[0], k=ks[1]) in norm(texts[4]), "headline with s, k and b from the files"  # computed line
-assert t["t5_dot_left"] in texts[4] and t["t5_dot_right"].format(s=s_) in texts[4], "grid titles"  # titles on screen
-assert t["t5_strip_top"].format(s=s_) in texts[4] and t["t5_strip_most"] in texts[4] and t["t5_strip_least"] in texts[4] and t["t5_dot_sort"] in texts[4], "strip labels and sort line"  # strip texts
-wd = re.search(r"class='ui-strip-top' style='width:([\d.]+)%", raws[4])  # width of the highlighted segment
-assert wd and abs(float(wd.group(1)) - share * 100) < 0.01 and "<svg" not in raws[4], "strip segment width equals selected_share, no svg"  # width from the file
+assert s_ == round(100 * share) and t["t5_dot_head"].format(s=s_, n=n_dots, b=ks[0], k=ks[1]) in norm(texts[5]), "headline with s, k and b from the files"  # computed line
+assert t["t5_dot_left"] in texts[5] and t["t5_dot_right"].format(s=s_) in texts[5], "grid titles"  # titles on screen
+assert t["t5_strip_top"].format(s=s_) in texts[5] and t["t5_strip_most"] in texts[5] and t["t5_strip_least"] in texts[5] and t["t5_dot_sort"] in texts[5], "strip labels and sort line"  # strip texts
+wd = re.search(r"class='ui-strip-top' style='width:([\d.]+)%", raws[5])  # width of the highlighted segment
+assert wd and abs(float(wd.group(1)) - share * 100) < 0.01 and "<svg" not in raws[5], "strip segment width equals selected_share, no svg"  # width from the file
 assert ks[1] > ks[0], "right grid is the top segment, better than blind"  # statement stays true
-assert texts[4].count(t["t5_dot_caption"].format(n=n_dots)) == 2, "caption under each big number"  # captions
+assert texts[5].count(t["t5_dot_caption"].format(n=n_dots)) == 2, "caption under each big number"  # captions
 import static_tabs  # the module the app uses
 data5 = static_tabs.results_data(cfg)  # chart table
 assert static_tabs.models_beat_rule(data5, cfg), "true case"  # data supports it
@@ -223,7 +234,7 @@ try:  # always restore
     at2 = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=120).run()  # second run
 finally:  # restore
     static_tabs.results_data = orig  # restore
-assert t["t5_headline_neutral"] in "".join(x.value for x in at2.tabs[4].get("html")) and t["t5_headline"] not in "".join(x.value for x in at2.tabs[4].get("html")), "neutral headline when the interval check fails"  # fallback on screen
+assert t["t5_headline_neutral"] in "".join(x.value for x in at2.tabs[5].get("html")) and t["t5_headline"] not in "".join(x.value for x in at2.tabs[5].get("html")), "neutral headline when the interval check fails"  # fallback on screen
 print("tab 5 ok")  # result
 
 tags = [r["tag"] for r in rows5 if r.get("tag")]  # the two advantage tags of tab 5, Timing then Style
@@ -232,17 +243,17 @@ v8 = validation_figures(cfg)  # tab 7 tested years
 summ = pd.read_csv(ROOT / pa["calibration_summary"]).set_index("target")  # calibration summary, read independently of the app
 gap_pts = {k: round(100 * float(v)) for k, v in summ["ece"].items()}  # round(100 x ECE) per target
 pts_text = lambda n: cfg["ui"]["point_one" if n == 1 else "point_many"].format(n=n)  # singular for one point, plural otherwise
-tim_top = pd.read_csv(ROOT / pa["calibration_timing"]).sort_values("bin").iloc[-1]["observed_rate"]  # highest Timing bin, as the tab 1 third card reads it
+tim_top = pd.read_csv(ROOT / pa["calibration_timing"]).sort_values("bin").iloc[-1]["observed_rate"]  # highest Timing bin, as story_halves reads it for tab 8
 vals = {"n": nn, "t": round(nn * tim_top), "tb": round(nn * wm["positive_rate"]), "s": k_s, "sb": b_s, "m": nn - k_s}  # placeholders of the tab 8 items: group size, top picks and random picking for Timing and Style, and the Style misses; read from the files, not from the app code
-assert raws[7].count("class='ui-card'") == 3 and raws[7].count("ui-close-dot'") == 3 and raws[7].count("class='ui-close-item'") == 13, "tab 8: three cards, a marker each, four items in What works, four in What to keep in mind, four in What comes next and the closing sentence"  # structure
+assert raws[8].count("class='ui-card'") == 3 and raws[8].count("ui-close-dot'") == 3 and raws[8].count("class='ui-close-item'") == 13, "tab 8: three cards, a marker each, four items in What works, four in What to keep in mind, four in What comes next and the closing sentence"  # structure
 for key in ("works", "mind", "next"):  # each card
-    assert t[f"t8_{key}_title"] in texts[7], f"card title {key}"  # title
-    assert key != "works" or html.escape(t["t8_works_tip"], quote=True) in raws[7], "What works title tooltip"  # tooltip
+    assert t[f"t8_{key}_title"] in texts[8], f"card title {key}"  # title
+    assert key != "works" or html.escape(t["t8_works_tip"], quote=True) in raws[8], "What works title tooltip"  # tooltip
     for i in {"works": (1, 2, 3, 4), "mind": (1, 2, 3, 4), "next": (1, 2, 3, 4)}[key]:  # items
         want = t[f"t8_{key}_{i}"].format(**vals)  # item with its numbers
         if (key, i) == ("next", 1) and not trees_tie(models_data(cfg), cfg):  # the tie clause is not supported by the data
             want = t["t8_next_1_plain"]  # first item without the tie clause
-        assert want in texts[7], f"item {key} {i}"  # item on screen
+        assert want in texts[8], f"item {key} {i}"  # item on screen
 import depth_views  # module whose tie check the closing slide calls
 import static_tabs  # builder of the closing slide
 for tie, want in ((True, t["t8_next_1"]), (False, t["t8_next_1_plain"])):  # the tie claim both ways
@@ -279,12 +290,12 @@ c3 = copy.deepcopy(cfg)  # config with a missing file
 c3["style_tab"]["paired_file"] = "results/style_forecast/does_not_exist.csv"  # no such file
 assert static_tabs.forecast_beats_repeat(c3) is False, "missing file gives False"  # chip falls back to A first step
 for pal_key, q in (("timing", "t8_close_timing_q"), ("style", "t8_close_style_q"), ("highlight", "t8_close_trends_q")):  # chip colors on the real page
-    assert t[q] in texts[7] and f"border-color:{cfg['design']['palette'][pal_key]}" in raws[7], f"closing chip {q} on screen in its color"  # question and color
-assert t["t8_headline"] in texts[7] and "poc-st" not in raws[7], "tab 8 headline, old blocks gone"  # clean
-assert "<svg" not in raws[7] and not re.search(r"\bWHEN\b|\bWHAT\b", texts[7]), "tab 8: no svg, no WHEN or WHAT"  # clean tab
+    assert t[q] in texts[8] and f"border-color:{cfg['design']['palette'][pal_key]}" in raws[8], f"closing chip {q} on screen in its color"  # question and color
+assert t["t8_headline"] in texts[8] and "poc-st" not in raws[8], "tab 8 headline, old blocks gone"  # clean
+assert "<svg" not in raws[8] and not re.search(r"\bWHEN\b|\bWHAT\b", texts[8]), "tab 8: no svg, no WHEN or WHAT"  # clean tab
 print("tab 8 ok")  # result
 
-(chart2,) = spec_rows(1)  # the tab 2 chart
+(chart2,) = spec_rows(2)  # the tab 2 chart
 main = [r for r in chart2 if "works" in r and "label" not in r]  # yearly rows
 peak_rows = [r for r in chart2 if "label" in r and "works" in r]  # the peak point
 band_rows = [r for r in chart2 if "x0" in r]  # the shaded band
@@ -300,7 +311,7 @@ print("tab 2 chart ok")  # result
 
 tag = cfg["header"]["tagline"]  # header tagline
 assert any(cfg["header"]["title"] in e.value and tag in e.value for e in at.get("html")), "header with name and tagline"  # on the page
-assert all(tag not in tab_text(i) for i in range(8)), "header sits above the tabs, so it shows on every tab"  # not inside a tab
+assert all(tag not in tab_text(i) for i in range(1, 9)), "header sits above the tabs, so it shows on every tab"  # not inside a tab
 css_text = "".join(e.value for e in at.get("html") if "<style>" in e.value)  # shared css
 pal = cfg["design"]["palette"]  # palette
 bg, tm = pal["background"], pal["text"]  # button colors, ink fill with paper text
@@ -314,7 +325,7 @@ for f in list((ROOT / "app").glob("*.py")) + list((ROOT / "src").glob("*.py")): 
     if f.name != "ui_components.py":  # only the shared module may carry button css
         assert "stBaseButton" not in src and "stButton" not in src, f"button css outside ui_components in {f.name}"  # one place
 print("header and buttons ok")  # result
-assert all(not re.search(r"\bWHEN\b|\bWHAT\b", tab_text(i)) for i in range(8)), "no WHEN or WHAT in any html, tooltips included"  # raw html
+assert all(not re.search(r"\bWHEN\b|\bWHAT\b", tab_text(i)) for i in range(1, 9)), "no WHEN or WHAT in any html, tooltips included"  # raw html
 print("no WHEN or WHAT in the raw html")  # result
 
 import tomllib  # toml reader
@@ -355,15 +366,15 @@ vk = sc["view_keys"]  # pill keys
 pill = lambda key: at.segmented_control(key=key)  # a pill by key
 assert pill(vk["tab2"]).options == [t[k] for k in sc["views"]["tab2"]] and pill(vk["tab3"]).options == [t[k] for k in sc["views"]["tab3"]], "two pills on tab 2 and on tab 3"  # options from the config
 assert pill(vk["tab2"]).value == t["t2_view_volume"] and pill(vk["tab3"]).value == t["t3_view_patterns"], "defaults are Volume and Two patterns"  # first view of each
-assert tab2_headline_text(cfg) in texts[1] and len(spec_rows(1)) == 1, "Volume view is the current tab 2"  # unchanged default
+assert tab2_headline_text(cfg) in texts[2] and len(spec_rows(2)) == 1, "Volume view is the current tab 2"  # unchanged default
 print("pills ok")  # result
 
 pill(vk["tab2"]).set_value(t["t2_view_genres"]).run()  # open the Genres view
 assert not at.exception, [e.value for e in at.exception]  # no exception
 gen = pd.read_csv(folder / pa["genre_share"])  # stored genre shares
-g_raw = tab_text(1)  # raw html of tab 2
+g_raw = tab_text(2)  # raw html of tab 2
 g_txt = plain(g_raw)  # visible text of tab 2
-g_rows = spec_rows(1)  # chart data of tab 2
+g_rows = spec_rows(2)  # chart data of tab 2
 assert len(g_rows) == 1 and sorted((int(r["year"]), r["genre"], round(r["share"], 10)) for r in g_rows[0]) == sorted((int(a_), g_, round(s_, 10)) for a_, g_, s_ in zip(gen["year"], gen["genre"], gen["share"])), "Genres chart data equals genre_share_by_year.csv"  # exact file values
 assert np.allclose(gen.groupby("year")["share"].sum(), 1.0), "shares sum to 1 per year"  # control
 y0, y1 = cfg["design"]["genre_story_start_year"], int(gen["year"].max())  # story years
@@ -373,7 +384,7 @@ line = t["t2g_headline"].format(genre=best, a=f"{wide.loc[best, y0] * 100:.0f}",
 assert line in g_txt and t["t2g_sub"] in g_txt, "Genres headline names the genre of largest increase, numbers equal the file"  # headline and subtitle
 assert t["t2g_note"].format(year=cfg["design"]["incomplete_from_year"] - 1) in g_txt and t["t2g_title"] in g_txt, "years note and card title"  # note and title
 assert tab2_headline_text(cfg) not in g_txt and "<svg" not in g_raw and not re.search(r"\bWHEN\b|\bWHAT\b", g_raw), "Genres view: Volume content gone, no svg, no WHEN or WHAT"  # clean view
-spec = json.loads(at.tabs[1].get("vega_lite_chart")[0].proto.spec)  # chart spec
+spec = json.loads(at.tabs[2].get("vega_lite_chart")[0].proto.spec)  # chart spec
 enc = spec["encoding"]  # encodings
 assert spec["params"][0]["bind"] == "legend" and enc["color"]["legend"]["orient"] == "right", "legend on the right, clickable"  # legend selection
 assert dict(zip(enc["color"]["scale"]["domain"], enc["color"]["scale"]["range"])) == cfg["design"]["genre_palette"] and set(gen["genre"]) == set(cfg["design"]["genre_palette"]), "one palette color per genre"  # config palette
@@ -381,12 +392,12 @@ assert [x["title"] for x in enc["tooltip"]] == [t["t2g_tip_year"], t["t2g_tip_ge
 assert spec["height"] == cfg["design"]["chart"]["height_genres"], "chart height from the config"  # height
 print("tab 2 genres ok")  # result
 pill(vk["tab2"]).set_value(t["t2_view_volume"]).run()  # back to Volume
-assert tab2_headline_text(cfg) in plain(tab_text(1)) and len(spec_rows(1)) == 1, "Volume view returns unchanged"  # switch back
+assert tab2_headline_text(cfg) in plain(tab_text(2)) and len(spec_rows(2)) == 1, "Volume view returns unchanged"  # switch back
 print("tab 2 views ok")  # result
 
 pill(vk["tab3"]).set_value(t["t3_view_tests"]).run()  # open the Six tests view
 assert not at.exception, [e.value for e in at.exception]  # no exception
-c_raw = tab_text(2)  # raw html of tab 3
+c_raw = tab_text(3)  # raw html of tab 3
 c_txt = plain(c_raw)  # visible text of tab 3
 cards = pd.read_csv(folder / pa["hyp_cards"]).merge(pd.read_csv(folder / pa["hyp_labels"]), on="id")  # stored cards with short labels
 order = cards.sort_values("effect_size", ascending=False).reset_index(drop=True)  # strongest first
@@ -397,7 +408,7 @@ assert t["t3s_line"] in c_txt and html.escape(t["t3s_tip_honesty"], quote=True) 
 size = cards.set_index("id")["effect_size"]  # by id
 assert all(abs(size[i] - e) <= sc["controls"]["effect_tolerance"] for i, e in sc["controls"]["effect_sizes"].items()), "effect sizes equal the controls"  # controls
 assert "ui-qtext" not in c_raw and "ui-meter" not in c_raw and "ui-answer" not in c_raw and "ui-chip'" not in c_raw and "hyp-card" not in c_raw, "no card grid, strength bars or chips"  # grid gone
-charts = at.tabs[2].get("vega_lite_chart")  # the charts of the view
+charts = at.tabs[3].get("vega_lite_chart")  # the charts of the view
 assert len(charts) == 1, "one chart"  # no mini charts
 got_rows = [r for d in charts[0].proto.datasets for r in arrow.ipc.open_stream(d.data.data).read_all().to_pylist()]  # chart data
 assert len(got_rows) == 6 and [r["short_label"] for r in got_rows] == list(order["short_label"]), "six bars in descending order of strength"  # rows
@@ -415,8 +426,8 @@ for r, (_, o) in zip(got_rows, order.iterrows()):  # bar by bar
 assert "<svg" not in c_raw and not re.search(r"\bWHEN\b|\bWHAT\b", c_raw) and t["t3_headline"] not in c_txt, "Six tests view: no svg, no WHEN or WHAT, Two patterns content gone"  # clean view
 print("tab 3 six tests ok")  # result
 pill(vk["tab3"]).set_value(t["t3_view_patterns"]).run()  # back to Two patterns
-back = spec_rows(2)  # the two charts again
-assert [[r["bucket"] for r in rows] for rows in back] == [list(h1["bucket"]), list(h6["bucket"])] and t["t3_headline"] in plain(tab_text(2)), "Two patterns view returns with the file bars"  # switch back
+back = spec_rows(3)  # the two charts again
+assert [[r["bucket"] for r in rows] for rows in back] == [list(h1["bucket"]), list(h6["bucket"])] and t["t3_headline"] in plain(tab_text(3)), "Two patterns view returns with the file bars"  # switch back
 print("tab 3 views ok")  # result
 # tab 5 depth views (pill, data equal to the files, headline conditions both ways)
 import app_data  # module whose loader the app calls, patched below
@@ -452,25 +463,25 @@ def patched_run(owner, name, repl, view: str):  # a fresh app run with one funct
 
 def tab5_html(app) -> str:  # raw html of tab 5
     """All html elements of tab 5 of an app run."""
-    return "".join(x.value for x in app.tabs[4].get("html"))  # raw html
+    return "".join(x.value for x in app.tabs[5].get("html"))  # raw html
 
 
 assert pill(vk["tab5"]).options == [t[k] for k in sc["views"]["tab5"]] and len(pill(vk["tab5"]).options) == 4, "tab 5 pill has four views"  # options from the config
-assert pill(vk["tab5"]).value == t["t5_view_results"] and len(at.tabs[4].get("vega_lite_chart")) == 2, "default is the Results view, unchanged"  # default
+assert pill(vk["tab5"]).value == t["t5_view_results"] and len(at.tabs[5].get("vega_lite_chart")) == 2, "default is the Results view, unchanged"  # default
 q_t, q_s = poc["label_timing"], poc["label_style"]  # question labels
 pal_ = cfg["design"]["palette"]  # palette
 
 pill(vk["tab5"]).set_value(t["t5_view_years"]).run()  # Year by year
 assert not at.exception, [e.value for e in at.exception]  # no exception
-y_raw = tab_text(4)  # raw html
-ch_y = spec_rows(4)  # the two line charts
+y_raw = tab_text(5)  # raw html
+ch_y = spec_rows(5)  # the two line charts
 byy = pd.read_csv(ROOT / pa["what_by_year"])  # Style per year
 want_t = {(t["t5_col_model"], int(k), round(v["pr_auc"], 10)) for k, v in wm["by_year"].items()} | {(t["t5_col_rule"], int(k), round(v["pr_auc"], 10)) for k, v in wb["by_year"].items()}  # Timing points from the JSON files
 want_s = {(t["t5_col_model"] if m == sc["rows"]["what_model"] else t["t5_col_rule"], int(yr), round(v, 10)) for m, yr, v in zip(byy["model"], byy["year"], byy["pr_auc"]) if m in (sc["rows"]["what_model"], sc["rows"]["what_rule"])}  # Style points from by_year.csv
 got = [{(r["line"], int(r["year"]), round(r["score"], 10)) for r in rows} for rows in ch_y]  # points sent to the browser
 assert len(ch_y) == 2 and got[0] == want_t and got[1] == want_s, "Year by year chart data equals the files"  # data
 assert max(yr for _, yr, _ in want_t) == 2023 and max(yr for _, yr, _ in want_s) == 2022 and len(want_s) == 10, "Style stops one year earlier, no 2023 point is invented"  # missing year
-assert all(f in "".join(e.proto.spec for e in at.tabs[4].get("vega_lite_chart")) for f in ("score_txt", t["t5y_tip_year"], t["t5y_tip_score"])), "friendly tooltips"  # tooltip rows
+assert all(f in "".join(e.proto.spec for e in at.tabs[5].get("vega_lite_chart")) for f in ("score_txt", t["t5y_tip_year"], t["t5y_tip_score"])), "friendly tooltips"  # tooltip rows
 ahead = all(m > r for want in (want_t, want_s) for (ln, yr, m) in want if ln == t["t5_col_model"] for (ln2, yr2, r) in want if ln2 == t["t5_col_rule"] and yr2 == yr)  # model above release counts in every year of each question
 assert ahead, "the files support the Year by year headline"  # true case
 assert t["t5y_headline"] in plain(y_raw) and t["t5y_line"] in plain(y_raw) and t["t5y_note"].format(year=y["holdout_end"] + 1) in plain(y_raw), "headline, muted line and the Style note shown"  # true case on screen
@@ -483,9 +494,9 @@ print("tab 5 year by year ok")  # result
 
 pill(vk["tab5"]).set_value(t["t5_view_models"]).run()  # Models compared
 assert not at.exception, [e.value for e in at.exception]  # no exception
-m_raw = tab_text(4)  # raw html
+m_raw = tab_text(5)  # raw html
 mc = pd.read_csv(folder / pa["models_compared"])  # stored table
-ch_m = spec_rows(4)  # the two dot plots
+ch_m = spec_rows(5)  # the two dot plots
 assert len(ch_m) == 2, "two dot plots"  # charts
 for rows, q, col in zip(ch_m, (q_t, q_s), (pal_["timing"], pal_["style"])):  # each question
     part = mc[mc["question"] == q]  # stored rows
@@ -495,7 +506,7 @@ for rows, q, col in zip(ch_m, (q_t, q_s), (pal_["timing"], pal_["style"])):  # e
     rule_row = [r for r in rows if r.get("model") == t["t5_col_rule"]]  # release counts row
     assert len(rule_row) == 1 and abs(rule_row[0]["mean_score"] - float(part.loc[part["model"] == t["t5_col_rule"], "mean_score"].iloc[0])) < 1e-9, f"{q}: dashed line equals the stored release counts score"  # line
     order = [m for m in part.sort_values("mean_score", ascending=False)["model"] if m != t["t5_col_rule"]]  # best first
-    assert order in find_key(json.loads(ch_m and at.tabs[4].get("vega_lite_chart")[(q_t, q_s).index(q)].proto.spec), "sort"), f"{q}: rows sorted from best to worst"  # sort order sent to the chart
+    assert order in find_key(json.loads(ch_m and at.tabs[5].get("vega_lite_chart")[(q_t, q_s).index(q)].proto.spec), "sort"), f"{q}: rows sorted from best to worst"  # sort order sent to the chart
 assert set(mc["question"]) == {q_t, q_s} and (mc["source"].str.len() > 0).all() and {"Logistic Regression", "Naive Bayes", "Random Forest", "HistGradientBoosting", "XGBoost"} <= set(mc["model"]), "every model has a row and a source"  # file content
 half = lambda q: ((lambda p: ((p["ci_high"] - p["ci_low"]) / 2).min())(mc[(mc["question"] == q) & mc["model"].isin(sc["tree_models"])]))  # smallest half-width of the trees
 ties = all((lambda p: p["mean_score"].max() - p["mean_score"].min() < half(q) and mc[(mc["question"] == q) & (mc["model"] == sc["simple_model"])]["mean_score"].iloc[0] < p["mean_score"].min())(mc[(mc["question"] == q) & mc["model"].isin(sc["tree_models"])]) for q in (q_t, q_s))  # independent condition
@@ -510,15 +521,15 @@ print("tab 5 models compared ok")  # result
 
 pill(vk["tab5"]).set_value(t["t5_view_trust"]).run()  # Can you trust the score?
 assert not at.exception, [e.value for e in at.exception]  # no exception
-c_raw5 = tab_text(4)  # raw html
-(ch_c,) = spec_rows(4)  # the reliability chart
+c_raw5 = tab_text(5)  # raw html
+(ch_c,) = spec_rows(5)  # the reliability chart
 rel_t, rel_s = (pd.read_csv(ROOT / pa[k]) for k in ("calibration_timing", "calibration_style"))  # reliability files
 pts = [r for r in ch_c if "bin" in r]  # point rows
 assert len(pts) == 20 and all(sum(r["question"] == q for r in pts) == 10 for q in (q_t, q_s)), "ten points per question"  # count
 for q, f in ((q_t, rel_t), (q_s, rel_s)):  # each question
     assert sorted((int(r["bin"]), round(r["mean_score"], 10), round(r["observed_rate"], 10), round(r["ci_low"], 10), round(r["ci_high"], 10)) for r in pts if r["question"] == q) == sorted((int(b), round(a, 10), round(o, 10), round(lo, 10), round(hi, 10)) for b, a, o, lo, hi in zip(f["bin"], f["mean_score"], f["observed_rate"], f["ci_low"], f["ci_high"])), f"{q}: points and whiskers equal the reliability file"  # data
 assert sorted(r["a"] for r in ch_c if "a" in r) == [0.0, 1.0], "the diagonal exists"  # perfect line
-spec_c = at.tabs[4].get("vega_lite_chart")[0].proto.spec  # chart spec
+spec_c = at.tabs[5].get("vega_lite_chart")[0].proto.spec  # chart spec
 assert spec_c.count('"domain": [0, 1]') + spec_c.count('"domain":[0,1]') >= 2 and "strokeDash" in spec_c, "equal axes from 0 to 1 and a dashed diagonal"  # axes and dash
 tip_s = [r for r in pts if r["question"] == q_s and int(r["bin"]) == 10][0]["tip"]  # tooltip of the top Style point
 top_s = rel_s.loc[rel_s["bin"].idxmax()]  # highest Style bin
@@ -549,7 +560,7 @@ assert cfg["poc"]["gap_points"] == gap_pts, "the loader's gaps equal round(100 x
 assert "{gap}" in cfg["poc"]["texts"]["score_tip"] and "not a probability" not in cfg["poc"]["texts"]["score_tip"], "tab 6 tooltip uses the gap and no longer denies calibration"  # tooltip pattern
 assert not any(re.search(r"not a probability|not calibrated|not been calibrated|calibration was not", v, re.I) for v in list(t.values()) + list(cfg["poc"]["texts"].values()) + list(cfg["notices"].values()) if isinstance(v, str)), "no on-screen text denies the calibration"  # texts
 pill(vk["tab5"]).set_value(t["t5_view_results"]).run()  # back to Results
-assert len(at.tabs[4].get("vega_lite_chart")) == 2 and t["t5_headline"] in plain(tab_text(4)), "Results view returns unchanged"  # switch back
+assert len(at.tabs[5].get("vega_lite_chart")) == 2 and t["t5_headline"] in plain(tab_text(5)), "Results view returns unchanged"  # switch back
 print("tab 5 views ok")  # result
 # design pass 8: alignment, gap wording, zoom caption, reading card, plural, tab 1 hook and photos
 def find_columns(node):  # the container whose children are the two columns of the Results view
@@ -565,7 +576,7 @@ def find_columns(node):  # the container whose children are the two columns of t
     return []  # none here
 
 
-cols5 = find_columns(at.tabs[4])  # chart column and dot column of the Results view
+cols5 = find_columns(at.tabs[5])  # chart column and dot column of the Results view
 cards5 = [next(iter(c.children.values())) for c in cols5]  # the two bordered cards
 assert [int(re.search(r"pixel_height: (\d+)", str(c.proto)).group(1)) for c in cards5] == [sc["sizes"]["tab5_card_height"]] * 2, "both Results cards have the configured height"  # same top and bottom
 dot_line_html = [x.value for x in cards5[1].children.values() if x.type == "html"][0]  # first html element of the dot card
@@ -574,13 +585,13 @@ assert not any(x.type == "html" and "ui-card-title" in x.value for x in cols5[1]
 print("tab 5 alignment ok")  # result
 
 assert t["t4_legend_gap"] == "Gap" and t["t4_tip_gap"] == "We leave a gap of two years. Each answer looks ahead one to two years, so training right up to the test would let the model peek at what it is graded on.", "gap legend wording"  # exact texts
-assert "Skipped" not in raws[3] and html.escape(t["t4_tip_gap"], quote=True) in raws[3], "tab 4 shows Gap and the new tooltip, no Skipped"  # on screen
+assert "Skipped" not in raws[4] and html.escape(t["t4_tip_gap"], quote=True) in raws[4], "tab 4 shows Gap and the new tooltip, no Skipped"  # on screen
 print("tab 4 gap wording ok")  # result
 
 pill(vk["tab5"]).set_value(t["t5_view_models"]).run()  # Models compared
 dom_min = lambda q: (lambda v: v.min() - 0.15 * (v.max() - v.min()))(mc.loc[mc["question"] == q, "mean_score"])  # axis minimum of a question
 assert cfg["design"]["chart"]["axis_pad"] == 0.15 and all(dom_min(q) > 0 for q in (q_t, q_s)), "both axes start above zero"  # premise
-assert plain(tab_text(4)).count(t["t5m_zoom"]) == 2, "one zoom caption under each dot plot"  # captions
+assert plain(tab_text(5)).count(t["t5m_zoom"]) == 2, "one zoom caption under each dot plot"  # captions
 low0 = depth_views.models_data(cfg).copy()  # real table
 low0.loc[(low0["question"] == q_t) & (low0["model"] == "Naive Bayes"), "mean_score"] = 0.0  # Timing axis now reaches zero
 fb = patched_run(depth_views, "models_data", lambda c: low0, t["t5_view_models"])  # patched run
@@ -589,44 +600,44 @@ print("tab 5 zoom caption ok")  # result
 
 pill(vk["tab5"]).set_value(t["t5_view_trust"]).run()  # Can you trust the score?
 cal_ = cfg["design"]["calibration"]  # example numbers
-read_txt = plain(tab_text(4))  # visible text
+read_txt = plain(tab_text(5))  # visible text
 assert t["t5t_read"].format(pct=cal_["example_pct"], days=cal_["example_days"], total=cal_["example_total"]) in read_txt and t["t5t_read_title"] in read_txt, "reading card text from the config numbers"  # card
 assert cal_["example_pct"] / 100 * cal_["example_total"] == cal_["example_days"], "the example is arithmetically right"  # 60% of 10 days is 6
 assert app_data.point_text(cfg, 1) == "1 point" and app_data.point_text(cfg, 2) == "2 points" and "1 points" not in read_txt, "singular for one point, plural otherwise"  # plural rule
 print("tab 5 reading card and plural ok")  # result
 
-h1_txt = texts[0]  # tab 1 visible text
+h1_txt = texts[1]  # tab 1 visible text
 assert t["t1_headline"].format(year=2026) in h1_txt and t["t1_use"] in h1_txt and sc["story"]["cutoff_year"] == 2026, "tab 1 hook texts"  # new framing
 assert not re.search(r"correct|right|predicted|accura|result|score", h1_txt, re.I), "the hook claims no prediction result"  # no claim
 photo = cfg["design"]["photo"]  # photo settings
 cr = pd.read_csv(ROOT / pa["artist_credits"]).set_index("artist")  # credits file
 ts_ = sc["story"]["timing_artist"]  # Taylor Swift
 assert (ROOT / pa["artist_photos"] / cr.loc[ts_, "file"]).is_file(), "premise: the Taylor Swift photo exists"  # file
-assert re.search(rf"<img class='ui-photo' src='data:image/jpeg;base64,[^']+' alt='{ts_}' style='width:100%;max-width:{photo['width']}px;height:{photo['height']}px;border-radius:{photo['radius']}px", raws[0]), "photo element for Taylor Swift with the configured size"  # photo
-assert "size" not in photo and f"object-position:{photo['focus']}" in raws[0] and f"font-size:{photo['name_font']}px" in raws[0] and f"font-size:{photo['question_font']}px" in raws[0], "old 56 px key gone, focus, name and question sizes from the config"  # card styling
-assert photo["card_height"] <= 320 and cfg["design"]["chart"]["height_story"] == 100, "one-screen proxy: the card height stays at most 320 px and the timeline is the short one"  # height proxy
+assert re.search(rf"<img class='ui-photo' src='data:image/jpeg;base64,[^']+' alt='{ts_}' style='width:100%;max-width:{photo['width']}px;height:{photo['height']}px;border-radius:{photo['radius']}px", raws[1]), "photo element for Taylor Swift with the configured size"  # photo
+assert "size" not in photo and f"object-position:{photo['focus']}" in raws[1] and f"font-size:{photo['name_font']}px" in raws[1] and f"font-size:{photo['question_font']}px" in raws[1], "old 56 px key gone, focus, name and question sizes from the config"  # card styling
+assert photo["card_height"] <= 262 and cfg["design"]["chart"]["height_story"] == 84, "one-screen proxy: two stacked cards of at most 262 px with the taller timeline"  # height proxy
 have = [a_ for a_ in cr.index if (ROOT / pa["artist_photos"] / cr.loc[a_, "file"]).is_file()]  # artists whose photo file exists
-wraps = re.findall(r"<div class='ui-photo-wrap'.*?</div></div>", raws[0], flags=re.S)  # photo columns with their overlay
+wraps = re.findall(r"<div class='ui-photo-wrap'.*?</div></div>", raws[1], flags=re.S)  # photo columns with their overlay
 assert len(wraps) == len(have) and all(w_.index("<img") < w_.index("class='ui-credit'") for w_ in wraps) and not any("position:absolute" in w_ for w_ in wraps), "the credit is a line under the photo inside the photo column, not an overlay"  # placement
-assert raws[0].count("class='ui-credit'") == len(have) and not re.search(r"</div>\s*<div class='ui-caption'>Photo:", raws[0]) and "linear-gradient" not in raws[0] and f"font-size:{photo['credit_font']}px" in raws[0] and f"opacity:{photo['credit_opacity']}" in raws[0] and "text-overflow:ellipsis" not in raws[0] and f"margin-top:{photo['credit_margin']}px" in raws[0], "credit sized from the config, no gradient, not after the question"  # styling
+assert raws[1].count("class='ui-credit'") == len(have) and not re.search(r"</div>\s*<div class='ui-caption'>Photo:", raws[1]) and "linear-gradient" not in raws[1] and f"font-size:{photo['credit_font']}px" in raws[1] and f"opacity:{photo['credit_opacity']}" in raws[1] and "text-overflow:ellipsis" not in raws[1] and f"margin-top:{photo['credit_margin']}px" in raws[1], "credit sized from the config, no gradient, not after the question"  # styling
 want_credit = lambda a_: (t["t1_credit"].format(author=cr.loc[a_, "author"], license=cr.loc[a_, "license"]) if isinstance(cr.loc[a_, "author"], str) and cr.loc[a_, "author"].strip() else t["t1_credit_noauthor"].format(license=cr.loc[a_, "license"]))  # text by the two patterns
 for a_ in have:  # each artist with a photo
     assert plain(static_tabs.credit_html(cfg, a_)).strip() == want_credit(a_), f"credit text of {a_} matches credits.csv"  # file text
 assert all(want_credit(a_) in h1_txt for a_ in have) and h1_txt.count("Photo:") == len(have), "one credit per photo that exists, none for a monogram"  # count
-assert raws[0].count(f"padding-bottom:{photo['bottom_pad']}px") == len(have), "bottom padding sits under the credit inside the photo column"  # padding
+assert raws[1].count(f"padding-bottom:{photo['bottom_pad']}px") == len(have), "bottom padding sits under the credit inside the photo column"  # padding
 st_q = {n_: t[k_].format(artist=n_) for n_, k_ in ((sc["story"]["timing_artist"], "t1_q_timing"), (sc["story"]["style_artist"], "t1_q_style"))}  # the two questions
-assert all(html.escape(q_) in html.unescape(raws[0]) or q_ in html.unescape(raws[0]) for q_ in st_q.values()), "both question lines are in the rendered tab 1 html"  # question visible
+assert all(html.escape(q_) in html.unescape(raws[1]) or q_ in html.unescape(raws[1]) for q_ in st_q.values()), "both question lines are in the rendered tab 1 html"  # question visible
 gap_px = 16  # Streamlit vertical gap between two elements of a column
-need = photo["name_font"] * 1.4 + cfg["design"]["box"]["gap"] + cfg["design"]["chart"]["height_story"] + photo["question_font"] * 1.5 * 2 + 2 * gap_px  # name block, timeline and question line
+need = photo["name_font"] * 1.4 + cfg["design"]["box"]["gap"] + cfg["design"]["chart"]["height_story"] + photo["question_font"] * 1.5 + 2 * gap_px  # name block, timeline and question line
 assert need <= photo["height"] + photo["question_extra"], f"name, timeline and question fit the photo height ({need} px of {photo['height']} px)"  # config proxy
-assert photo["height"] + photo["credit_margin"] + photo["credit_line"] + photo["bottom_pad"] <= photo["card_height"] and all(sum(f"pixel_height: {photo['height']}" in str(c.proto) for c in col.children.values()) >= 0 for col in at.tabs[0].columns), "photo column plus credit and padding fits the card; the right column is a container of the photo height"  # proxy
-assert raws[0].count(f"padding-bottom:{photo['bottom_pad']}px") == len(have) and photo["card_height"] == 316 and photo["height"] + photo["credit_line"] + photo["credit_margin"] == 224, "bottom padding on the question, photo shortened by the same amount"  # padding
-marker = re.findall(r'"y2Offset":\s*(\d+)', "".join(e.proto.spec for e in at.tabs[0].get("vega_lite_chart")))  # marker offset sent to the browser
+assert photo["height"] + photo["credit_margin"] + photo["credit_line"] + photo["bottom_pad"] <= photo["card_height"] and all(sum(f"pixel_height: {photo['height']}" in str(c.proto) for c in col.children.values()) >= 0 for col in at.tabs[1].columns), "photo column plus credit and padding fits the card; the right column is a container of the photo height"  # proxy
+assert raws[1].count(f"padding-bottom:{photo['bottom_pad']}px") == len(have) and photo["card_height"] == 262 and photo["height"] + photo["credit_line"] + photo["credit_margin"] == 126, "bottom padding on the question, photo shortened by the same amount"  # padding
+marker = re.findall(r'"y2Offset":\s*(\d+)', "".join(e.proto.spec for e in at.tabs[1].get("vega_lite_chart")))  # marker offset sent to the browser
 assert marker and all(int(v) == cfg["design"]["story"]["marker_below"] for v in marker), "marker ends a configured number of pixels below the timeline line"  # marker height proxy
-labels_dy = re.findall(r'"dy":\s*(\d+)', "".join(e.proto.spec for e in at.tabs[0].get("vega_lite_chart")))  # label offset sent to the browser
+labels_dy = re.findall(r'"dy":\s*(\d+)', "".join(e.proto.spec for e in at.tabs[1].get("vega_lite_chart")))  # label offset sent to the browser
 assert str(cfg["design"]["story"]["label_dy"]) in labels_dy, "year labels lowered by the configured offset"  # label offset
 bb_ = sc["story"]["style_artist"]  # Bad Bunny
-assert ((ROOT / pa["artist_photos"] / cr.loc[bb_, "file"]).is_file() and f"alt='{bb_}'" in raws[0]) or (">BB<" in raws[0] and "ui-mono" in raws[0]), "Bad Bunny shows its photo when the file exists, else the monogram"
+assert ((ROOT / pa["artist_photos"] / cr.loc[bb_, "file"]).is_file() and f"alt='{bb_}'" in raws[1]) or (">BB<" in raws[1] and "ui-mono" in raws[1]), "Bad Bunny shows its photo when the file exists, else the monogram"
 orig_cr = static_tabs.credit_row  # keep the real function
 try:  # always restore
     static_tabs.credit_row = lambda c, n: {**orig_cr(c, n), "author": float("nan")}  # empty author
@@ -652,9 +663,9 @@ try:  # always restore
     miss = _AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=120).run()  # fresh run
 finally:  # restore
     app_data.load_demo_config = orig_load  # restore
-m_raw0 = "".join(x.value for x in miss.tabs[0].get("html"))  # tab 1 html without photos
+m_raw0 = "".join(x.value for x in miss.tabs[1].get("html"))  # tab 1 html without photos
 assert not miss.exception and "<img" not in m_raw0 and m_raw0.count("ui-mono") == 2 and ">TS<" in m_raw0 and "Photo:" not in plain(m_raw0), "monograms and no credit when the photo file is missing"  # fallback
-assert "<svg" not in raws[0] and not re.search(r"\bWHEN\b|\bWHAT\b", raws[0]), "tab 1: no svg, no WHEN or WHAT"  # clean
+assert "<svg" not in raws[1] and not re.search(r"\bWHEN\b|\bWHAT\b", raws[1]), "tab 1: no svg, no WHEN or WHAT"  # clean
 print("tab 1 hook and photos ok")  # result
 fresh = AppTest.from_file(str(ROOT / "app/streamlit_app.py"), default_timeout=120).run()  # first load, fragments in place
 assert not fresh.exception and [fresh.segmented_control(key=vk[k]).value for k in ("tab2", "tab3", "tab5")] == [t["t2_view_volume"], t["t3_view_patterns"], t["t5_view_results"]], "fragments keep the defaults Volume, Two patterns and Results on first load"  # defaults
@@ -668,7 +679,7 @@ page = lambda i: "".join(x.value for x in fresh.tabs[i].get("html"))  # raw html
 tab4_pill = fresh.segmented_control(key=vk["tab4"])  # pill of tab 4
 assert len(tab4_pill.options) == 2 and tab4_pill.value == t["t4_view_method"], "tab 4 has two pills and opens on the Method view"  # two pills
 fresh.segmented_control(key=vk["tab4"]).set_value(t["t4_view_inputs"]).run()  # open What the model sees
-raw4, text4 = page(3), plain(page(3))  # new view, raw and visible
+raw4, text4 = page(4), plain(page(4))  # new view, raw and visible
 assert not fresh.exception and t["t4i_facts"].format(n=len(NUMERIC_FEATURES) + len(GENRES)) in text4 and t["t4i_facts"].format(n=len(WHAT_FEATURES)) in text4, "the n facts of both models equal the real list lengths"  # counts
 assert all(f["name"] in text4 for f in sc["inputs"]["style"]) and "Release counts" in text4 and "Activity pattern" in text4 and "Career so far" not in text4, "Style families show their renamed names"  # family names
 codes = {f for f in NUMERIC_FEATURES + WHAT_FEATURES} | {f"genre_{g}" for g in GENRES}  # every code name
@@ -678,14 +689,14 @@ fund = pd.read_csv(folder / pa["funnel"], comment="#").set_index("step")["rows_o
 seen = ""  # visible text of the three views of tab 2
 for v_ in ("t2_view_volume", "t2_view_genres", "t2_view_cleaning"):  # every view of tab 2
     fresh.segmented_control(key=vk["tab2"]).set_value(t[v_]).run()  # open the view
-    seen += plain(page(1))  # its visible text
+    seen += plain(page(2))  # its visible text
     if v_ == "t2_view_cleaning":  # the new view
-        assert t["t2c_before"] in plain(page(1)) and t["t2c_after"] in plain(page(1)) and t["t2c_releases"] in plain(page(1)) and t["t2c_artists"] in plain(page(1)) and page(1).count("ui-chip'") == 1 and all(short_number(fund[k]) in plain(page(1)) for k in ("standalone_nomaster", "combined", "final_table", "final_artists", "undated")), "Cleaning shows the no-master, combined, final releases, artists and undated numbers of the csv"  # numbers
+        assert t["t2c_before"] in plain(page(2)) and t["t2c_after"] in plain(page(2)) and t["t2c_releases"] in plain(page(2)) and t["t2c_artists"] in plain(page(2)) and page(2).count("ui-chip'") == 1 and all(short_number(fund[k]) in plain(page(2)) for k in ("standalone_nomaster", "combined", "final_table", "final_artists", "undated")), "Cleaning shows the no-master, combined, final releases, artists and undated numbers of the csv"  # numbers
 assert not re.search(r"\bWorks?\b", seen + text4), "no on-screen text of tab 2 or the new tab 4 view contains Works"  # one word for the unit
 new_keys = [k for k in t if k.startswith(("t4i_", "t2c_"))]  # texts of the two new views
 assert new_keys and not [k for k in new_keys if re.search(r"\d", placeholder.sub("", t[k]))], "no digit outside a placeholder in the new texts"  # digits
 print("tab 4 inputs view and tab 2 cleaning view ok")  # result
-bad = {k: v for k, v in t.items() if k not in ("t3s_line", "t4_final_forecast", "t5_tip_advantage", "t5_caption", "t5_caption_tip") and re.search(r"\d", placeholder.sub("", v))}  # texts with a digit outside a placeholder, except the 0 to 1 scale of the muted line, the tab number of the forecast tag and the factor 100 of the advantage tooltip
+bad = {k: v for k, v in t.items() if k not in ("t3s_line", "cover_programme", "t4_final_forecast", "t5_tip_advantage", "t5_caption", "t5_caption_tip") and re.search(r"\d", placeholder.sub("", v))}  # texts with a digit outside a placeholder, except the 0 to 1 scale of the muted line, the tab number of the forecast tag and the factor 100 of the advantage tooltip
 assert not bad, f"digits outside placeholders: {bad}"  # none, no exception was needed
 print("static_tabs texts: no digit outside a placeholder (only the 0 to 1 scale in t3s_line)")  # result
 print("run_static_apptest OK")  # done

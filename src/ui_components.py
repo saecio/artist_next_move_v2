@@ -39,6 +39,7 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f".ui-chips{{display:flex;flex-wrap:wrap;gap:{b['gap'] // 2}px;margin-top:{b['gap']}px;align-items:center}}",  # row of chips
         f".ui-info{{display:inline-block;position:relative;margin-left:6px;width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;border:{b['border']}px solid {c['muted']};color:{c['muted']};font-size:{ty['caption']}px;cursor:help;font-style:normal;font-weight:400}}",  # small i
         f".ui-info:hover::after{{content:attr(data-tip);position:absolute;left:0;top:22px;z-index:10;width:min(260px,calc(100vw - 4rem));background:{c['card']};color:{c['text']};{box};border-radius:{b['radius']}px;padding:{b['gap']}px;font-size:{ty['caption']}px;line-height:1.4;text-align:left;text-transform:none;letter-spacing:normal;font-weight:400;box-shadow:none}}",  # tooltip bubble, a white card with a thin border
+        ".ui-info-up:hover::after{top:auto;bottom:22px}",  # bubble opens upward when the icon sits at the bottom edge of a card
         f".ui-stack{{display:flex;flex-direction:column;gap:{b['gap']}px}}",  # blocks one under the other
         f"{pill}{{background:transparent;{box};border-radius:{bt['radius']}px;color:{c['text']};box-shadow:none}}",  # idle view pill, flat
         f"{pill_on}{{background:{c['text']};border-color:{c['text']};border-radius:{bt['radius']}px;color:{c['background']};box-shadow:none}}",  # selected view pill, ink with paper text
@@ -63,6 +64,8 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f".ui-app-head{{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 {hd['gap']}px;overflow:hidden}}",  # header, one line on desktop and wrapping on phones
         f".ui-app-title{{font-size:{hd['title_font']}px;font-family:{head_font};letter-spacing:{ty['head_tracking']};font-weight:600;color:{c['text']};white-space:nowrap}}",  # project name
         f".ui-app-tag{{font-size:{hd['tagline_font']}px;color:{c['muted']};min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}",  # tagline
+        "[data-testid='stMainBlockContainer']:has([data-testid='stTab']:first-of-type[aria-selected='true']) [data-testid='stElementContainer']:has(.ui-app-head){display:none}",  # header hidden while the first tab (Introduction) is selected (Streamlit 1.64 tabs are div[data-testid='stTab']), display none leaves no gap
+        f"@media (min-width:1024px){{[class*='st-key-ui-accent'][class*='-t1'] [data-testid='stColumn']:first-child{{flex:0 0 {d['photo']['width']}px !important;width:{d['photo']['width']}px !important;min-width:{d['photo']['width']}px !important}}[class*='st-key-ui-accent'][class*='-t1'] [data-testid='stColumn']:last-child{{flex:1 1 0 !important;min-width:0 !important}}}}",  # tab 1 cards on desktop: photo column of a fixed width, the content takes the rest
         f"[data-testid='stMainBlockContainer']{{padding-top:{hd['top_pad']}px;max-width:100%}}",  # less space above the header
         f"[data-testid='stBaseButton-primary'],[data-testid='stBaseButton-secondary']{{font-weight:{bt['weight']};border-radius:{bt['radius']}px;box-shadow:none}}",  # same weight and flat corners on every button
         f"[data-testid='stBaseButton-primary']{{background:{c['text']};border-color:{c['text']};color:{c['background']}}}",  # primary: ink fill with paper text
@@ -112,9 +115,9 @@ def accent_key(question: str, tab: str) -> str:  # container key that draws the 
     return f"ui-accent-{question}-{tab}"  # unique per tab, so two tabs never share a key
 
 
-def info(text: str) -> str:  # small i with a hover tooltip
-    """A small i whose hover bubble shows `text`."""
-    return f"<span class='ui-info' data-tip='{html.escape(text, quote=True)}'>i</span>"  # tooltip in a data attribute
+def info(text: str, up: bool = False) -> str:  # small i with a hover tooltip
+    """A small i whose hover bubble shows `text`, opening upward when `up` is set."""
+    return f"<span class='ui-info{' ui-info-up' if up else ''}' data-tip='{html.escape(text, quote=True)}'>i</span>"  # tooltip in a data attribute
 
 
 def headline(text: str, subtitle: str = "", tip: str = "") -> str:  # page headline

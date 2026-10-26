@@ -207,11 +207,11 @@ def tab4_html(cfg: dict) -> str:  # method
     return method_css(cfg) + "<div class='ui-stack'>" + headline(t["t4_headline"]) + method_legend(cfg, t) + card_html + f"<div class='ui-caption'>{html.escape(caption)} {info(t['t4_caption_tip'])}</div>" + chips + finals + "</div>"  # page
 
 def tab8_html(cfg: dict) -> str:  # limits and next steps
-    """Closing slide: three equal cards with a marker, a title and up to four items; numbers come from the tab 5 tags, the tab 1 card and the tab 7 test years."""
+    """Closing slide: three equal cards with a marker, a title and up to four items; numbers come from the tab 5 tags, the story_halves top picks and the tab 7 test years."""
     from depth_views import models_data, trees_tie  # imported here because depth_views imports this module
     t, p = cfg["static_tabs"]["texts"], cfg["poc"]["texts"]  # texts and Timing / Style labels
     res = results_data(cfg)  # the table of tab 5, read by the closing block
-    tim, sty = story_halves(cfg)  # Timing and Style numbers of the tab 1 third card: label, color, caption, top picks, random
+    tim, sty = story_halves(cfg)  # Timing and Style top-pick numbers from story_halves, shared with the tab 5 dot card: label, color, caption, top picks, random
     n = cfg["static_tabs"]["sizes"]["dots_side"] ** 2  # artists per group
     values = {"n": n, "t": tim[3], "tb": tim[4], "s": sty[3], "sb": sty[4], "m": n - sty[3]}  # every placeholder of the items
     supported = {("works", 1): bool(panel_beats_rule(res, cfg).all()), ("works", 2): tim[3] > tim[4], ("works", 3): sty[3] > sty[4]}  # line 1 needs the model clearly above release counts, lines 2 and 3 the highest-rated artists above random picking
@@ -448,3 +448,40 @@ def tab4i_html(cfg: dict) -> str:  # "What the model sees" view of tab 4
     right = inputs_card(pal["style"], t["t4i_style_title"], t["t4i_facts"].format(n=len(WHAT_FEATURES)), t["t4i_style_question"], input_rows(cfg, style, what))  # Style card
     example = f"<div class='ui-caption'>{html.escape(t['t4i_example'].format(artist=artist, year=year))}</div>"  # example line
     return inputs_css(cfg) + "<div class='ui-stack'>" + headline(t["t4i_headline"], html.escape(t["t4i_sub"])) + example + f"<div class='ui-row'>{left}{right}</div><div class='ui-caption'>{html.escape(t['t4i_caption'])}</div></div>"  # page
+
+
+@st.cache_data  # cache the encoded cover
+def cover_uri(path: str, width: int) -> str:  # cover picture as a data URI
+    """Picture file (path relative to the project root) scaled to `width` px with its shape kept, as a JPEG data URI."""
+    img = Image.open(ROOT / path).convert("RGB")  # three channels
+    img = img.resize((width, round(img.height * width / img.width)), Image.LANCZOS)  # scaled down, same ratio
+    buf = io.BytesIO()  # in-memory file
+    img.save(buf, "JPEG", quality=85)  # compressed
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()  # inline image
+
+
+def cover_html(cfg: dict) -> str:  # opening screen
+    """Cover: the picture fills a rounded container, the project name, the header tagline, the author and the programme sit on its dark left side."""
+    sc, d = cfg["static_tabs"], cfg["design"]  # settings and design section
+    c, cv, fo, ty = d["palette"], d["cover"], d["font"], d["type"]  # palette, cover sizes, typefaces and type scale
+    t, h = sc["texts"], cfg["header"]  # texts and header (title and tagline are reused)
+    head_font = f"'{fo['heading']}',Georgia,serif"  # serif heading stack, as in the design system
+    ink = c["text"]  # dark base of the shade
+    rules = [  # one rule per element, every name starts with ui-cover
+        f".ui-cover{{position:relative;height:{cv['height_vh']}vh;min-height:{cv['min_height']}px;border-radius:{d['box']['radius']}px;overflow:hidden;background:{ink}}}",  # container, tall as a share of the window
+        ".ui-cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:left center}",  # picture fills the container, the dark left side stays in view
+        f".ui-cover-shade{{position:absolute;inset:0;background:{ink}{cv['shade']}}}",  # flat shade over the whole picture (the design system has no gradient)
+        f".ui-cover-text{{position:absolute;top:0;bottom:0;left:{cv['text_left']}%;width:{cv['text_width']}%;display:flex;flex-direction:column;justify-content:center;gap:{cv['gap']}px}}",  # text column on the dark side
+        f".ui-cover-title{{margin:0;padding:0;font-family:{head_font};font-weight:600;letter-spacing:{ty['head_tracking']};line-height:1.1;font-size:clamp({cv['title_min']}px,{cv['title_font']}vw,{cv['title_max']}px);color:{c['background']};text-wrap:balance}}",  # project name in the display font
+        f".ui-cover-line{{margin:0;font-size:{cv['line_font']}px;line-height:{ty['line']};color:{c['tint']}}}",  # tagline
+        f".ui-cover-meta{{margin:{cv['gap']}px 0 0;padding-top:{cv['gap']}px;border-top:{d['box']['border']}px solid {c['rule']};font-size:{cv['meta_font']}px;line-height:{ty['line']};color:{c['line']}}}",  # author and programme under a thin rule
+        ".ui-cover-meta b{display:block;font-weight:600;color:" + c["tint"] + "}",  # author stands out from the programme
+        f"@media(max-width:640px){{.ui-cover-shade{{background:{ink}B3}}.ui-cover-text{{left:6%;width:88%}}}}",  # phone: the text covers the picture, so shade all of it
+    ]
+    img = f"<img class='ui-cover-img' alt='' src='{cover_uri(sc['paths']['cover_image'], cv['image_width'])}'>"  # picture, decorative
+    text = (  # text column
+        f"<div class='ui-cover-text'><h1 class='ui-cover-title'>{html.escape(h['title'])}</h1>"  # project name
+        f"<p class='ui-cover-line'>{html.escape(h['tagline'])}</p>"  # tagline from the header config
+        f"<p class='ui-cover-meta'><b>{html.escape(t['cover_author'])}</b>{html.escape(t['cover_programme'])}</p></div>"  # author and programme
+    )
+    return "<style>" + "".join(rules) + "</style>" + f"<div class='ui-cover'>{img}<div class='ui-cover-shade'></div>{text}</div>"  # style and block

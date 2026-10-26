@@ -6,6 +6,7 @@ validation_years: [2018, 2022]  # first and last year selectable in the demo
 row_scores_columns: [artist_id, year, label, stage0_score, baseline_c_score]  # columns read and shown, raw names
 predictions_columns: [style, target_year, method, expected_growth, expected_works, range_low, range_high, rank]  # columns read and shown
 tabs:  # tab titles, in display order
+  - Introduction  # tab title, the opening screen
   - Problem and question  # tab title
   - Data and cleaning  # tab title
   - Data exploration  # tab title
@@ -387,6 +388,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     notebook_timing: notebooks/03_when_backtesting_design.ipynb  # saved outputs of the Timing model comparison
     notebook_style: notebooks/05_what_models.ipynb  # saved outputs of the Style model comparison
     artist_photos: app/assets/artists  # folder of the artist photos, read only
+    cover_image: app/assets/cover.jpg  # cover picture of the first tab, read only
     artist_credits: app/assets/artists/credits.csv  # artist, file, author, license, license_url, source_url
     calibration_summary: results/calibration/summary.csv  # one row per target: ECE and Brier figures
     calibration_timing: results/calibration/reliability_next_1y.csv  # Timing reliability table, ten bins
@@ -485,6 +487,8 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     H5: {question: "Do years without a date matter?", result: "The gap is mostly catalogue length", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 64"}  # qualitative
     H6: {question: "Does the gap since the last release predict a release next year?", result: "Falls from {first} to {last} as the gap grows", test: Chi-square, h0_rejected: "yes", source: "notebook 02 cell 69"}  # rate range from h6_buckets.csv
   texts:  # on-screen texts, placeholders in braces
+    cover_author: "Juan Francisco Calvo Sánchez"  # cover author line
+    cover_programme: "Ironhack Data Analytics 2026"  # cover programme line
     t1_headline: "It is {year}. You want to stay ahead of the world's top artists."  # tab 1 headline, year from static_tabs.story.cutoff_year
     t1_q_timing: "Will {artist} release something next year?"  # question under the Timing artist timeline
     t1_q_style: "Will {artist}'s next release bring a style new to him?"  # question under the Style artist timeline
@@ -552,14 +556,14 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t8_works_title: "What works"  # card title
     t8_works_tip: "The model gives every artist a score and ranks them from most to least likely. We look at the highest-rated tenth. Picked at random means choosing artists with no model."  # tooltip next to the card title
     t8_works_1: "On both questions it does better than release counts alone, tested only on years it never saw."  # item, shown only when the model is clearly above past habits on both questions (tab 5 condition)
-    t8_works_2: "Timing: of every {n} artists it rates highest, {t} release the next year. Picked at random, {tb}."  # item, n, t and tb equal the Timing numbers of the tab 1 third card, shown only when the highest-rated artists beat random picking
-    t8_works_3: "Style: of every {n} artists it rates highest, {s} bring a style new to them. Picked at random, {sb}."  # item, n, s and sb equal the Style numbers of the tab 1 third card and the tab 5 dot card, shown only when the highest-rated artists beat random picking
+    t8_works_2: "Timing: of every {n} artists it rates highest, {t} release the next year. Picked at random, {tb}."  # item, n, t and tb equal the Timing top-pick numbers computed by story_halves, shown only when the highest-rated artists beat random picking
+    t8_works_3: "Style: of every {n} artists it rates highest, {s} bring a style new to them. Picked at random, {sb}."  # item, n, s and sb equal the Style top-pick numbers computed by story_halves, the same as the tab 5 dot card, shown only when the highest-rated artists beat random picking
     t8_works_4: "Use it as a ranking, to decide which artists to look at first, not to call a single artist."  # item, always shown
     t8_mind_title: "What to keep in mind"  # card title
     t8_mind_1: "Discogs is a collector database: some releases are missing and recent years are incomplete."  # item
     t8_mind_2: "\"A style new to them\" means new for that artist, not new to the world. It is a Discogs style tag, not measured from the sound."  # item
     t8_mind_3: "Demo artists are picked to be recognisable, not at random."  # item
-    t8_mind_4: "Style is the harder question: even among the artists it rates highest, {m} in {n} miss."  # item, m = n minus the Style top picks of the tab 1 third card
+    t8_mind_4: "Style is the harder question: even among the artists it rates highest, {m} in {n} miss."  # item, m = n minus the Style top picks computed by story_halves, the same as the tab 5 dot card
     t8_close_timing_name: "Timing"  # closing block name
     t8_close_style_name: "Style"  # closing block name
     t8_close_trends_name: "Trends"  # closing block name
@@ -753,6 +757,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     swatch_h: 12  # height of a legend swatch of tab 4
   chip: {pad_v: 3, pad_h: 10, font: 11, radius: 2}  # chip sizes in px
   header: {title_font: 20, tagline_font: 14, gap: 14, top_pad: 56}  # header sizes in px, top_pad is the space above the header (page padding)
+  cover: {height_vh: 70, min_height: 420, image_width: 1920, text_left: 5, text_width: 30, title_font: 3.6, title_min: 34, title_max: 72, line_font: 17, meta_font: 14, shade: "4D", gap: 14}  # cover tab: container height (vh, with a px floor), picture width stored in px, text column left offset and width (percent of the container), title size (vw with px floor and ceiling), tagline and author lines (px), flat shade over the picture as a hex alpha byte (4D is 30 percent), space between lines (px)
   button: {weight: 600, radius: 4}  # button label weight and corner radius in px (active fill is the text color, label is the palette background)
   genre_story_start_year: 1990  # first year of the Genres headline comparison
   genre_palette:  # one color per genre of the genre chart (light paper), distinct from the timing and style colors
@@ -783,7 +788,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     example_days: 6  # days of rain in the reading card example
     example_total: 10  # days in the reading card example
     note_gap: 0.02  # gap of the top Timing bin above which the "too confident" note is shown
-  photo: {width: 200, height: 206, content_weight: 430, card_height: 316, question_extra: 52, radius: 4, focus: "50% 20%", name_font: 22, question_font: 16, monogram_font: 64, monogram_opacity: 0.25, credit_font: 10, credit_line: 12, credit_margin: 6, credit_opacity: 1, bottom_pad: 16}  # tab 1 artist card (credit_font, credit_line and credit_margin in px for the one-line credit under the photo, credit_opacity of the muted credit text, bottom_pad px under the credit line, equal to the space above the photo; the photo height is the card content height minus the credit line and margin): photo column width and height, relative width of the content column, card height (px), corner radius (px), object-position of the photo, name and question sizes (px), monogram size (px) and background opacity
+  photo: {width: 150, height: 165, content_weight: 900, card_height: 262, question_extra: 63, radius: 4, focus: "50% 20%", name_font: 22, question_font: 16, monogram_font: 64, monogram_opacity: 0.25, credit_font: 10, credit_line: 12, credit_margin: 6, credit_opacity: 1, bottom_pad: 16}  # tab 1 artist card (credit_font, credit_line and credit_margin in px for the one-line credit under the photo, credit_opacity of the muted credit text, bottom_pad px under the credit line, equal to the space above the photo; the photo height is the card content height minus the credit line and margin): photo column width and height, relative width of the content column, card height (px), corner radius (px), object-position of the photo, name and question sizes (px), monogram size (px) and background opacity
   story:  # tab 1 timeline marker
     marker_below: 6  # px the "You are here" marker continues below the timeline line, so it stops above the year labels
     label_dy: 14  # px the year labels sit lower than the lane position, so the marker never touches them
@@ -810,7 +815,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     bar_corner: 4  # bar corner radius in px
     whisker_width: 2  # whisker line width in px
     y_headroom_results: 1.22  # headroom of the tab 5 chart, room for the advantage tag
-    height_story: 100  # tab 1 timeline height in px
+    height_story: 84  # tab 1 timeline height in px, enough room for the label to sit at least 20 px above the largest dot
     story_dot_min: 60  # smallest timeline dot area
     story_dot_max: 420  # largest timeline dot area
     story_glyph_font: 44  # size of the question mark after the cutoff

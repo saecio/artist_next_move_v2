@@ -18,7 +18,7 @@ from style_tab import style_subtitle, forecast_table, mark_for, style_summary, s
 from demo_multi import advance_stage, multi_rows, multi_signature, multi_summary, hidden_lines, picker_options, play_year, playable_years, reliability_lines, route_for_year, route_ids, row_marks  # noqa: E402  mode 2 logic, reused by mode 1
 from poc_view import card_marks, chips_html, forecast_html, how_lines, multi_table_html, style_html, style_table_html, timeline_html, timing_html, open_year_text, star_in_row, window_years, work_panel_html, year_end_tag  # noqa: E402  mode 2 table, mode 1 timeline, panels and tag
 from static_charts import results_chart, strength_chart, works_chart  # noqa: E402  Altair charts of tabs 2, 3 and 5
-from static_tabs import dots_html, dots_panels, strip_html, results_data, tab1_head_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2c_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab4i_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
+from static_tabs import cover_html, dots_html, dots_panels, strip_html, results_data, tab1_head_html, tab1_panels, cards_table, tab2_chart_title_html, tab2_head_html, tab2_right_html, tab2c_html, tab2g_head_html, tab2g_parts, tab3_head_html, tab3_panels, tab3s_head_html, tab4_html, tab4i_html, tab5_chips_html, tab5_head_html, tab8_html, view_selector, works_per_year  # noqa: E402  static tabs
 from depth_views import legend_html, models_charts, models_data, models_head_html, models_note_html, models_title_html, reliability_data, trust_chart, trust_head_html, trust_legend_html, trust_css, trust_right_html, trust_title_html, year_data, years_charts, years_head_html  # noqa: E402  depth views of tab 5
 from ui_components import accent_key, base_css, header_html, headline, info  # noqa: E402  design system
 from demo_game import (  # noqa: E402  pure game functions
@@ -79,10 +79,13 @@ st.html(base_css(cfg))  # one-time design system styles, shared by every tab
 st.html(header_html(cfg))  # project name and tagline above the tabs
 tabs = st.tabs(cfg["tabs"])  # one tab per title, in config order
 
-with tabs[0]:  # Problem and question
+with tabs[0]:  # Introduction
+    st.html(cover_html(cfg))  # picture with the project name, tagline, author and programme
+
+with tabs[1]:  # Problem and question
     st.html(tab1_head_html(cfg))  # story headline and use sentence
-    for col, panel, q in zip(st.columns(2), tab1_panels(cfg), ("timing", "style")):  # Timing card and Style card
-        with col, st.container(border=True, height=cfg["design"]["photo"]["card_height"], key=accent_key(q, "t1")):  # card of equal height
+    for panel, q in zip(tab1_panels(cfg), ("timing", "style")):  # Timing card on top, Style card below, each at full width
+        with st.container(border=True, height=cfg["design"]["photo"]["card_height"], key=accent_key(q, "t1")):  # card of equal height
             pic, body = st.columns([cfg["design"]["photo"]["width"], cfg["design"]["photo"]["content_weight"]])  # photo column and content
             pic.html(panel["photo"])  # photo or monogram, the hero
             body = body.container(height=cfg["design"]["photo"]["height"] + cfg["design"]["photo"]["question_extra"], border=False)  # right column as tall as the photo plus room for a second question line, so the question is never clipped
@@ -114,7 +117,7 @@ def render_tab2() -> None:  # body of the tab with view pills
                     st.altair_chart(works_chart(works_per_year(cfg), cfg["design"]["incomplete_from_year"], {"incomplete": sct["texts"]["t2_incomplete"], "peak": sct["texts"]["t2_peak"], "band_tip": sct["texts"]["t2_band_tip"]}, cfg), theme=None, width="stretch")  # Works per year
                 right.html(tab2_right_html(cfg))  # numbers and cleaning schema, stretched to the chart card
 
-with tabs[1]:  # Data and cleaning
+with tabs[2]:  # Data and cleaning
     render_tab2()  # fragment of this tab
 
 @st.fragment  # a click on a view pill reruns only this tab
@@ -127,10 +130,10 @@ def render_tab4() -> None:  # body of the tab with view pills
         else:  # Method view
             st.html(tab4_html(cfg))  # the tab as it was
 
-with tabs[3]:  # Method
+with tabs[4]:  # Method
     render_tab4()  # fragment of this tab
 
-for i, build in ((7, tab8_html),):  # static tab with one HTML block, the headline is the only title
+for i, build in ((8, tab8_html),):  # static tab with one HTML block, the headline is the only title
     with tabs[i]:  # open the tab
         st.html(build(cfg))  # the tab content
 
@@ -151,7 +154,7 @@ def render_tab3() -> None:  # body of the tab with view pills
                     st.altair_chart(panel["chart"], theme=None, width="stretch")  # five bars
                     st.html(panel["line"])  # muted one-liner
 
-with tabs[2]:  # Data exploration
+with tabs[3]:  # Data exploration
     render_tab3()  # fragment of this tab
 
 @st.fragment  # a click on a view pill reruns only this tab
@@ -200,7 +203,7 @@ def render_tab5() -> None:  # body of the tab with view pills
                 st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
                 for col, panel in zip(st.columns(2), results_chart(results, cfg)):  # Timing and Style panels share the width equally
                     col.altair_chart(panel, theme=None, width="stretch")  # one panel
-                st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}{info(cfg['static_tabs']['texts']['t5_caption_tip'])}</div>")  # what the score is, with its tooltip
+                st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}{info(cfg['static_tabs']['texts']['t5_caption_tip'], up=True)}</div>")  # what the score is, with its tooltip
             dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
             dtx = cfg["static_tabs"]["texts"]  # texts of the dot card
             with right, st.container(border=True, height=card_h):  # dot card, same height and top as the chart card
@@ -208,10 +211,10 @@ def render_tab5() -> None:  # body of the tab with view pills
                 st.html(strip_html(cfg))  # sorted-artists strip
                 st.html(dots_html(cfg, dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"tip": dtx["t5_dot_tip"]}))  # two grids that fit the card
 
-with tabs[4]:  # Results
+with tabs[5]:  # Results
     render_tab5()  # fragment of this tab
 
-with tabs[5]:  # Time Machine demo
+with tabs[6]:  # Time Machine demo
     g, rt = cfg["game"], cfg["route"]  # game and route settings
     st.html(headline(g["headline"].format(year=rt["year"]), g["subtitle"]))  # headline with the configured year and subtitle
     modes = list(g["mode_options"])  # mode keys
@@ -308,7 +311,7 @@ with tabs[5]:  # Time Machine demo
             st.caption(open_year_text(poc["texts"]))  # same sentence as the tooltip
     st.caption(cfg["game"]["t6_disclaimer"])  # disclaimer at the very bottom of the tab, both modes
 
-with tabs[6]:  # Global style forecast
+with tabs[7]:  # Global style forecast
     stt = cfg["style_tab"]  # tab 7 settings
     sk, sx = stt["keys"], stt["texts"]  # widget keys and texts
     figures = validation_figures(cfg)  # years and hits of the tested years, from the data
