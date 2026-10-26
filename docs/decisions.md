@@ -5,7 +5,7 @@ The decision log is split by theme; entries are never renamed, so an entry is ci
 | File | Holds | Size (KB) |
 |---|---|---|
 | decisions_core.md | Methodology: principles, data and Works table, snapshots, Timing target, backtesting, Timing models and holdout, Style target and kill gate, Style models and holdout, global style forecast, audits, EDA and hypotheses, limitations and future work | 203.3 |
-| decisions_demo.md | Build record of the Streamlit app; block 2 touches the predictions it shows | 156.0 |
+| decisions_demo.md | Build record of the Streamlit app; block 2 touches the predictions it shows | 159.7 |
 | decisions_pending.md | Open items | 0.6 |
 | decisions_archive.md | Reversed or replaced decisions (CUT) | 24.9 |
 
@@ -87,33 +87,37 @@ Rules:
   334: ### Tab 1 story strip (22-10-2026)
   340: ### Tab 4 inputs view and tab 2 cleaning view (22-10-2026)
   352: ### Trust view, result column, tab 7 subtitle and What works (22-10-2026)
+  360: ### Tab 8 Conclusions: two cards and the What works band (26-10-2026)
+  372: ### Tab 8 renamed to Conclusions (26-10-2026)
+  380: ### Tab 8 closing slide: tile wording, one status sentence and shorter layout (26-10-2026)
 
-360: ## 6. Text and wording rules
-  362: ### Text rules for the audience (20-10-2026)
-  367: ### Text and coherence pass (22-10-2026)
-  373: ### Review fixes (22-10-2026)
-  386: ### Tooltips, tab 5 chart layout and tab 6 disclaimer (22-10-2026)
-  392: ### Wording fixes: tab 1 card 2 and tab 5 Style baseline line (23-10-2026)
-  398: ### Wording: Release counts and tab 7 status line (23-10-2026)
-  404: ### Wording: fourth item in tab 8 What comes next (24-10-2026)
-  410: ### Wording: tab 4 models tooltip (24-10-2026)
-  416: ### Wording: usage recommendation in tab 8 What works (24-10-2026)
-  422: ### Wording: tab 1 number strip removed (24-10-2026)
-  428: ### Wording: tab 2 numbers abbreviated and text trimmed (24-10-2026)
-  434: ### Wording: tab 5 view order (24-10-2026)
-  440: ### Wording: tab 7 random baseline (24-10-2026)
-  446: ### Wording: baseline label in models_compared.csv (24-10-2026)
-  452: ### Wording: tab 5 caption tooltip opens upward (26-10-2026)
+388: ## 6. Text and wording rules
+  390: ### Text rules for the audience (20-10-2026)
+  395: ### Text and coherence pass (22-10-2026)
+  401: ### Review fixes (22-10-2026)
+  414: ### Tooltips, tab 5 chart layout and tab 6 disclaimer (22-10-2026)
+  420: ### Wording fixes: tab 1 card 2 and tab 5 Style baseline line (23-10-2026)
+  426: ### Wording: Release counts and tab 7 status line (23-10-2026)
+  432: ### Wording: fourth item in tab 8 What comes next (24-10-2026)
+  440: ### Wording: tab 4 models tooltip (24-10-2026)
+  446: ### Wording: usage recommendation in tab 8 What works (24-10-2026)
+  454: ### Wording: tab 1 number strip removed (24-10-2026)
+  460: ### Wording: tab 2 numbers abbreviated and text trimmed (24-10-2026)
+  466: ### Wording: tab 5 view order (24-10-2026)
+  472: ### Wording: tab 7 random baseline (24-10-2026)
+  478: ### Wording: baseline label in models_compared.csv (24-10-2026)
+  484: ### Wording: tab 5 caption tooltip opens upward (26-10-2026)
+  490: ### Wording: tab 6 opens on One artist and the headline has no fixed year (26-10-2026)
 
-458: ## 7. Design system and passes
-  460: ### Design system of the demo (20-10-2026)
-  466: ### Design pass 2: header, schemas, dot chart (20-10-2026)
-  472: ### Design pass 3: story slides (20-10-2026)
-  478: ### Design pass 8: alignment, gap wording, calibration wording and tab 1 hook with photos (22-10-2026)
-  484: ### Design pass 10: typography and signature (22-10-2026)
-  490: ### Design pass 11 (editorial identity and responsive) (22-10-2026)
-  496: ### Design: Cover tab as the opening screen (24-10-2026)
-  504: ### Design: header rule for Streamlit 1.64 and tab 1 card fixes (26-10-2026)
+498: ## 7. Design system and passes
+  500: ### Design system of the demo (20-10-2026)
+  506: ### Design pass 2: header, schemas, dot chart (20-10-2026)
+  512: ### Design pass 3: story slides (20-10-2026)
+  518: ### Design pass 8: alignment, gap wording, calibration wording and tab 1 hook with photos (22-10-2026)
+  524: ### Design pass 10: typography and signature (22-10-2026)
+  530: ### Design pass 11 (editorial identity and responsive) (22-10-2026)
+  536: ### Design: Cover tab as the opening screen (24-10-2026)
+  544: ### Design: header rule for Streamlit 1.64 and tab 1 card fixes (26-10-2026)
 
 ## decisions_pending.md and decisions_archive.md
 
