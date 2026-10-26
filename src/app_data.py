@@ -9,6 +9,7 @@ from config import ROOT  # project root, independent of the working directory
 DEMO_CONFIG_PATH = ROOT / "app" / "demo_config.yaml"  # location of the demo settings
 
 
+@st.cache_data(show_spinner=False)  # cache the parsed settings, callers get their own copy
 def load_demo_config() -> dict:  # read the demo settings
     """Read app/demo_config.yaml and return it as a dict."""
     with open(DEMO_CONFIG_PATH, encoding="utf-8") as f:  # the single settings file of the app

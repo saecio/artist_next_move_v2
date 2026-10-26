@@ -6,6 +6,7 @@ import pandas as pd  # tables
 from app_live import load_tables, style_live  # live rescoring and the stored files, as the app reads them
 from poc_view import badge_kind  # same marks as mode 2 of tab 6
 from config import ROOT  # project root
+from streamlit import cache_data  # cache decorator
 from style_forecast import FINAL_MODEL, top_hits  # registered hits definition
 
 
@@ -58,6 +59,7 @@ def mark_for(in_range, flagged: bool) -> tuple:  # color and mark key of a row
     return badge_kind(True, "yes" if in_range else "no", not flagged, "yes")  # same rule as mode 2
 
 
+@cache_data(show_spinner=False)  # cache by year, top n and method
 def hits_of(year: int, top_n: int, method: str) -> int:  # top n hits of one method
     """Top n hits of the method's ranking: styles of the real top n by actual growth among the eligible styles present in its top n."""
     rf = style_live(year)  # live rows of the year

@@ -72,6 +72,7 @@ def load_tables() -> dict:  # load the cached tables
     }  # close the table dict
 
 
+@st.cache_data(show_spinner=False)  # cache by the plain argument
 def score_when(artist_id: int) -> pd.DataFrame:  # live WHEN scores of one artist
     """Live next_1y and next_2y scores for every Work of the artist in the WHEN feature file."""
     models, tables = load_models(), load_tables()  # cached assets
@@ -83,6 +84,7 @@ def score_when(artist_id: int) -> pd.DataFrame:  # live WHEN scores of one artis
     return out.reset_index(drop=True)  # clean index
 
 
+@st.cache_data(show_spinner=False)  # cache by the plain argument
 def score_what(artist_id: int) -> pd.DataFrame:  # live WHAT scores of one artist
     """Live stage 0 score for every artist-year in the WHAT feature file, with the stored label and baseline (c)."""
     models, tables = load_models(), load_tables()  # cached assets
@@ -97,6 +99,7 @@ def score_what(artist_id: int) -> pd.DataFrame:  # live WHAT scores of one artis
     return out.merge(labels, on=["artist_id", "year"], how="left").merge(baseline, on=["artist_id", "year"], how="left").reset_index(drop=True)  # label, flag and baseline next to the score
 
 
+@st.cache_data(show_spinner=False)  # cache by the plain argument
 def artist_timeline(artist_id: int) -> pd.DataFrame:  # one timeline row per year
     """One row per year from the first shown year to the last year of the data; years without Works stay empty."""
     tables = load_tables()  # cached tables
@@ -118,6 +121,7 @@ def artist_timeline(artist_id: int) -> pd.DataFrame:  # one timeline row per yea
     return base  # one row per year
 
 
+@st.cache_data(show_spinner=False)  # cache by the plain argument
 def style_live(target_year: int) -> pd.DataFrame:  # style table of one target year
     """Random Forest and repeat_last table of one target year, rescored from the saved models, panel rows and percentiles."""
     tables = load_tables()  # cached tables
