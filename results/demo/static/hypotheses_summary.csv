@@ -1,7 +1,7 @@
 id,question,result,test,h0_rejected,source
-H1,"More releases before, fewer new styles?",Falls from 26.9% to 6.2% as an artist's history grows,Chi-square,yes,notebook 02 cell 51
+H1,"More releases before, fewer styles new to them?",Falls from 26.9% to 6.2% as an artist's history grows,Chi-square,yes,notebook 02 cell 51
 H2,Does genre matter?,"Yes, but less and less as history grows",Chi-square per history group,yes,notebook 02 cell 54
-H3,Does a long gap bring a new style?,"More often, but a small effect",Mann-Whitney U,yes,notebook 02 cell 58
-H4,"More styles already used, more new styles?",Only inside each history group,Chi-square,yes,notebook 02 cell 61
+H3,Does a long gap bring a style new to them?,"More often, but a small effect",Mann-Whitney U,yes,notebook 02 cell 58
+H4,"More styles already used, more styles new to them?",Only inside each history group,Chi-square,yes,notebook 02 cell 61
 H5,Do years without a date matter?,The gap is mostly catalogue length,Chi-square,yes,notebook 02 cell 64
 H6,Does the gap since the last release predict a release next year?,Falls from 54.8% to 12.5% as the gap grows,Chi-square,yes,notebook 02 cell 69

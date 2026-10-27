@@ -150,7 +150,7 @@ game:  # tab 6 flow, thresholds, widget keys and texts
   hide_rerecordings: true  # hide cards of Works flagged is_rerecording, scores and labels are unchanged
   similar_gap: 1  # largest gap, in whole artists out of 10, between the outside rate and the base rate still worded "almost the same"
   default_mode: one  # mode shown first in tab 6: one (one artist) or many (several artists)
-  t6_disclaimer: "This demo is an illustration, not a measurement. The artists are chosen to show both hits and misses, so the tally above says nothing about the model's overall accuracy. The tested results are on the Results tab."  # muted line at the very bottom of tab 6, both modes
+  t6_disclaimer: "This demo is an illustration. The artists are chosen to show hits and misses, so the tally above says nothing about the model's overall accuracy. Tested results are on the Results tab."  # muted line at the very bottom of tab 6, both modes
   mode_label: "View"  # mode selector label
   mode_options: {one: "One artist", many: "Several artists"}  # mode selector texts
   threshold: 0.5  # the model says yes when the live next_1y score is at least this value
@@ -539,7 +539,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t4_view_method: "How we test"  # tab 4 view label
     t4_view_inputs: "What the model sees"  # tab 4 view label
     t4i_headline: "What the model sees"  # inputs view headline
-    t4i_sub: "For each prediction the model gets a short list of facts about the artist, all taken from the past. Here is one real example."  # inputs view subtitle
+    t4i_sub: "For each prediction the model gets a short list of facts about the artist, all taken from the past."  # inputs view subtitle
     t4i_example: "Example: {artist}, {year}"  # line under the subtitle, artist and year of the tab 6 default
     t4i_timing_title: "Timing model"  # left card title
     t4i_style_title: "Style model"  # right card title
@@ -548,7 +548,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t4i_facts: "{n} facts"  # chip with the number of model inputs
     t4i_yes: "yes"  # value of a 0 / 1 fact equal to 1
     t4i_no: "no"  # value of a 0 / 1 fact equal to 0
-    t4i_caption: "Every value is computed only from releases before the prediction. Nothing from the future gets in."  # under the cards
+    t4i_caption: "Every value is computed only from releases before the prediction."  # under the cards
     t4_chips_tip: "The three tree models tied on the practice runs, within the margin of error. We tuned XGBoost in stages and tuning added almost nothing: the limit is the information, not the algorithm."  # tooltip of the chip row
     t5_col_chance: "By chance"  # results column
     t5_col_model: "Our model"  # results column
@@ -677,7 +677,7 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
     t5t_headline: "Its scores are close to what really happened."  # Can you trust headline, shown only when the highest Style bin gap is small
     t5t_sub: "Of {n} artists it rated around {s}%, about {o} really brought a style new to them."  # subtitle, n from design.calibration.group_size, s and o from the highest Style bin, whole numbers
     t5t_read_title: "How to read it"  # title of the reading card
-    t5t_read: "A forecast of {pct}% rain means it rains on about {days} days in {total}. The same here: group artists by the percentage the model gave them, and that share really happened."  # reading card text, numbers from design.calibration
+    t5t_read: "A forecast of {pct}% rain means it rains on about {days} days in {total}. The same here: of the artists the model gave that percentage, that share really happened."  # reading card text, numbers from design.calibration
     t5t_headline_neutral: "How the scores compare with what happened"  # Can you trust headline otherwise
     t5t_title: "Score against what happened"  # card title
     t5t_tip: "We did not adjust the scores after seeing the test years."  # tooltip of the card title
@@ -700,8 +700,8 @@ static_tabs:  # tabs 1 to 5 and 8: files, settings and texts. Every number in a 
       H1: {question: "Do artists with a long catalogue try fewer styles new to them?", answer: "Yes. With 3 to 5 earlier releases, {first} bring a style new to them. With 51 or more, {last}.", measure: "Cramer's V", short_label: "Catalogue size"}  # values from h1_buckets.csv
       H2: {question: "Does the genre change how often artists try styles new to them?", answer: "Yes. Among artists with a short history, {a} of electronic artists try a style new to them, against {b} of folk and country artists.", measure: "Cramer's V", short_label: "Genre"}  # a, b from the 3-5 group of the H2 test
       H3: {question: "Does a long pause before a release mean a style new to them?", answer: "A little. After a pause of 11 years or more, {a} bring a style new to them. With no pause, {b}.", measure: "rank-biserial", short_label: "Pause before a release"}  # a, b from the year-gap buckets
-      H4: {question: "Do artists who already tried many styles keep trying new ones?", answer: "Not by itself. It only shows when we compare artists with a similar number of releases.", measure: "Cramer's V", short_label: "Styles already tried"}  # no placeholders
-      H5: {question: "Do artists with undated releases behave differently?", answer: "They bring fewer styles new to them ({a} against {b}), but the difference mostly disappears when we compare artists with similar catalogues.", measure: "Cramer's V", short_label: "Undated releases"}  # a undated, b dated
+      H4: {question: "Do artists who already tried many styles keep trying new ones?", answer: "Not by itself. It shows only among artists with a similar number of releases.", measure: "Cramer's V", short_label: "Styles already tried"}  # no placeholders
+      H5: {question: "Do artists with undated releases behave differently?", answer: "They bring fewer styles new to them ({a} against {b}), but the difference mostly disappears among artists with similar catalogues.", measure: "Cramer's V", short_label: "Undated releases"}  # a undated, b dated
       H6: {question: "Does a long silence mean no release next year?", answer: "Yes. One year after the last release, {first} release again the next year. After 10 years or more, {last}.", measure: "Cramer's V", short_label: "Silence since the last release"}  # values from h6_buckets.csv
 design:  # visual system of the demo: the only place for colors, type scale and chart settings
   palette:  # hex values; .streamlit/config.toml must equal background, card, text, line, timing (a test checks it)
