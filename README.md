@@ -9,12 +9,14 @@ Predicts two things about an artist's next release, using only information that 
 
 Every model is compared with simple historical baselines, and every score comes from out-of-time evaluation: models are trained on the past and tested on years they never saw. The Streamlit demo, the "Time Machine", hides the future, predicts, then reveals what actually happened.
 
-Data: Discogs, 5,949,217 works by 1,034,756 artists. Final test on a sealed holdout (2018 to 2023), evaluated once.
+Data: Discogs, 5,949,217 works by 1,034,756 artists. Final test on a sealed holdout (2018 to 2023), evaluated once. Timing was re-scored once more only to add 95% intervals, with identical point estimates.
 
 | Question | Our model | Release counts | By chance |
 |---|---|---|---|
-| Timing (PR-AUC) | 0.785 | 0.735 | 0.542 |
+| Timing, next year (PR-AUC) | 0.785 | 0.735 | 0.542 |
 | Style (PR-AUC) | 0.499 | 0.346 | 0.313 |
+
+Timing over the next two years: PR-AUC 0.835 for the model, 0.789 for release counts and 0.643 by chance.
 
 Among the artists the model rates highest (top tenth), 90 out of 100 publish the next year (54 by chance) and 60 out of 100 bring a style new to them (31 by chance). The figures are in `results/holdout/`, `results/holdout_ci95/`, `results/holdout_what/` and `results/calibration/`. PR-AUC is not an accuracy: do not read it as "right x% of the time".
 
@@ -84,9 +86,9 @@ Notebooks:
 - Evaluation is always out of time. There is never a random split.
 - Each prediction uses a snapshot: only what was known at that date.
 - Baselines come before machine learning. A model passes only if the lower bound of its 95% artist-level bootstrap interval is above the baseline's upper bound.
-- The final holdout (snapshot years 2018 to 2023) is evaluated once, after all choices are fixed.
+- The final holdout (snapshot years 2018 to 2023) is evaluated once, after all choices are fixed (Timing was re-scored once more only for the 95% intervals).
 - Years 2024 and 2025 are excluded from training, tuning and metrics because they are incomplete.
-- Models compared: Logistic Regression, Naive Bayes, Random Forest, HistGradientBoosting and XGBoost. XGBoost is tuned in stages (random search, grid, manual) on the development years only; the others keep their default settings. For the Global style forecast, the Random Forest is the one tuned.
+- Models compared: Logistic Regression, Naive Bayes, Random Forest, HistGradientBoosting and XGBoost. XGBoost is tuned in stages (random search, grid, manual) on the development years only; the others keep their default settings. For the Global style forecast, the Random Forest is the one tuned. It does not pass the pass rule against repeating last year's ranking (6.28 against 6.00 hits in the top 10, a margin of 0.28 where 0.5 is required), so the recommended ranking is repeating last year's list (notebook 06).
 
 ## Reproduce everything from the raw data
 
