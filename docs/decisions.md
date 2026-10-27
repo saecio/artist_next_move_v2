@@ -5,7 +5,7 @@ The decision log is split by theme; entries are never renamed, so an entry is ci
 | File | Holds | Size (KB) |
 |---|---|---|
 | decisions_core.md | Methodology: principles, data and Works table, snapshots, Timing target, backtesting, Timing models and holdout, Style target and kill gate, Style models and holdout, global style forecast, audits, EDA and hypotheses, limitations and future work | 204.2 |
-| decisions_demo.md | Build record of the Streamlit app; block 2 touches the predictions it shows | 163.5 |
+| decisions_demo.md | Build record of the Streamlit app; block 2 touches the predictions it shows | 164.8 |
 | decisions_pending.md | Open items | 0.6 |
 | decisions_archive.md | Reversed or replaced decisions (CUT) | 24.9 |
 
@@ -108,16 +108,17 @@ Rules:
   478: ### Wording: baseline label in models_compared.csv (24-10-2026)
   484: ### Wording: tab 5 caption tooltip opens upward (26-10-2026)
   490: ### Wording: tab 6 opens on One artist and the headline has no fixed year (26-10-2026)
+  498: ### Wording: Six tests files synced and app text cleanups (27-10-2026)
 
-498: ## 7. Design system and passes
-  500: ### Design system of the demo (20-10-2026)
-  506: ### Design pass 2: header, schemas, dot chart (20-10-2026)
-  512: ### Design pass 3: story slides (20-10-2026)
-  518: ### Design pass 8: alignment, gap wording, calibration wording and tab 1 hook with photos (22-10-2026)
-  524: ### Design pass 10: typography and signature (22-10-2026)
-  530: ### Design pass 11 (editorial identity and responsive) (22-10-2026)
-  536: ### Design: Cover tab as the opening screen (24-10-2026)
-  544: ### Design: header rule for Streamlit 1.64 and tab 1 card fixes (26-10-2026)
+506: ## 7. Design system and passes
+  508: ### Design system of the demo (20-10-2026)
+  514: ### Design pass 2: header, schemas, dot chart (20-10-2026)
+  520: ### Design pass 3: story slides (20-10-2026)
+  526: ### Design pass 8: alignment, gap wording, calibration wording and tab 1 hook with photos (22-10-2026)
+  532: ### Design pass 10: typography and signature (22-10-2026)
+  538: ### Design pass 11 (editorial identity and responsive) (22-10-2026)
+  544: ### Design: Cover tab as the opening screen (24-10-2026)
+  552: ### Design: header rule for Streamlit 1.64 and tab 1 card fixes (26-10-2026)
 
 ## decisions_pending.md and decisions_archive.md
 

@@ -495,6 +495,14 @@ Reason: the live part of the presentation starts in the One artist view, which b
 
 Tests: scripts/run_multi_apptest.py and scripts/run_style_apptest.py assert that tab 6 opens on One artist and then select Several artists where they need it; scripts/run_game_apptest.py already selects One artist explicitly.
 
+### Wording: Six tests files synced and app text cleanups (27-10-2026)
+
+Decision: results/demo/static/hypotheses_cards.csv and hypotheses_summary.csv still held the old "new style" wording, because the generator (src/static_assets.py, run by scripts/run_static_assets.py) never overwrites an existing file. Both were synced by hand to the wording "a style new to them" of the 22-10-2026 entry "Trust view, result column, tab 7 subtitle and What works": the questions of H1, H3 and H4 in the summary file, and the questions and answers of H1, H2, H3 and H5 in the cards file (values, column order and quoting unchanged). Small wording cleanups of the same day, with no change to any number, placeholder or key: game.t6_disclaimer (no "not a measurement"), t4i_sub (last sentence removed), t4i_caption (second sentence removed), t5t_read (second sentence shortened), and the H4 and H5 answers ("among artists with ..." instead of "when we compare ..."), identical in the cards file and in static_tabs.cards.items.
+
+Reason: the Six tests tooltips are read from the cards file, so the screen said "new style" while the config said "a style new to them".
+
+Tests: scripts/run_static_apptest.py compares the tooltip text with the cards file (line 434) and the short labels with the config (line 415), so both follow the file.
+
 ## 7. Design system and passes
 
 ### Design system of the demo (20-10-2026)
