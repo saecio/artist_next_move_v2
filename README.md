@@ -229,7 +229,7 @@ The decision files are long. Find an entry by its exact title with `grep -n` and
 
 ## Limits
 
-Counts are works catalogued in Discogs, not sales or listens. Some works have no year. The Style question can only be answered for artists with tagged styles. The full list is in tab 8 of the app and in the Limitations section of `docs/decisions_core.md`.
+Counts are works catalogued in Discogs, not sales or listens. Some works have no year. The Style question can only be answered for artists with tagged styles. The test periods are fixed 5-year tranches, and no other length was tried. The full list is in tab 8 of the app and in the Limitations section of `docs/decisions_core.md`.
 
 ## Credits and licences
 

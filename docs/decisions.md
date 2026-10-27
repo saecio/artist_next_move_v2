@@ -4,8 +4,8 @@ The decision log is split by theme; entries are never renamed, so an entry is ci
 
 | File | Holds | Size (KB) |
 |---|---|---|
-| decisions_core.md | Methodology: principles, data and Works table, snapshots, Timing target, backtesting, Timing models and holdout, Style target and kill gate, Style models and holdout, global style forecast, audits, EDA and hypotheses, limitations and future work | 203.3 |
-| decisions_demo.md | Build record of the Streamlit app; block 2 touches the predictions it shows | 159.7 |
+| decisions_core.md | Methodology: principles, data and Works table, snapshots, Timing target, backtesting, Timing models and holdout, Style target and kill gate, Style models and holdout, global style forecast, audits, EDA and hypotheses, limitations and future work | 204.2 |
+| decisions_demo.md | Build record of the Streamlit app; block 2 touches the predictions it shows | 163.5 |
 | decisions_pending.md | Open items | 0.6 |
 | decisions_archive.md | Reversed or replaced decisions (CUT) | 24.9 |
 
@@ -19,24 +19,24 @@ Rules:
 5: ### 1. Principles and project setup (6 entries)
 14: ### 2. Data and the Works table (41 entries)
 58: ### 3. Snapshots and the Timing target (8 entries)
-69: ### 4. Backtesting design (9 entries)
-81: ### 5. Timing models, tuning and holdout (13 entries)
-97: ### 6. Style target, baselines and kill gate (21 entries)
-121: ### 7. Style models, tuning and holdout (16 entries)
-140: ### 8. Global style forecast (9 entries)
-152: ### 9. Audits and checks (4 entries)
-157: #### Leakage in model selection: label look-ahead in development fold 5 (17-10-2026)
-160: #### Duplicate audit: sensitivity analysis (17-10-2026)
-168: #### Duplicate audit: sensitivity result (17-10-2026)
-179: #### Style forecast: duplicate audit design (17-10-2026)
-187: #### Style forecast: duplicate audit result (17-10-2026)
-200: ### 10. EDA and hypotheses (12 entries)
-204: #### EDA
-208: #### Hypothesis Testing
-242: ### 11. Limitations and future work (20 entries)
-244: #### Future improvements
-249: #### Limitations
-267: ##### Known limitation: catalogue date (17-10-2026)
+69: ### 4. Backtesting design (10 entries)
+82: ### 5. Timing models, tuning and holdout (13 entries)
+98: ### 6. Style target, baselines and kill gate (21 entries)
+122: ### 7. Style models, tuning and holdout (16 entries)
+141: ### 8. Global style forecast (9 entries)
+153: ### 9. Audits and checks (4 entries)
+158: #### Leakage in model selection: label look-ahead in development fold 5 (17-10-2026)
+161: #### Duplicate audit: sensitivity analysis (17-10-2026)
+169: #### Duplicate audit: sensitivity result (17-10-2026)
+180: #### Style forecast: duplicate audit design (17-10-2026)
+188: #### Style forecast: duplicate audit result (17-10-2026)
+201: ### 10. EDA and hypotheses (12 entries)
+205: #### EDA
+209: #### Hypothesis Testing
+243: ### 11. Limitations and future work (21 entries)
+245: #### Future improvements
+250: #### Limitations
+269: ##### Known limitation: catalogue date (17-10-2026)
 
 ## decisions_demo.md (line: heading)
 
