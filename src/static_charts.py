@@ -54,7 +54,7 @@ def panel_chart(df: pd.DataFrame, title: str, subtitle: str, title_color: str, c
     whisk = base.mark_rule(color=c["text"], strokeWidth=ch["whisker_width"]).encode(y=alt.Y("lo:Q", axis=None, scale=alt.Scale(domain=[0, top])), y2="hi:Q", tooltip=name_score + [alt.Tooltip("range_txt:N", title=range_title)]).transform_filter(has_range)  # interval, rows with one only
     text = base.mark_text(dy=-8, baseline="bottom", color=c["text"], fontSize=ch["label_font"]).encode(y=alt.Y("label_y:Q", axis=None, scale=alt.Scale(domain=[0, top])), text=alt.Text("value:Q", format=".3f"), tooltip=alt.value(None))  # value on top
     tag = base.mark_text(align="left", baseline="top", color=title_color, fontSize=ch["axis_font"]).encode(x=alt.value(0), y=alt.value(ch["tag_row"]), text="tag:N", tooltip=alt.Tooltip("tag_tip:N", title=" ")).transform_filter(alt.expr.isValid(alt.datum.tag))  # advantage tag in a fixed row under the subtitle, with its tooltip
-    return alt.layer(bars_plain, bars_range, whisk, text, tag).properties(title=alt.TitleParams(title, subtitle=textwrap.wrap(subtitle, ch["subtitle_wrap"]), subtitleColor=c["muted"], subtitleFontSize=ch["axis_font"], color=title_color, fontSize=ch["title_font"], anchor="start"), height=ch["height_results"], width="container")  # panel
+    return alt.layer(bars_plain, bars_range, whisk, text, tag).properties(title=alt.TitleParams(title, subtitle=textwrap.wrap(subtitle, ch["subtitle_wrap"]), subtitleColor=c["muted"], subtitleFontSize=ch["axis_font"], color=title_color, fontSize=ch["title_font"], anchor="start", limit=ch["title_limit"]), height=ch["height_results"], width="container")  # panel
 
 
 def results_chart(data: pd.DataFrame, cfg: dict) -> list:  # one chart per question, the caller puts them in equal columns

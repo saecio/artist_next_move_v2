@@ -197,19 +197,20 @@ def render_tab5() -> None:  # body of the tab with view pills
         else:  # Results view, the original content
             results = results_data(cfg)  # one row per bar
             st.html(tab5_head_html(cfg, results))  # headline and subtitle
-            left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_columns"])  # chart card and dot card
-            card_h = cfg["static_tabs"]["sizes"]["tab5_card_height"]  # one height for both cards
-            with left, st.container(border=True, height=card_h):  # chart card
-                st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
-                for col, panel in zip(st.columns(2), results_chart(results, cfg)):  # Timing and Style panels share the width equally
-                    col.altair_chart(panel, theme=None, width="stretch")  # one panel
-                st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}{info(cfg['static_tabs']['texts']['t5_caption_tip'], up=True)}</div>")  # what the score is, with its tooltip
-            dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
-            dtx = cfg["static_tabs"]["texts"]  # texts of the dot card
-            with right, st.container(border=True, height=card_h):  # dot card, same height and top as the chart card
-                st.html(f"<div class='ui-card-title'>{dot_line}</div>")  # headline line, first line of the card
-                st.html(strip_html(cfg))  # sorted-artists strip
-                st.html(dots_html(cfg, dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"tip": dtx["t5_dot_tip"]}))  # two grids that fit the card
+            with st.container(key="ui-results"):  # keyed row, the css matches it
+                left, right = st.columns(cfg["static_tabs"]["sizes"]["tab5_columns"])  # chart card and dot card
+                card_h = cfg["static_tabs"]["sizes"]["tab5_card_height"]  # one height for both cards
+                with left, st.container(border=True, height=card_h):  # chart card
+                    st.html(tab5_chips_html(cfg))  # the three column labels with their tooltips
+                    for col, panel in zip(st.columns(2), results_chart(results, cfg)):  # Timing and Style panels share the width equally
+                        col.altair_chart(panel, theme=None, width="stretch")  # one panel
+                    st.html(f"<div class='ui-caption'>{cfg['static_tabs']['texts']['t5_caption']}{info(cfg['static_tabs']['texts']['t5_caption_tip'], up=True)}</div>")  # what the score is, with its tooltip
+                dot_line, dot_panels = dots_panels(cfg)  # line above the card and the two grids
+                dtx = cfg["static_tabs"]["texts"]  # texts of the dot card
+                with right, st.container(border=True, height=card_h):  # dot card, same height and top as the chart card
+                    st.html(f"<div class='ui-card-title'>{dot_line}</div>")  # headline line, first line of the card
+                    st.html(strip_html(cfg))  # sorted-artists strip
+                    st.html(dots_html(cfg, dot_panels, cfg["static_tabs"]["sizes"]["dots_side"], {"tip": dtx["t5_dot_tip"]}))  # two grids that fit the card
 
 with tabs[5]:  # Results
     render_tab5()  # fragment of this tab

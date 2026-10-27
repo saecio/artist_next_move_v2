@@ -77,7 +77,7 @@ def years_charts(d: pd.DataFrame, cfg: dict) -> list:  # one line chart per ques
         base = alt.Chart(part).encode(x=alt.X("year:O", title=t["t5y_x"], axis=alt.Axis(labelAngle=0)), y=alt.Y("score:Q", title=t["t5y_y"], scale=alt.Scale(domain=pad_domain(part["score"], ch["axis_pad"]))), color=col, tooltip=[alt.Tooltip("year:O", title=t["t5y_tip_year"]), alt.Tooltip("score_txt:N", title=t["t5y_tip_score"]), alt.Tooltip("line:N", title=t["t5y_tip_line"])])  # shared encoding
         line = base.mark_line(strokeWidth=ch["line_width"])  # the two lines
         points = base.mark_point(filled=True, size=ch["point_size"], opacity=1)  # one point per year
-        charts.append(alt.layer(line, points).properties(title=alt.TitleParams(question, color=color, fontSize=ch["title_font"], anchor="start"), height=ch["height_years"], width="container"))  # chart
+        charts.append(alt.layer(line, points).properties(title=alt.TitleParams(question, color=color, fontSize=ch["title_font"], anchor="start", limit=ch["title_limit"]), height=ch["height_years"], width="container"))  # chart
     return charts  # Timing, Style
 
 

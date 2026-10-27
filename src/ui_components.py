@@ -95,7 +95,9 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f"@media (max-width:1023px){{[data-testid='stMainBlockContainer']{{padding-left:1.5rem !important;padding-right:1.5rem !important}}"  # tablet: less side padding
         f"[data-testid='stHorizontalBlock']{{flex-wrap:wrap}}[data-testid='stColumn']{{flex:1 1 calc(50% - 1rem) !important;min-width:calc(50% - 1rem) !important}}"  # tablet: at most two columns
         f".ui-row{{flex-wrap:wrap}}.ui-row>.ui-card{{flex:1 1 calc(50% - {b['gap']}px)}}.ui-fill-right{{height:auto}}"  # tablet: at most two cards per row
-        f".ui-m-row{{grid-template-columns:{d['method']['label_w'] * 2 // 3}px 1fr}}}}",  # tablet: narrower run labels
+        f".ui-m-row{{grid-template-columns:{d['method']['label_w'] * 2 // 3}px 1fr}}"  # tablet: narrower run labels
+        f".st-key-ui-results [data-testid='stColumn']{{flex:1 1 100% !important;min-width:100% !important}}.st-key-ui-results [data-testid='stColumn'] [data-testid='stColumn']{{flex:1 1 calc(50% - 1rem) !important;min-width:calc(50% - 1rem) !important}}"  # tablet: the chart card above the dot card, the two panels inside stay side by side
+        f".ui-row:has(.ui-in-row)>.ui-card{{flex:1 1 100%}}}}",  # tablet: the two model cards stacked
         f"@media (max-width:639px){{[data-testid='stMainBlockContainer']{{padding-left:1rem !important;padding-right:1rem !important}}"  # phone: smallest side padding
         f"[data-testid='stColumn']{{flex:1 1 100% !important;min-width:100% !important}}"  # phone: one column
         f".ui-row>.ui-card{{flex:1 1 100%}}.ui-flow>.ui-flow-box{{width:100%}}.ui-flow-row{{flex-wrap:wrap}}.ui-flow-row>.ui-flow-box{{flex:1 1 100%}}"  # phone: one card per row, wide flow boxes

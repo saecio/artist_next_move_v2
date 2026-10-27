@@ -820,6 +820,7 @@ design:  # visual system of the demo: the only place for colors, type scale and 
     tag_dy: 28  # lift of the advantage tag above the value label, px
     y_headroom: 1.15  # share of the top value kept free above the bars
     subtitle_wrap: 42  # characters per line of a results panel subtitle
+    title_limit: 1000  # px a chart title or subtitle may take before Vega cuts it with an ellipsis, above any panel width
     dot_cell: 15  # width and height of one circle cell in px
     dot_fill: 0.7  # circle diameter as a share of its cell
     dot_wrap: 24  # characters per line of a grid title
