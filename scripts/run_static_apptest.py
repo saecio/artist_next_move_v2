@@ -172,7 +172,7 @@ assert re.findall(r"class='ui-m-tick'[^>]*>(\d+)<", raws[4]) == [str(v) for v in
 chips4 = [html.unescape(c) for c in re.findall(r"class='ui-chip'[^>]*>([^<]*)", raws[4])]  # chip texts of the row
 chips4, tags4 = chips4[:-3], chips4[-3:]  # model chips, then the three final-model tags
 assert chips4 == [t["t5_col_rule"]] + sc["models_compared"] and raws[4].count("ui-m-arrow'") == len(chips4) - 1 and t["t4_final_flag"] in texts[4], "chips equal the config list plus release counts, arrows between"  # model row
-assert re.search(r"ui-m-inline'><span class='ui-chip'[^>]*>XGBoost</span><span class='ui-info'", raws[4]), "info icon inline right after the final chip"  # attached to the chip
+assert re.search(r"ui-m-inline'><span class='ui-chip'[^>]*>XGBoost</span><span class='ui-info[^']*'", raws[4]), "info icon inline right after the final chip"  # attached to the chip
 from models import make_what_xgboost, make_xgboost  # builders of the Timing and Style final models
 from style_forecast import FINAL_MODEL, make_model  # final model of the forecast and its builder
 assert (make_xgboost.__name__, make_what_xgboost.__name__, FINAL_MODEL, type(make_model(FINAL_MODEL)).__name__) == ("make_xgboost", "make_what_xgboost", "random_forest", "RandomForestRegressor"), "final model sources: XGBoost builders and the forest"  # sources
