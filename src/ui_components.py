@@ -39,6 +39,7 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f".ui-chips{{display:flex;flex-wrap:wrap;gap:{b['gap'] // 2}px;margin-top:{b['gap']}px;align-items:center}}",  # row of chips
         f".ui-info{{display:inline-block;position:relative;margin-left:6px;width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;border:{b['border']}px solid {c['muted']};color:{c['muted']};font-size:{ty['caption']}px;cursor:help;font-style:normal;font-weight:400}}",  # small i
         f".ui-info:hover::after{{content:attr(data-tip);position:absolute;left:0;top:22px;z-index:10;width:min(260px,calc(100vw - 4rem));background:{c['card']};color:{c['text']};{box};border-radius:{b['radius']}px;padding:{b['gap']}px;font-size:{ty['caption']}px;line-height:1.4;text-align:left;text-transform:none;letter-spacing:normal;font-weight:400;box-shadow:none}}",  # tooltip bubble, a white card with a thin border
+        ".ui-info-left:hover::after{left:auto;right:0}",  # bubble opens toward the left when the icon sits in the right half of the page
         ".ui-info-up:hover::after{top:auto;bottom:22px}",  # bubble opens upward when the icon sits at the bottom edge of a card
         f".ui-stack{{display:flex;flex-direction:column;gap:{b['gap']}px}}",  # blocks one under the other
         f"{pill}{{background:transparent;{box};border-radius:{bt['radius']}px;color:{c['text']};box-shadow:none}}",  # idle view pill, flat
@@ -99,7 +100,8 @@ def base_css(cfg: dict) -> str:  # one-time style block
         f".st-key-ui-results [data-testid='stColumn']{{flex:1 1 100% !important;min-width:100% !important}}.st-key-ui-results [data-testid='stColumn'] [data-testid='stColumn']{{flex:1 1 calc(50% - 1rem) !important;min-width:calc(50% - 1rem) !important}}"  # tablet: the chart card above the dot card, the two panels inside stay side by side
         f".ui-row:has(.ui-in-row)>.ui-card{{flex:1 1 100%}}}}",  # tablet: the two model cards stacked
         f"@media (max-width:639px){{[data-testid='stMainBlockContainer']{{padding-left:1rem !important;padding-right:1rem !important}}"  # phone: smallest side padding
-        f"[data-testid='stColumn']{{flex:1 1 100% !important;min-width:100% !important}}"  # phone: one column
+        f"[data-testid='stColumn']{{flex:1 1 100% !important;min-width:100% !important}}.st-key-ui-results [data-testid='stColumn'] [data-testid='stColumn']{{flex:1 1 100% !important;min-width:100% !important}}"  # phone: one column, also the two panels inside the Results chart card
+        f"[data-testid='stHtml']{{position:relative}}.ui-info{{position:static}}.ui-info:hover::after,.ui-info.ui-info-left:hover::after{{left:0;right:0;width:auto;top:auto;margin-top:22px}}.ui-info.ui-info-up:hover::after{{margin-top:0;bottom:22px}}"  # phone: the bubble spans the html block under its icon, so it never leaves the screen
         f".ui-row>.ui-card{{flex:1 1 100%}}.ui-flow>.ui-flow-box{{width:100%}}.ui-flow-row{{flex-wrap:wrap}}.ui-flow-row>.ui-flow-box{{flex:1 1 100%}}"  # phone: one card per row, wide flow boxes
         f"[class*='st-key-ui-accent'] [data-testid='stVerticalBlock'],[class*='st-key-ui-accent'][class*='-t1']{{height:auto !important;max-height:none !important;overflow:visible !important}}[data-testid='stLayoutWrapper']:has(>[class*='st-key-ui-accent'][class*='-t1']){{height:auto !important;flex:none !important}}"  # phone: the artist cards (the keyed card, its inner blocks and the fixed-height layout wrapper around it) grow with their stacked content
         f".ui-m-track{{height:auto;min-height:{d['method']['row_h']}px}}.ui-m-train{{white-space:normal;line-height:1.1;font-size:{ty['caption'] * 5 // 6}px}}.ui-m-test{{font-size:{ty['caption'] * 5 // 6}px;min-width:0;overflow:hidden}}.ui-m-sealed{{flex-direction:column;gap:2px}}.ui-m-tick{{white-space:nowrap}}"  # phone: smaller run labels that wrap inside their bars, and a track that grows with its text so the year axis stays below
@@ -118,9 +120,9 @@ def accent_key(question: str, tab: str) -> str:  # container key that draws the 
     return f"ui-accent-{question}-{tab}"  # unique per tab, so two tabs never share a key
 
 
-def info(text: str, up: bool = False) -> str:  # small i with a hover tooltip
-    """A small i whose hover bubble shows `text`, opening upward when `up` is set."""
-    return f"<span class='ui-info{' ui-info-up' if up else ''}' data-tip='{html.escape(text, quote=True)}'>i</span>"  # tooltip in a data attribute
+def info(text: str, up: bool = False, left: bool = False) -> str:  # small i with a hover tooltip
+    """A small i whose hover bubble shows `text`, opening upward when `up` is set and toward the left when `left` is set (icons in the right half of the page)."""
+    return f"<span class='ui-info{' ui-info-up' if up else ''}{' ui-info-left' if left else ''}' data-tip='{html.escape(text, quote=True)}'>i</span>"  # tooltip in a data attribute
 
 
 def headline(text: str, subtitle: str = "", tip: str = "") -> str:  # page headline
@@ -139,6 +141,6 @@ def card(inner: str, title: str = "", tip: str = "") -> str:  # card around html
     return f"<div class='ui-card'>{head}{inner}</div>"  # card
 
 
-def chip(text: str, color: str, tip: str = "") -> str:  # small pill
-    """A pill with a colored border and an optional tooltip."""
-    return f"<span class='ui-chip' style='border-color:{color}'>{html.escape(text)}{info(tip) if tip else ''}</span>"  # chip
+def chip(text: str, color: str, tip: str = "", left: bool = False) -> str:  # small pill
+    """A pill with a colored border and an optional tooltip, which opens toward the left when `left` is set."""
+    return f"<span class='ui-chip' style='border-color:{color}'>{html.escape(text)}{info(tip, left=left) if tip else ''}</span>"  # chip

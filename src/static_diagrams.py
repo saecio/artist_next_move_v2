@@ -5,9 +5,9 @@ import html  # escape of text
 from ui_components import card, chip, info  # card, pill and small i with a tooltip
 
 
-def _box(label: str, count: str, tip: str, color: str) -> str:  # one flow box
+def _box(label: str, count: str, tip: str, color: str, left: bool = False) -> str:  # one flow box
     """A box with a label (and its tooltip) and a big count in `color`."""
-    return f"<div class='ui-flow-box' style='border-color:{color}'><div class='ui-label'>{html.escape(label)}{info(tip) if tip else ''}</div><div class='ui-flow-count' style='color:{color}'>{html.escape(count)}</div></div>"  # box
+    return f"<div class='ui-flow-box' style='border-color:{color}'><div class='ui-label'>{html.escape(label)}{info(tip, left=left) if tip else ''}</div><div class='ui-flow-count' style='color:{color}'>{html.escape(count)}</div></div>"  # box
 
 
 def clean_flow(cfg: dict, t: dict, n: int, counts: dict) -> str:  # tab 2 cleaning flow
@@ -15,7 +15,7 @@ def clean_flow(cfg: dict, t: dict, n: int, counts: dict) -> str:  # tab 2 cleani
     color = cfg["design"]["palette"]["highlight"]  # box color
     arrow = "<div class='ui-flow-arrow'></div>"  # CSS arrow pointing down
     by = f"<div class='ui-flow-by'>{html.escape(t['t2_by'])}</div>"  # connector word between releases and artists
-    inputs = _box(t["t2_in_master"], counts["master"], t["t2_tip_master"], color) + _box(t["t2_in_standalone"].format(n=n), counts["standalone"], t["t2_tip_standalone"], color)  # the two sources
+    inputs = _box(t["t2_in_master"], counts["master"], t["t2_tip_master"], color) + _box(t["t2_in_standalone"].format(n=n), counts["standalone"], t["t2_tip_standalone"], color, left=True)  # the two sources
     return f"<div class='ui-flow'><div class='ui-flow-row'>{inputs}</div>{arrow}{_box(t['t2_out'], counts['works'], t['t2_tip_out'], color)}{by}{_box(t['t2_artists'], counts['artists'], '', color)}</div>"  # whole flow
 
 def method_css(cfg: dict) -> str:  # style rules of the tab 4 infographic and model chips
@@ -90,7 +90,7 @@ def method_chips(cfg: dict, t: dict, names: list) -> str:  # tab 4 model chips
     """Release counts, then the compared models with arrows; the last model is the final one and carries the flag and the row tooltip."""
     pal = cfg["design"]["palette"]  # palette
     items = [(t["t5_col_rule"], pal["muted"], "")] + [(n, pal["rule"], "") for n in names[:-1]] + [(names[-1], pal["highlight"], t["t4_final_flag"])]  # label, color and flag of each chip
-    parts = [f"<div class='ui-m-col'><span class='ui-m-flag'>{html.escape(flag)}</span><div class='ui-m-inline'>{chip(text, color)}{info(t['t4_chips_tip']) if flag else ''}</div></div>" for text, color, flag in items]  # one column per chip, the tooltip icon sits right after the final one
+    parts = [f"<div class='ui-m-col'><span class='ui-m-flag'>{html.escape(flag)}</span><div class='ui-m-inline'>{chip(text, color)}{info(t['t4_chips_tip'], left=True) if flag else ''}</div></div>" for text, color, flag in items]  # one column per chip, the tooltip icon sits right after the final one
     return "<div class='ui-m-chips'>" + "<div class='ui-m-arrow'></div>".join(parts) + "</div>"  # arrows between the chips
 
 def close_css(cfg: dict) -> str:  # style rules of the tab 8 closing cards and band
